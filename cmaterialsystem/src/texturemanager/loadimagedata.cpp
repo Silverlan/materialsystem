@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "texturemanager.h"
-#include "loadimagedata.h"
-#include "filesystem.h"
-#include "texturequeue.h"
+#include "texturemanager/texturemanager.h"
+#include "texturemanager/loadimagedata.h"
+#include <fsys/filesystem.h>
+#include "texturemanager/texturequeue.h"
 #include "virtualfile.h"
 #include <util_image.h>
 

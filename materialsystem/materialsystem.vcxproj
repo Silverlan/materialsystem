@@ -170,8 +170,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\impl_surfacematerials.h" />
-    <ClInclude Include="include\impl_texture_formats.h" />
     <ClInclude Include="include\material.h" />
     <ClInclude Include="include\materialmanager.h" />
     <ClInclude Include="include\matsysdefinitions.h" />
@@ -179,6 +177,8 @@
     <ClInclude Include="include\textureinfo.h" />
     <ClInclude Include="include\texture_load_flags.hpp" />
     <ClInclude Include="include\texture_type.h" />
+    <ClInclude Include="src\impl_surfacematerials.h" />
+    <ClInclude Include="src\impl_texture_formats.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\impl_texture_formats.cpp" />
