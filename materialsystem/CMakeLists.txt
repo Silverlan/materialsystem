@@ -30,8 +30,20 @@ function(add_external_library IDENTIFIER)
 endfunction(add_external_library)
 
 function(link_external_library IDENTIFIER)
-	add_include_dir(${IDENTIFIER} ${ARGN})
-	add_external_library(${IDENTIFIER} ${ARGN})
+	set(PRETTYNAME ${IDENTIFIER})
+	set(ARGV ${ARGN})
+	list(LENGTH ARGV ARGC)
+	if(${ARGC} GREATER 0)
+		list(GET ARGV 0 PRETTYNAME)
+	endif()
+	string(TOUPPER ${IDENTIFIER} UIDENTIFIER)
+
+	set(${DEFAULT_DIR} "")
+	set(DEPENDENCY_${UIDENTIFIER}_INCLUDE ${DEFAULT_DIR} CACHE PATH "Path to ${PRETTYNAME} include directory.")
+	set(INCLUDE_DIRS ${INCLUDE_DIRS} DEPENDENCY_${UIDENTIFIER}_INCLUDE PARENT_SCOPE)
+
+	set(DEPENDENCY_${UIDENTIFIER}_LIBRARY "" CACHE FILEPATH "Path to ${PRETTYNAME} library.")
+	set(LIBRARIES ${LIBRARIES} DEPENDENCY_${UIDENTIFIER}_LIBRARY PARENT_SCOPE)
 endfunction(link_external_library)
 
 ##### CONFIGURATION #####
@@ -49,7 +61,6 @@ link_external_library(datasystem)
 link_external_library(VTFLib)
 link_external_library(lpng)
 link_external_library(util_image)
-link_external_library(shaderinfo)
 
 add_include_dir(glm)
 add_include_dir(zlib)

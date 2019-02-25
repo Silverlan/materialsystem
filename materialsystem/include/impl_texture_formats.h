@@ -19,7 +19,7 @@ struct DLLMATSYS ImageFormat
 	std::string extension;
 };
 
-DLLMATSYS std::vector<ImageFormat> get_perfered_image_format_order();
+DLLMATSYS std::vector<ImageFormat> get_perferred_image_format_order();
 DLLMATSYS std::string translate_image_path(const std::string &imgFile,bool bCubemap,TextureType &type,std::string path="materials/");
 
 #endif

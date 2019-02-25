@@ -14,7 +14,7 @@
 class Material;
 DECLARE_BASE_HANDLE(DLLMATSYS,Material,Material);
 
-class ShaderInfo;
+namespace util {class ShaderInfo;};
 class MaterialManager;
 class MaterialHandle;
 namespace ds {class Block;};
@@ -25,7 +25,7 @@ class DLLMATSYS Material
 protected:
 	virtual ~Material();
 	MaterialHandle m_handle;
-	util::WeakHandle<ShaderInfo> m_shaderInfo = {};
+	util::WeakHandle<util::ShaderInfo> m_shaderInfo = {};
 	std::unique_ptr<std::string> m_shader;
 	std::string m_name;
 	std::shared_ptr<ds::Block> m_data;
@@ -44,13 +44,13 @@ protected:
 		TMaterial *Copy() const;
 public:
 	Material(MaterialManager *manager);
-	Material(MaterialManager *manager,const util::WeakHandle<ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
+	Material(MaterialManager *manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
 	Material(MaterialManager *manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
 	Material(const Material&)=delete;
 	void Remove();
 	MaterialHandle GetHandle();
-	void SetShaderInfo(const util::WeakHandle<ShaderInfo> &shaderInfo);
-	const ShaderInfo *GetShaderInfo() const;
+	void SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo);
+	const util::ShaderInfo *GetShaderInfo() const;
 	void UpdateTextures();
 	const std::string &GetShaderIdentifier() const;
 	virtual Material *Copy() const;
@@ -75,7 +75,7 @@ public:
 	void *GetUserData();
 	void SetUserData(void *data);
 	void Reset();
-	void Initialize(const util::WeakHandle<ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
+	void Initialize(const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
 	void Initialize(const std::string &shader,const std::shared_ptr<ds::Block> &data);
 };
 #pragma warning(pop)

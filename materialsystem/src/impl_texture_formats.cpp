@@ -5,7 +5,7 @@
 #include "impl_texture_formats.h"
 #include <fsys/filesystem.h>
 
-std::vector<ImageFormat> get_perfered_image_format_order()
+std::vector<ImageFormat> get_perferred_image_format_order()
 {
 	return std::vector<ImageFormat>{ // Order of preference
 		{TextureType::KTX,".ktx"},
@@ -22,7 +22,7 @@ std::string translate_image_path(const std::string &imgFile,bool bCubemap,Textur
 {
 	path += FileManager::GetNormalizedPath(imgFile);
 	ustring::to_lower(path);
-	auto formats = get_perfered_image_format_order();
+	auto formats = get_perferred_image_format_order();
 	type = formats.front().type;
 
 	auto ext = path.substr(path.length() -4);

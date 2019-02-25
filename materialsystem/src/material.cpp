@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "material.h"
-#include <shaderinfo.h>
+#include <sharedutils/util_shaderinfo.hpp>
 
 DEFINE_BASE_HANDLE(DLLMATSYS,Material,Material);
 
@@ -14,7 +14,7 @@ Material::Material(MaterialManager *manager)
 	Reset();
 }
 
-Material::Material(MaterialManager *manager,const util::WeakHandle<ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data)
+Material::Material(MaterialManager *manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data)
 	: Material(manager)
 {
 	Initialize(shaderInfo,data);
@@ -45,7 +45,7 @@ void Material::Reset()
 	m_texAlpha = nullptr;
 }
 
-void Material::Initialize(const util::WeakHandle<ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data)
+void Material::Initialize(const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data)
 {
 	Reset();
 	SetShaderInfo(shaderInfo);
@@ -77,7 +77,7 @@ void Material::UpdateTextures()
 	m_bTranslucent = m_data->GetBool("translucent");
 }
 
-void Material::SetShaderInfo(const util::WeakHandle<ShaderInfo> &shaderInfo)
+void Material::SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo)
 {
 	m_shaderInfo = shaderInfo;
 	m_shader = nullptr;
@@ -130,7 +130,7 @@ TextureInfo *Material::GetParallaxMap() {return m_texParallax;}
 void Material::SetName(const std::string &name) {m_name = name;}
 const std::string &Material::GetName() {return m_name;}
 
-const ShaderInfo *Material::GetShaderInfo() const {return m_shaderInfo.get();}
+const util::ShaderInfo *Material::GetShaderInfo() const {return m_shaderInfo.get();}
 const std::string &Material::GetShaderIdentifier() const
 {
 	if(m_shaderInfo.expired() == false)
