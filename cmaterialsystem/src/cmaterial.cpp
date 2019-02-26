@@ -32,7 +32,7 @@ bool CMaterial::ShaderEqualFn::operator()(const util::WeakHandle<prosper::Shader
 CMaterial::CMaterial(MaterialManager *manager)
 	: Material(manager)
 {}
-CMaterial::CMaterial(MaterialManager *manager,const util::WeakHandle<ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data)
+CMaterial::CMaterial(MaterialManager *manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data)
 	: Material(manager,shader,data)
 {}
 CMaterial::CMaterial(MaterialManager *manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
