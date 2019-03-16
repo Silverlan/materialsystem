@@ -8,6 +8,7 @@
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
 #include <sharedutils/util.h>
+#include <array>
 #ifdef ENABLE_VMT_SUPPORT
 #include <VTFLib/VMTFile.h>
 #endif
@@ -60,6 +61,68 @@ template<class TData,typename TInternal>
 		if(translate != nullptr)
 			v = translate(v);
 		root->AddData(key,std::make_shared<TData>(dataSettings,std::to_string(v)));
+	}
+}
+
+// Find highest dx node version and merge its values with the specified node
+static void merge_dx_node_values(VTFLib::Nodes::CVMTGroupNode &node)
+{
+	enum class DXVersion : uint8_t
+	{
+		Undefined = 0,
+		dx90,
+		dx90_20b // dxlevel 95
+	};
+	const std::unordered_map<std::string,DXVersion> dxStringToEnum = {
+		{"dx90",DXVersion::dx90},
+		{"dx90_20b",DXVersion::dx90_20b}
+	};
+	enum class Operator : int8_t
+	{
+		None = -1,
+		LessThan = 0,
+		LessThanOrEqual,
+		GreaterThanOrEqual,
+		GreaterThan
+	}; // Operators ordered by significance!
+	const std::array<std::string,4> acceptedOperators = {"<","<=",">=",">"};
+	auto numNodes = node.GetNodeCount();
+	VTFLib::Nodes::CVMTNode *dxNode = nullptr;
+	auto bestDxVersion = DXVersion::Undefined;
+	auto bestOperator = Operator::None;
+	for(auto i=decltype(numNodes){0u};i<numNodes;++i)
+	{
+		auto *pNode = node.GetNode(i);
+		auto *name = pNode->GetName();
+		std::string dxLevelValue {};
+		auto op = Operator::None;
+		for(auto opIdx : {2,3,1,0}) // Order is important! (Ordered by string length per operator type (e.g. '<=' has to come before '<'))
+		{
+			auto &candidate = acceptedOperators.at(opIdx);
+			if(ustring::compare(name,candidate.c_str(),true,candidate.length()) == false)
+				continue;
+			op = static_cast<Operator>(opIdx);
+		}
+		if(op == Operator::None)
+			dxLevelValue = name;
+		else
+			dxLevelValue = ustring::sub(name,acceptedOperators.at(umath::to_integral(op)).length());
+		ustring::to_lower(dxLevelValue);
+		auto it = dxStringToEnum.find(dxLevelValue);
+		if(it == dxStringToEnum.end())
+			continue;
+		if(umath::to_integral(it->second) <= umath::to_integral(bestDxVersion) && umath::to_integral(op) <= umath::to_integral(bestOperator))
+			continue;
+		dxNode = pNode;
+		bestDxVersion = it->second;
+		bestOperator = op;
+	}
+	if(dxNode != nullptr && dxNode->GetType() == VMTNodeType::NODE_TYPE_GROUP)
+	{
+		auto *dxGroupNode = static_cast<VTFLib::Nodes::CVMTGroupNode*>(dxNode);
+		auto numNodesDx = dxGroupNode->GetNodeCount();
+		for(auto i=decltype(numNodesDx){0u};i<numNodesDx;++i)
+			node.AddNode(dxGroupNode->GetNode(i)->Clone());
 	}
 }
 #endif
@@ -199,6 +262,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 			std::string shader = vmtRoot->GetName();
 			ustring::to_lower(shader);
 
+			merge_dx_node_values(*vmtRoot);
 			auto phongOverride = std::numeric_limits<float>::quiet_NaN();
 			auto bWater = false;
 			std::string shaderName;
