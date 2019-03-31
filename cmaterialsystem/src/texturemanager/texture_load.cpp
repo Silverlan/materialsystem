@@ -11,6 +11,7 @@
 #include <sharedutils/util_file.h>
 #include <map>
 
+#pragma optimize("",off)
 void TextureManager::ReloadTexture(const std::string &tex,const LoadInfo &loadInfo)
 {
 	std::string ext;
@@ -155,3 +156,4 @@ bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,c
 	PushOnLoadQueue(std::move(item));
 	return false;
 }
+#pragma optimize("",on)

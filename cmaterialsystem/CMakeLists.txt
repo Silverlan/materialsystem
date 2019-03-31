@@ -58,13 +58,17 @@ link_external_library(sharedutils)
 link_external_library(mathutil)
 link_external_library(vfilesystem)
 link_external_library(datasystem)
-link_external_library(VTFLib)
+if($(CONFIG_ENABLE_VMT_SUPPORT))
+	link_external_library(VTFLib)
+endif()
 link_external_library(lpng)
 link_external_library(util_image)
 link_external_library(prosper)
 link_external_library(zlib)
 link_external_library(vulkan)
 link_external_library(anvil)
+link_external_library(iglfw)
+link_external_library(glfw)
 
 add_include_dir(glm)
 add_include_dir(gli)
@@ -72,14 +76,18 @@ add_include_dir(squish)
 
 add_external_library(materialsystem)
 
+set(CONFIG_ENABLE_VMT_SUPPORT "1" CACHE BOOL "Enable support for VMT/VTF files.")
+
 set(DEFINITIONS
 	DLLCMATSYS_EX
 	DLLMATSYS_EX
 	GLM_FORCE_DEPTH_ZERO_TO_ONE
 	GLM_ENABLE_EXPERIMENTAL
-	ENABLE_VTF_SUPPORT
-	ENABLE_VMT_SUPPORT
 )
+
+if($(CONFIG_ENABLE_VMT_SUPPORT))
+	list(APPEND DEFINITIONS ENABLE_VMT_SUPPORT)
+endif()
 
 ##### CONFIGURATION #####
 
@@ -87,7 +95,7 @@ set(LIB_TYPE SHARED)
 if(ENABLE_STATIC_LIBRARY_FLAG MATCHES 1)
 	set(CONFIG_STATIC_LIBRARY 0 CACHE BOOL "Build as static library?")
 endif()
-if((DEFINED CONFIG_STATIC_LIBRARY) AND (${CONFIG_STATIC_LIBRARY} MATCHES ON))
+if(DEFINED ${CONFIG_STATIC_LIBRARY} AND ${CONFIG_STATIC_LIBRARY})
 	set(LIB_TYPE STATIC)
 endif()
 
@@ -129,7 +137,7 @@ endforeach(INCLUDE_PATH)
 
 set(TARGET_PROPERTIES LINKER_LANGUAGE CXX)
 if(DEFINED PRECOMPILED_HEADER)
-	set(TARGET_PROPERTIES ${TARGET_PROPERTIES} COMPILE_FLAGS /Yu"${PRECOMPILED_HEADER}.h")
-	set_source_files_properties("${CMAKE_CURRENT_LIST_DIR}/src/${PRECOMPILED_HEADER}.cpp" PROPERTIES COMPILE_FLAGS "/Yc${PRECOMPILED_HEADER}.h")
+	include(PrecompiledHeader.cmake)
+	add_precompiled_header(${PROJ_NAME} "src/${PRECOMPILED_HEADER}.h" c++17 FORCEINCLUDE)
 endif()
 set_target_properties(${PROJ_NAME} PROPERTIES ${TARGET_PROPERTIES})

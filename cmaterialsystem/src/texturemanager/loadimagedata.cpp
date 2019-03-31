@@ -207,7 +207,7 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 					item.valid = false;
 			}
 #else
-				item->valid = false;
+				item.valid = false;
 #endif
 		}
 	}

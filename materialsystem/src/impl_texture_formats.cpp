@@ -5,6 +5,7 @@
 #include "impl_texture_formats.h"
 #include <fsys/filesystem.h>
 
+#pragma optimize("",off)
 std::vector<ImageFormat> get_perferred_image_format_order()
 {
 	return std::vector<ImageFormat>{ // Order of preference
@@ -74,3 +75,4 @@ std::string translate_image_path(const std::string &imgFile,bool bCubemap,Textur
 	}
 	return path;
 }
+#pragma optimize("",on)
