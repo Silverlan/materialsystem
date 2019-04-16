@@ -54,11 +54,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(ENABLE_STATIC_LIBRARY_FLAG 0)
 # set(PRECOMPILED_HEADER "stdafx")
 
+set(CONFIG_ENABLE_VTF_SUPPORT "1" CACHE BOOL "Enable support for VMT/VTF files.")
+
 link_external_library(sharedutils)
 link_external_library(mathutil)
 link_external_library(vfilesystem)
 link_external_library(datasystem)
-if($(CONFIG_ENABLE_VMT_SUPPORT))
+if(CONFIG_ENABLE_VTF_SUPPORT)
 	link_external_library(VTFLib)
 endif()
 link_external_library(lpng)
@@ -69,24 +71,25 @@ link_external_library(vulkan)
 link_external_library(anvil)
 link_external_library(iglfw)
 link_external_library(glfw)
+link_external_library(glslang)
 
 add_include_dir(glm)
 add_include_dir(gli)
 add_include_dir(squish)
+add_include_dir(anvil_build)
 
 add_external_library(materialsystem)
-
-set(CONFIG_ENABLE_VMT_SUPPORT "1" CACHE BOOL "Enable support for VMT/VTF files.")
 
 set(DEFINITIONS
 	DLLCMATSYS_EX
 	DLLMATSYS_EX
 	GLM_FORCE_DEPTH_ZERO_TO_ONE
 	GLM_ENABLE_EXPERIMENTAL
+	ANVIL_VULKAN_CPP
 )
 
-if($(CONFIG_ENABLE_VMT_SUPPORT))
-	list(APPEND DEFINITIONS ENABLE_VMT_SUPPORT)
+if(CONFIG_ENABLE_VTF_SUPPORT)
+	list(APPEND DEFINITIONS ENABLE_VTF_SUPPORT)
 endif()
 
 ##### CONFIGURATION #####

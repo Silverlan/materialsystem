@@ -67,14 +67,14 @@ link_external_library(util_image)
 add_include_dir(glm)
 add_include_dir(zlib)
 
-set(CONFIG_ENABLE_VMT_SUPPORT "1" CACHE BOOL "Enable support for VMT/VTF files.")
+set(CONFIG_ENABLE_VTF_SUPPORT "1" CACHE BOOL "Enable support for VMT/VTF files.")
 
 set(DEFINITIONS
 	MATSYS_DLL
 	GLM_FORCE_DEPTH_ZERO_TO_ONE
 )
 
-if($(CONFIG_ENABLE_VMT_SUPPORT))
+if(CONFIG_ENABLE_VTF_SUPPORT)
 	list(APPEND DEFINITIONS ENABLE_VMT_SUPPORT)
 endif()
 
