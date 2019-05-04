@@ -131,7 +131,7 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 							data.resize(fp->GetSize());
 							fp->Read(data.data(),data.size());
 							fp = nullptr;
-							auto &vtfFile = std::make_shared<VTFLib::CVTFFile>();
+							auto vtfFile = std::make_shared<VTFLib::CVTFFile>();
 							vtf->textures.push_back(vtfFile);
 							vtf->valid = vtfFile->Load(&f,false);
 							if(vtf->valid == true)
@@ -175,7 +175,7 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 							data.resize(fp->GetSize());
 							fp->Read(data.data(),data.size());
 							fp = nullptr;
-							auto &vtfFile = std::make_shared<VTFLib::CVTFFile>();
+							auto vtfFile = std::make_shared<VTFLib::CVTFFile>();
 							vtf->textures.push_back(vtfFile);
 							vtf->valid = vtfFile->Load(&f,false);
 							if(vtf->valid == true)

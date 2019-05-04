@@ -14,7 +14,7 @@
 #include <gli/gli.hpp>
 #include <gli/texture2d.hpp>
 #ifdef ENABLE_VTF_SUPPORT
-#include <VTFLib/VTFFile.h>
+#include <VTFFile.h>
 #endif
 
 namespace prosper

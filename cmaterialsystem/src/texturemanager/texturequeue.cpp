@@ -6,7 +6,7 @@
 #include <sharedutils/functioncallback.h>
 #include <util_image.h>
 #ifdef ENABLE_VTF_SUPPORT
-#include <VTFLib/VTFWrapper.h>
+#include <VTFWrapper.h>
 #endif
 
 TextureQueueItem::TextureQueueItem()

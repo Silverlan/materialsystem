@@ -10,7 +10,7 @@
 #include <sharedutils/util.h>
 #include <array>
 #ifdef ENABLE_VMT_SUPPORT
-#include <VTFLib/VMTFile.h>
+#include <VMTFile.h>
 #endif
 
 static const std::unordered_map<std::string,std::string> ENUM_VARS = { // These have to correspond with their respective vulkan enum values!

@@ -58,14 +58,13 @@ link_external_library(sharedutils)
 link_external_library(mathutil)
 link_external_library(vfilesystem)
 link_external_library(datasystem)
-if(WIN32)
-	link_external_library(VTFLib)
-endif()
+link_external_library(VTFLib)
 link_external_library(lpng)
 link_external_library(util_image)
 
 add_include_dir(glm)
 add_include_dir(zlib)
+add_include_dir(vtflib_build)
 
 set(CONFIG_ENABLE_VTF_SUPPORT "1" CACHE BOOL "Enable support for VMT/VTF files.")
 

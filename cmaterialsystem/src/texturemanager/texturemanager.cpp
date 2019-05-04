@@ -17,7 +17,7 @@
 #include <gli/texture2d.hpp>
 #include <sharedutils/util_file.h>
 #ifdef ENABLE_VTF_SUPPORT
-#include <VTFLib/Proc.h>
+#include <Proc.h>
 #include "virtualfile.h"
 #endif
 
@@ -73,12 +73,12 @@ TextureManager::TextureManager(prosper::Context &context)
 	TextureManager::SetupSamplerMipmapMode(samplerCreateInfo,TextureMipmapMode::Ignore);
 	m_textureSamplerNoMipmap = prosper::util::create_sampler(context.GetDevice(),samplerCreateInfo);
 #ifdef ENABLE_VTF_SUPPORT
-	vlSetProc(PROC_READ_CLOSE,vtf_read_close);
-	vlSetProc(PROC_READ_OPEN,vtf_read_open);
-	vlSetProc(PROC_READ_READ,vtf_read_read);
-	vlSetProc(PROC_READ_SEEK,vtf_read_seek);
-	vlSetProc(PROC_READ_SIZE,vtf_read_size);
-	vlSetProc(PROC_READ_TELL,vtf_read_tell);
+	vlSetProc(PROC_READ_CLOSE,reinterpret_cast<void*>(vtf_read_close));
+	vlSetProc(PROC_READ_OPEN,reinterpret_cast<void*>(vtf_read_open));
+	vlSetProc(PROC_READ_READ,reinterpret_cast<void*>(vtf_read_read));
+	vlSetProc(PROC_READ_SEEK,reinterpret_cast<void*>(vtf_read_seek));
+	vlSetProc(PROC_READ_SIZE,reinterpret_cast<void*>(vtf_read_size));
+	vlSetProc(PROC_READ_TELL,reinterpret_cast<void*>(vtf_read_tell));
 #endif
 }
 
