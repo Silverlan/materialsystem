@@ -65,6 +65,7 @@ link_external_library(util_image)
 add_include_dir(glm)
 add_include_dir(zlib)
 add_include_dir(vtflib_build)
+add_include_dir(lpng_build)
 
 set(CONFIG_ENABLE_VTF_SUPPORT "1" CACHE BOOL "Enable support for VMT/VTF files.")
 

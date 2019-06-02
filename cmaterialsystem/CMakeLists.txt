@@ -76,6 +76,7 @@ add_include_dir(gli)
 add_include_dir(squish)
 add_include_dir(anvil_build)
 add_include_dir(vtflib_build)
+add_include_dir(lpng_build)
 
 add_external_library(materialsystem)
 

@@ -106,7 +106,7 @@ static void merge_dx_node_values(VTFLib::Nodes::CVMTGroupNode &node)
 		if(op == Operator::None)
 			dxLevelValue = name;
 		else
-			dxLevelValue = ustring::sub(name,acceptedOperators.at(umath::to_integral(op)).length());
+			dxLevelValue = ustring::substr(std::string{name},acceptedOperators.at(umath::to_integral(op)).length());
 		ustring::to_lower(dxLevelValue);
 		auto it = dxStringToEnum.find(dxLevelValue);
 		if(it == dxStringToEnum.end())
