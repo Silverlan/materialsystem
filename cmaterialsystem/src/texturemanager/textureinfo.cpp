@@ -14,6 +14,17 @@ Texture::Texture(std::shared_ptr<prosper::Texture> &tex)
 	: texture(tex),width((*tex->GetImage())->get_image_extent_2D(0u).width),height((*tex->GetImage())->get_image_extent_2D(0u).height)
 {}
 
+Texture::~Texture()
+{
+	while(m_onRemoveCallbacks.empty() == false)
+	{
+		auto &cb = m_onRemoveCallbacks.front();
+		if(cb.IsValid())
+			cb();
+		m_onRemoveCallbacks.pop();
+	}
+}
+
 bool Texture::IsIndexed() const {return (m_flags &Flags::Indexed) != Flags::None;}
 bool Texture::IsLoaded() const {return (m_flags &Flags::Loaded) != Flags::None;}
 bool Texture::IsError() const {return (m_flags &Flags::Error) != Flags::None;}
@@ -30,6 +41,12 @@ void Texture::CallOnLoaded(const std::function<void(std::shared_ptr<Texture>)> &
 		return;
 	}
 	m_onLoadCallbacks.push(callback);
+}
+CallbackHandle Texture::CallOnRemove(const std::function<void()> &callback)
+{
+	auto cb = FunctionCallback<void>::Create(callback);
+	m_onRemoveCallbacks.push(cb);
+	return cb;
 }
 
 void Texture::RunOnLoadedCallbacks()

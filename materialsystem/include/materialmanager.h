@@ -10,6 +10,7 @@
 
 #pragma warning(push)
 #pragma warning(disable : 4251)
+enum class TextureType : uint32_t;
 class DLLMATSYS MaterialManager
 {
 protected:
@@ -35,6 +36,15 @@ protected:
 
 	std::shared_ptr<ds::Settings> CreateDataSettings() const;
 public:
+	struct DLLMATSYS ImageFormat
+	{
+		ImageFormat(TextureType _type,std::string _extension)
+			: type(_type),extension(_extension)
+		{}
+		TextureType type;
+		std::string extension;
+	};
+
 	MaterialManager();
 	MaterialManager &operator=(const MaterialManager&)=delete;
 	MaterialManager(const MaterialManager&)=delete;
@@ -50,6 +60,8 @@ public:
 	const std::unordered_map<std::string,MaterialHandle> &GetMaterials() const;
 	void Clear(); // Clears all materials (+Textures?)
 	void ClearUnused();
+
+	static const std::vector<ImageFormat> &get_supported_image_formats();
 };
 #pragma warning(pop)
 

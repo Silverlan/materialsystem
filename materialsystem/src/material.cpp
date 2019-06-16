@@ -121,11 +121,17 @@ CallbackHandle Material::CallOnLoaded(const std::function<void(void)> &f)
 	return m_callOnLoaded.back();
 }
 bool Material::IsLoaded() const {return m_bLoaded;}
+const TextureInfo *Material::GetDiffuseMap() const {return const_cast<Material*>(this)->GetDiffuseMap();}
 TextureInfo *Material::GetDiffuseMap() {return m_texDiffuse;}
+const TextureInfo *Material::GetNormalMap() const {return const_cast<Material*>(this)->GetNormalMap();}
 TextureInfo *Material::GetNormalMap() {return m_texNormal;}
+const TextureInfo *Material::GetSpecularMap() const {return const_cast<Material*>(this)->GetSpecularMap();}
 TextureInfo *Material::GetSpecularMap() {return m_texSpecular;}
+const TextureInfo *Material::GetGlowMap() const {return const_cast<Material*>(this)->GetGlowMap();}
 TextureInfo *Material::GetGlowMap() {return m_texGlow;}
+const TextureInfo *Material::GetAlphaMap() const {return const_cast<Material*>(this)->GetAlphaMap();}
 TextureInfo *Material::GetAlphaMap() {return m_texAlpha;}
+const TextureInfo *Material::GetParallaxMap() const {return const_cast<Material*>(this)->GetParallaxMap();}
 TextureInfo *Material::GetParallaxMap() {return m_texParallax;}
 void Material::SetName(const std::string &name) {m_name = name;}
 const std::string &Material::GetName() {return m_name;}
@@ -158,7 +164,7 @@ TextureInfo *Material::GetTextureInfo(const std::string &key)
 	return &const_cast<TextureInfo&>(datTex.GetValue());
 }
 
-const std::shared_ptr<ds::Block> &Material::GetDataBlock()
+const std::shared_ptr<ds::Block> &Material::GetDataBlock() const
 {
 	static std::shared_ptr<ds::Block> nptr = nullptr;
 	return (m_data != nullptr) ? m_data : nptr;

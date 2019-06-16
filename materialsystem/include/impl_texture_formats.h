@@ -8,18 +8,9 @@
 #include "matsysdefinitions.h"
 #include <vector>
 #include "texture_type.h"
+#include "materialmanager.h"
 #include <sharedutils/util_string.h>
 
-struct DLLMATSYS ImageFormat
-{
-	ImageFormat(TextureType _type,std::string _extension)
-		: type(_type),extension(_extension)
-	{}
-	TextureType type;
-	std::string extension;
-};
-
-DLLMATSYS std::vector<ImageFormat> get_perferred_image_format_order();
 DLLMATSYS std::string translate_image_path(const std::string &imgFile,bool bCubemap,TextureType &type,std::string path="materials/");
 
 #endif

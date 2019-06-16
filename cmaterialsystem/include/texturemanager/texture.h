@@ -27,6 +27,7 @@ public:
 		Cubemap = Error<<1u
 	};
 	Texture();
+	~Texture();
 	std::shared_ptr<prosper::Texture> texture = nullptr;
 	Texture(std::shared_ptr<prosper::Texture> &texture);
 	Anvil::Format internalFormat = Anvil::Format::UNKNOWN;
@@ -35,6 +36,7 @@ public:
 	unsigned int height;
 	void Reset();
 	void CallOnLoaded(const std::function<void(std::shared_ptr<Texture>)> &callback);
+	CallbackHandle CallOnRemove(const std::function<void()> &callback);
 	void RunOnLoadedCallbacks();
 
 	bool IsIndexed() const;
@@ -45,6 +47,7 @@ private:
 	Flags GetFlags() const;
 	void SetFlags(Flags flags);
 	std::queue<std::function<void(std::shared_ptr<Texture>)>> m_onLoadCallbacks;
+	std::queue<CallbackHandle> m_onRemoveCallbacks;
 	Flags m_flags = Flags::None;
 };
 REGISTER_BASIC_BITWISE_OPERATORS(Texture::Flags);

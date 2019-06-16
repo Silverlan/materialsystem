@@ -6,24 +6,25 @@
 #include <fsys/filesystem.h>
 
 #pragma optimize("",off)
-std::vector<ImageFormat> get_perferred_image_format_order()
+const std::vector<MaterialManager::ImageFormat> &MaterialManager::get_supported_image_formats()
 {
-	return std::vector<ImageFormat>{ // Order of preference
+	static std::vector<ImageFormat> s_supportedImageFormats = { // Order of preference
 		{TextureType::KTX,".ktx"},
 		{TextureType::DDS,".dds"},
 		{TextureType::PNG,".png"},
 		{TextureType::TGA,".tga"},
-#ifdef ENABLE_VTF_SUPPORT
+	#ifdef ENABLE_VTF_SUPPORT
 		{TextureType::VTF,".vtf"}
-#endif
+	#endif
 	};
+	return s_supportedImageFormats;
 }
 
 std::string translate_image_path(const std::string &imgFile,bool bCubemap,TextureType &type,std::string path)
 {
 	path += FileManager::GetNormalizedPath(imgFile);
 	ustring::to_lower(path);
-	auto formats = get_perferred_image_format_order();
+	auto formats = MaterialManager::get_supported_image_formats();
 	type = formats.front().type;
 
 	auto ext = path.substr(path.length() -4);
