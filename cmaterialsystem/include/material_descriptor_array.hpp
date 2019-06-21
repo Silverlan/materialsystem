@@ -15,16 +15,22 @@ public:
 	#pragma pack(push,1)
 	struct MaterialRenderInfoBufferData
 	{
-		ArrayIndex diffuseTextureArrayIndex = INVALID_ARRAY_INDEX; // Index into global texture array
-		ArrayIndex specularTextureArrayIndex = INVALID_ARRAY_INDEX; // Index into global texture array
-		ArrayIndex normalTextureArrayIndex = INVALID_ARRAY_INDEX; // Index into global texture array
-		// TODO: Material parameters required for raytracing
+		// Indices into global texture array
+		ArrayIndex albedoTextureArrayIndex = INVALID_ARRAY_INDEX;
+		ArrayIndex normalTextureArrayIndex = INVALID_ARRAY_INDEX;
+		ArrayIndex ambientOcclusionTextureArrayIndex = INVALID_ARRAY_INDEX;
+		ArrayIndex metallicTextureArrayIndex = INVALID_ARRAY_INDEX;
+		ArrayIndex roughnessTextureArrayIndex = INVALID_ARRAY_INDEX;
+		
+		ArrayIndex specularTextureArrayIndex = INVALID_ARRAY_INDEX;
+
+		std::array<ArrayIndex,2> padding;
 	};
 	#pragma pack(pop)
 
 	using DescriptorArrayManager::DescriptorArrayManager;
 	virtual ~MaterialDescriptorArrayManager() override;
-	std::optional<prosper::Buffer::SubBufferIndex> RegisterMaterial(const Material &mat);
+	std::optional<prosper::Buffer::SubBufferIndex> RegisterMaterial(const Material &mat,bool reInitialize=false);
 	const std::shared_ptr<prosper::UniformResizableBuffer> &GetMaterialInfoBuffer() const;
 	friend DescriptorArrayManager;
 private:

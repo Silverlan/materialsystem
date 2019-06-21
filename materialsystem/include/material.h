@@ -30,7 +30,7 @@ protected:
 	std::string m_name;
 	std::shared_ptr<ds::Block> m_data;
 	bool m_bLoaded;
-	std::vector<CallbackHandle> m_callOnLoaded;
+	mutable std::vector<CallbackHandle> m_callOnLoaded;
 	MaterialManager *m_manager;
 	bool m_bTranslucent;
 	TextureInfo *m_texDiffuse;
@@ -58,6 +58,7 @@ public:
 	const std::string &GetName();
 	bool IsTranslucent() const;
 	virtual TextureInfo *GetTextureInfo(const std::string &key);
+	const TextureInfo *GetTextureInfo(const std::string &key) const;
 	const TextureInfo *GetDiffuseMap() const;
 	TextureInfo *GetDiffuseMap();
 	const TextureInfo *GetNormalMap() const;
@@ -72,7 +73,7 @@ public:
 	TextureInfo *GetParallaxMap();
 	const std::shared_ptr<ds::Block> &GetDataBlock() const;
 	void SetLoaded(bool b);
-	CallbackHandle CallOnLoaded(const std::function<void(void)> &f);
+	CallbackHandle CallOnLoaded(const std::function<void(void)> &f) const;
 	bool IsValid() const;
 	MaterialManager *GetManager() const;
 

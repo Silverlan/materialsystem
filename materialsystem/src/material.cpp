@@ -110,7 +110,7 @@ void Material::SetLoaded(bool b)
 		m_callOnLoaded.clear();
 	}
 }
-CallbackHandle Material::CallOnLoaded(const std::function<void(void)> &f)
+CallbackHandle Material::CallOnLoaded(const std::function<void(void)> &f) const
 {
 	if(IsLoaded())
 	{
@@ -143,6 +143,8 @@ const std::string &Material::GetShaderIdentifier() const
 		return m_shaderInfo.get()->GetIdentifier();
 	return *m_shader;
 }
+
+const TextureInfo *Material::GetTextureInfo(const std::string &key) const {return const_cast<Material*>(this)->GetTextureInfo(key);}
 
 TextureInfo *Material::GetTextureInfo(const std::string &key)
 {
