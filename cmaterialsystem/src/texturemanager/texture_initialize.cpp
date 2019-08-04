@@ -57,6 +57,13 @@ static void initialize_generic_image(
 			break;
 		}
 	}
+
+	// Note: Originally we'd use staging images for loading the image mipmaps, which would then get copied into the final image.
+	// This requires linear tiling, so for image formats that don't support linear tiling, we'd use staging buffers instead.
+	// However, compressed image data does not work well with the staging-image method, so we just use staging buffers for all cases now.
+	// TODO: All staging-image code can be removed once this has been tested thoroughly!
+	bUseSrcBuffers = true;
+
 	// Use buffers if linear images for this format aren't supported
 	if(bUseSrcBuffers == true)
 	{
