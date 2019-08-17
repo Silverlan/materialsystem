@@ -22,64 +22,19 @@ VFilePtr TextureManager::OpenTextureFile(const std::string &fpath)
 
 void TextureManager::InitializeTextureData(TextureQueueItem &item)
 {
-	const std::array<std::string,6> cubemapPostfixes = {"rt","lf","up","dn","bk","ft"};
 	auto *surface = dynamic_cast<TextureQueueItemSurface*>(&item);
 	if(surface != nullptr)
 	{
-		if(surface->cubemap == false)
-		{
-			auto f = OpenTextureFile(item.path);
-			if(f == nullptr)
-				item.valid = false;
-			else
-			{
-				auto sz = f->GetSize();
-				std::vector<uint8_t> data(sz);
-				f->Read(data.data(),sz);
-				surface->textures.push_back(std::make_unique<gli::texture2d>(gli::load(static_cast<char*>(static_cast<void*>(data.data())),data.size())));
-				if(surface->textures.front()->empty())
-				{
-					surface->valid = false;
-					surface->textures.clear();
-				}
-				else
-					surface->valid = true;
-			}
-		}
+		auto f = OpenTextureFile(item.path);
+		if(f == nullptr)
+			item.valid = false;
 		else
 		{
-			surface->textures.reserve(cubemapPostfixes.size());
-			surface->valid = true;
-			for(auto &p : cubemapPostfixes)
-			{
-				auto path = item.path +p;
-				auto pathKtx = path +".ktx";
-				auto f = OpenTextureFile(pathKtx);
-				if(f == nullptr)
-				{
-					auto pathDds = path +".dds";
-					f = OpenTextureFile(pathDds);
-				}
-				if(f == nullptr)
-				{
-					item.valid = false;
-					surface->textures.clear();
-					break;
-				}
-				else
-				{
-					auto sz = f->GetSize();
-					std::vector<uint8_t> data(sz);
-					f->Read(data.data(),sz);
-					surface->textures.push_back(std::make_unique<gli::texture2d>(gli::load(static_cast<char*>(static_cast<void*>(data.data())),data.size())));
-					if(surface->textures.front()->empty())
-					{
-						surface->valid = false;
-						surface->textures.clear();
-						break;
-					}
-				}
-			}
+			auto sz = f->GetSize();
+			std::vector<uint8_t> data(sz);
+			f->Read(data.data(),sz);
+			surface->texture = std::make_unique<gli::texture2d>(gli::load(static_cast<char*>(static_cast<void*>(data.data())),data.size()));
+			surface->valid = surface->texture != nullptr;
 		}
 	}
 	else
@@ -119,87 +74,39 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 */
 				if(vtf != nullptr)
 				{
-					if(item.cubemap == false)
-					{
-						auto fp = OpenTextureFile(vtf->path);
-						if(fp == nullptr)
-							vtf->valid = false;
-						else
-						{
-							VirtualFile f{};
-							auto &data = f.GetData();
-							data.resize(fp->GetSize());
-							fp->Read(data.data(),data.size());
-							fp = nullptr;
-							auto vtfFile = std::make_shared<VTFLib::CVTFFile>();
-							vtf->textures.push_back(vtfFile);
-							vtf->valid = vtfFile->Load(&f,false);
-							if(vtf->valid == true)
-							{
-								auto format = vtfFile->GetFormat();
-								switch(format)
-								{
-									case VTFImageFormat::IMAGE_FORMAT_DXT1:
-									case VTFImageFormat::IMAGE_FORMAT_DXT3:
-									case VTFImageFormat::IMAGE_FORMAT_DXT5:
-									case VTFImageFormat::IMAGE_FORMAT_RGB888:
-									case VTFImageFormat::IMAGE_FORMAT_RGBA8888:
-									case VTFImageFormat::IMAGE_FORMAT_BGR888:
-									case VTFImageFormat::IMAGE_FORMAT_BGRA8888:
-									case VTFImageFormat::IMAGE_FORMAT_UV88:
-									case VTFImageFormat::IMAGE_FORMAT_RGBA16161616F:
-									case VTFImageFormat::IMAGE_FORMAT_RGBA32323232F:
-										break;
-									default:
-										vtf->valid = false; // Unsupported format
-								}
-							}
-						}
-					}
+					auto fp = OpenTextureFile(vtf->path);
+					if(fp == nullptr)
+						vtf->valid = false;
 					else
 					{
-						vtf->textures.reserve(cubemapPostfixes.size());
-						vtf->valid = true;
-						for(auto &p : cubemapPostfixes)
+						VirtualFile f{};
+						auto &data = f.GetData();
+						data.resize(fp->GetSize());
+						fp->Read(data.data(),data.size());
+						fp = nullptr;
+						vtf->texture = std::make_unique<VTFLib::CVTFFile>();
+						vtf->valid = vtf->texture->Load(&f,false);
+						if(vtf->valid == true)
 						{
-							auto path = item.path +p;
-							auto pathVtf = path +".vtf";
-							auto fp = OpenTextureFile(pathVtf);
-							if(fp == nullptr)
+							auto format = vtf->texture->GetFormat();
+							switch(format)
 							{
-								vtf->valid = false;
-								break;
+								case VTFImageFormat::IMAGE_FORMAT_DXT1:
+								case VTFImageFormat::IMAGE_FORMAT_DXT3:
+								case VTFImageFormat::IMAGE_FORMAT_DXT5:
+								case VTFImageFormat::IMAGE_FORMAT_RGB888:
+								case VTFImageFormat::IMAGE_FORMAT_RGBA8888:
+								case VTFImageFormat::IMAGE_FORMAT_BGR888:
+								case VTFImageFormat::IMAGE_FORMAT_BGRA8888:
+								case VTFImageFormat::IMAGE_FORMAT_UV88:
+								case VTFImageFormat::IMAGE_FORMAT_RGBA16161616F:
+								case VTFImageFormat::IMAGE_FORMAT_RGBA32323232F:
+								case VTFImageFormat::IMAGE_FORMAT_ABGR8888:
+								case VTFImageFormat::IMAGE_FORMAT_BGRX8888:
+									break; // Note: When adding new formats, make sure to also add them to texture_initialize.cpp:vtf_format_to_vulkan_format
+								default:
+									vtf->valid = false; // Unsupported format
 							}
-							VirtualFile f{};
-							auto &data = f.GetData();
-							data.resize(fp->GetSize());
-							fp->Read(data.data(),data.size());
-							fp = nullptr;
-							auto vtfFile = std::make_shared<VTFLib::CVTFFile>();
-							vtf->textures.push_back(vtfFile);
-							vtf->valid = vtfFile->Load(&f,false);
-							if(vtf->valid == true)
-							{
-								auto format = vtfFile->GetFormat();
-								switch(format)
-								{
-									case VTFImageFormat::IMAGE_FORMAT_DXT1:
-									case VTFImageFormat::IMAGE_FORMAT_DXT3:
-									case VTFImageFormat::IMAGE_FORMAT_DXT5:
-									case VTFImageFormat::IMAGE_FORMAT_RGB888:
-									case VTFImageFormat::IMAGE_FORMAT_RGBA8888:
-									case VTFImageFormat::IMAGE_FORMAT_BGR888:
-									case VTFImageFormat::IMAGE_FORMAT_BGRA8888:
-									case VTFImageFormat::IMAGE_FORMAT_UV88:
-									case VTFImageFormat::IMAGE_FORMAT_RGBA16161616F:
-									case VTFImageFormat::IMAGE_FORMAT_RGBA32323232F:
-										break;
-									default:
-										vtf->valid = false; // Unsupported format
-								}
-							}
-							if(vtf->valid == false)
-								break;
 						}
 					}
 				}

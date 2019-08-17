@@ -68,9 +68,8 @@ bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,c
 		}
 	}
 	TextureType type;
-	auto bCubemap = (loadInfo.flags &TextureLoadFlags::Cubemap) != TextureLoadFlags::None;
 	auto bLoadInstantly = (loadInfo.flags &TextureLoadFlags::LoadInstantly) != TextureLoadFlags::None;
-	auto path = translate_image_path(imgFile,bCubemap,type,(bAbsolutePath == false) ? "materials/" : "");
+	auto path = translate_image_path(imgFile,type,(bAbsolutePath == false) ? "materials/" : "");
 	//if(bReload == true)
 	//	bLoadInstantly = true;
 	if(bLoadInstantly == false && m_threadLoad == nullptr)
@@ -100,7 +99,6 @@ bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,c
 	item->cache = pathCache; // Normalized name without extension
 	item->mipmapMode = loadInfo.mipmapLoadMode;
 	item->sampler = loadInfo.sampler;
-	item->cubemap = bCubemap;
 
 	auto bReload = (loadInfo.flags &TextureLoadFlags::Reload) != TextureLoadFlags::None;
 	if(bReload == false)
@@ -112,16 +110,12 @@ bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,c
 	ptrTexture->width = 0;
 	ptrTexture->height = 0;
 	ptrTexture->name = item->cache;
-	if(bCubemap)
-		ptrTexture->SetFlags(ptrTexture->GetFlags() | Texture::Flags::Cubemap);
-	else
-		ptrTexture->SetFlags(ptrTexture->GetFlags() &~Texture::Flags::Cubemap);
 	item->context = context.shared_from_this();
 
 	m_texturesTmp.push_back(std::static_pointer_cast<Texture>(text));
 	if(outTexture != nullptr)
 		*outTexture = text;
-	if(!bCubemap && !FileManager::Exists(path.c_str()))
+	if(!FileManager::Exists(path.c_str()))
 		bLoadInstantly = true; // No point in queuing it if the texture doesn't even exist
 	if(bLoadInstantly == true)
 	{

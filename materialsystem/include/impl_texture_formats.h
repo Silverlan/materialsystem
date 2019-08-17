@@ -11,6 +11,6 @@
 #include "materialmanager.h"
 #include <sharedutils/util_string.h>
 
-DLLMATSYS std::string translate_image_path(const std::string &imgFile,bool bCubemap,TextureType &type,std::string path="materials/");
+DLLMATSYS std::string translate_image_path(const std::string &imgFile,TextureType &type,std::string path="materials/");
 
 #endif

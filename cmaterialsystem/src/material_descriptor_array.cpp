@@ -109,7 +109,7 @@ std::optional<prosper::Buffer::SubBufferIndex> MaterialDescriptorArrayManager::R
 			matRenderInfo.ambientOcclusionTextureArrayIndex = *index;
 	}
 	
-	auto *metallicMap = loaded ? mat.GetTextureInfo("metallic_map") : errTex;
+	auto *metallicMap = loaded ? mat.GetTextureInfo("metalness_map") : errTex;
 	if(metallicMap && metallicMap->texture)
 	{
 		auto index = AddItem(*std::static_pointer_cast<Texture>(metallicMap->texture));

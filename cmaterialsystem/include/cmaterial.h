@@ -20,7 +20,6 @@ class TextureManager;
 namespace ds
 {
 	class Texture;
-	class Cubemap;
 };
 #pragma warning(push)
 #pragma warning(disable : 4251)
@@ -75,7 +74,6 @@ private:
 	uint32_t GetMipmapMode(const std::shared_ptr<ds::Block> &data) const;
 	prosper::Context &GetContext();
 	void LoadTexture(const std::shared_ptr<ds::Block> &data,const std::shared_ptr<ds::Texture> &texture,TextureLoadFlags flags=TextureLoadFlags::None,const std::shared_ptr<CallbackInfo> &callbackInfo=nullptr);
-	void LoadTexture(const std::shared_ptr<ds::Block> &data,const std::shared_ptr<ds::Cubemap> &texture,TextureLoadFlags flags=TextureLoadFlags::None,const std::shared_ptr<CallbackInfo> &callbackInfo=nullptr);
 	void InitializeSampler();
 	void InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::shared_ptr<CallbackInfo> &info,bool bLoadInstantly);
 };

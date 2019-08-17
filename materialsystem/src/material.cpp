@@ -4,6 +4,9 @@
 
 #include "material.h"
 #include <sharedutils/util_shaderinfo.hpp>
+#include <sstream>
+#include <fsys/filesystem.h>
+#include <sharedutils/util_file.h>
 
 DEFINE_BASE_HANDLE(DLLMATSYS,Material,Material);
 
@@ -42,6 +45,7 @@ void Material::Reset()
 	m_texSpecular = nullptr;
 	m_texGlow = nullptr;
 	m_texParallax = nullptr;
+	m_texAo = nullptr;
 	m_texAlpha = nullptr;
 }
 
@@ -69,11 +73,37 @@ bool Material::IsTranslucent() const {return m_bTranslucent;}
 void Material::UpdateTextures()
 {
 	m_texDiffuse = GetTextureInfo("diffusemap");
+	if(!m_texDiffuse)
+		m_texDiffuse = GetTextureInfo("diffuse_map");
+
 	m_texNormal = GetTextureInfo("normalmap");
+	if(!m_texNormal)
+		m_texNormal = GetTextureInfo("normal_map");
+
 	m_texSpecular = GetTextureInfo("specularmap");
+	if(!m_texSpecular)
+		m_texSpecular = GetTextureInfo("specular_map");
+
 	m_texGlow = GetTextureInfo("glowmap");
+	if(!m_texGlow)
+		m_texGlow = GetTextureInfo("glow_map");
+	if(!m_texGlow)
+		m_texGlow = GetTextureInfo("emission_map");
+
 	m_texParallax = GetTextureInfo("parallaxmap");
+	if(!m_texParallax)
+		m_texParallax = GetTextureInfo("parallax_map");
+
+	m_texAo = GetTextureInfo("ambientocclusionmap");
+	if(!m_texAo)
+		m_texAo = GetTextureInfo("ambient_occlusion_map");
+	if(!m_texAo)
+		m_texAo = GetTextureInfo("ao_map");
+
 	m_texAlpha = GetTextureInfo("alphamap");
+	if(!m_texAlpha)
+		m_texAlpha = GetTextureInfo("alpha_map");
+
 	m_bTranslucent = m_data->GetBool("translucent");
 }
 
@@ -110,6 +140,67 @@ void Material::SetLoaded(bool b)
 		m_callOnLoaded.clear();
 	}
 }
+bool Material::Save(const std::string &fileName,const std::string &inRootPath) const
+{
+	auto rootPath = inRootPath;
+	if(rootPath.empty() == false && rootPath.back() != '/' && rootPath.back() != '\\')
+		rootPath += '/';
+	auto fullPath = rootPath +"materials/" +fileName;
+	ufile::remove_extension_from_filename(fullPath);
+	fullPath += ".wmi";
+
+	auto pathWithoutFileName = ufile::get_path_from_filename(fullPath);
+	FileManager::CreatePath(pathWithoutFileName.c_str());
+
+	auto f = FileManager::OpenFile<VFilePtrReal>(fullPath.c_str(),"w");
+	if(f == nullptr)
+		return false;
+	auto &rootData = GetDataBlock();
+	std::stringstream ss;
+	ss<<"\""<<GetShaderIdentifier()<<"\"\n{\n";
+	std::function<void(const ds::Block&,const std::string&)> fIterateDataBlock = nullptr;
+	fIterateDataBlock = [&ss,&fIterateDataBlock](const ds::Block &block,const std::string &t) {
+		auto *data = block.GetData();
+		if(data == nullptr)
+			return;
+		for(auto &pair : *data)
+		{
+			if(pair.second->IsBlock())
+			{
+				auto &block = static_cast<ds::Block&>(*pair.second);
+				ss<<t<<"\""<<pair.first<<"\"\n"<<t<<"{\n";
+				fIterateDataBlock(block,t +'\t');
+				ss<<t<<"}\n";
+				continue;
+			}
+			if(pair.second->IsContainer())
+			{
+				auto &container = static_cast<ds::Container&>(*pair.second);
+				ss<<t<<"\""<<pair.first<<"\"\n"<<t<<"{\n";
+				for(auto &block : container.GetBlocks())
+				{
+					if(block->IsContainer() || block->IsBlock())
+						throw std::invalid_argument{"Data set block may only contain values!"};
+					auto *dsValue = dynamic_cast<ds::Value*>(pair.second.get());
+					if(dsValue == nullptr)
+						throw std::invalid_argument{"Unexpected data set type!"};
+					ss<<t<<"\t\""<<dsValue->GetString()<<"\"\n";
+				}
+				ss<<t<<"}\n";
+				continue;
+			}
+			auto *dsValue = dynamic_cast<ds::Value*>(pair.second.get());
+			if(dsValue == nullptr)
+				throw std::invalid_argument{"Unexpected data set type!"};
+			ss<<t<<"$"<<dsValue->GetTypeString()<<" "<<pair.first<<" \""<<dsValue->GetString()<<"\"\n";
+		}
+	};
+	fIterateDataBlock(*rootData,"\t");
+	ss<<"}\n";
+
+	f->WriteString(ss.str());
+	return true;
+}
 CallbackHandle Material::CallOnLoaded(const std::function<void(void)> &f) const
 {
 	if(IsLoaded())
@@ -133,6 +224,8 @@ const TextureInfo *Material::GetAlphaMap() const {return const_cast<Material*>(t
 TextureInfo *Material::GetAlphaMap() {return m_texAlpha;}
 const TextureInfo *Material::GetParallaxMap() const {return const_cast<Material*>(this)->GetParallaxMap();}
 TextureInfo *Material::GetParallaxMap() {return m_texParallax;}
+const TextureInfo *Material::GetAmbientOcclusionMap() const {return const_cast<Material*>(this)->GetAmbientOcclusionMap();}
+TextureInfo *Material::GetAmbientOcclusionMap() {return m_texAo;}
 void Material::SetName(const std::string &name) {m_name = name;}
 const std::string &Material::GetName() {return m_name;}
 
@@ -154,14 +247,7 @@ TextureInfo *Material::GetTextureInfo(const std::string &key)
 	auto &val = static_cast<ds::Value&>(*base);
 	auto &type = typeid(val);
 	if(type != typeid(ds::Texture))
-	{
-		if(type == typeid(ds::Cubemap))
-		{
-			auto &datTex = static_cast<ds::Cubemap&>(val);
-			return &const_cast<TextureInfo&>(datTex.GetValue());
-		}
 		return nullptr;
-	}
 	auto &datTex = static_cast<ds::Texture&>(val);
 	return &const_cast<TextureInfo&>(datTex.GetValue());
 }

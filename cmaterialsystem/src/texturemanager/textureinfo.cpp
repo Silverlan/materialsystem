@@ -28,7 +28,6 @@ Texture::~Texture()
 bool Texture::IsIndexed() const {return (m_flags &Flags::Indexed) != Flags::None;}
 bool Texture::IsLoaded() const {return (m_flags &Flags::Loaded) != Flags::None;}
 bool Texture::IsError() const {return (m_flags &Flags::Error) != Flags::None;}
-bool Texture::IsCubemap() const {return (m_flags &Flags::Cubemap) != Flags::None;}
 
 Texture::Flags Texture::GetFlags() const {return m_flags;}
 void Texture::SetFlags(Flags flags) {m_flags = flags;}

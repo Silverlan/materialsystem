@@ -183,16 +183,11 @@ void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data,const std::sh
 {
 	LoadTexture(data,dataTexture->GetValue(),loadFlags,callbackInfo);
 }
-void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data,const std::shared_ptr<ds::Cubemap> &dataTexture,TextureLoadFlags loadFlags,const std::shared_ptr<CallbackInfo> &callbackInfo)
-{
-	LoadTexture(data,dataTexture->GetValue(),loadFlags | TextureLoadFlags::Cubemap,callbackInfo);
-}
 
 void CMaterial::SetTexture(const std::string &identifier,Texture *texture)
 {
 	auto dsSettingsTmp = ds::create_data_settings({});
-	auto dataTex = texture->IsCubemap() ? std::make_shared<ds::Cubemap>(*dsSettingsTmp,"") :
-		std::make_shared<ds::Texture>(*dsSettingsTmp,""); // Data settings will be overwrriten by AddData-call below
+	auto dataTex = std::make_shared<ds::Texture>(*dsSettingsTmp,""); // Data settings will be overwrriten by AddData-call below
 	auto &v = dataTex->GetValue();
 	v.texture = texture->shared_from_this();
 	v.width = texture->width;
@@ -243,7 +238,6 @@ void CMaterial::InitializeTextures(const std::shared_ptr<ds::Block> &data,const 
 {
 	InitializeSampler();
 	const auto &typeTexture = typeid(ds::Texture);
-	const auto &typeCubemap = typeid(ds::Cubemap);
 	auto *values = data->GetData();
 	for(auto &it : *values)
 	{
@@ -253,8 +247,6 @@ void CMaterial::InitializeTextures(const std::shared_ptr<ds::Block> &data,const 
 			auto &type = typeid(*value);
 			if(type == typeTexture)
 				LoadTexture(data,std::static_pointer_cast<ds::Texture>(value),bLoadInstantly ? TextureLoadFlags::LoadInstantly : TextureLoadFlags::None,info);
-			else if(type == typeCubemap)
-				LoadTexture(data,std::static_pointer_cast<ds::Cubemap>(value),bLoadInstantly ? TextureLoadFlags::LoadInstantly : TextureLoadFlags::None,info);
 			else
 				continue;
 			++info->count;

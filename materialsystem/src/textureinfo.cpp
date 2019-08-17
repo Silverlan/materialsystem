@@ -5,12 +5,13 @@
 #include "textureinfo.h"
 #include "impl_texture_formats.h"
 #include <util_image.h>
+#include <sharedutils/util_file.h>
 #include <cstring>
 
-static bool read_image_size(std::string &imgFile,bool bCubemap,uint32_t &width,uint32_t &height)
+static bool read_image_size(std::string &imgFile,uint32_t &width,uint32_t &height)
 {
 	TextureType type;
-	imgFile = translate_image_path(imgFile,bCubemap,type);
+	imgFile = translate_image_path(imgFile,type);
 	auto r = uimg::read_image_size(imgFile,width,height);
 	imgFile = imgFile.substr(strlen("materials/"));
 	return r;
@@ -29,7 +30,7 @@ ds::Texture::Texture(ds::Settings &dataSettings,const std::string &value,bool bC
 	}
 	uint32_t width;
 	uint32_t height;
-	if(read_image_size(str,bCubemap,width,height) == true)
+	if(read_image_size(str,width,height) == true)
 	{
 		m_value.texture = NULL;
 		m_value.width = width;
@@ -53,16 +54,22 @@ ds::Texture *ds::Texture::Copy() {return new ds::Texture(*m_dataSettings,m_value
 const TextureInfo &ds::Texture::GetValue() const {return const_cast<Texture*>(this)->GetValue();}
 TextureInfo &ds::Texture::GetValue() {return m_value;}
 
-std::string ds::Texture::GetString() const {return m_value.name;}
+std::string ds::Texture::GetString() const
+{
+	auto name = m_value.name;
+	ustring::replace(name,"\\","/");
+	ufile::remove_extension_from_filename(name); // TODO: Allow manual extension if it was specified explicitly?
+	return name;
+}
 int ds::Texture::GetInt() const {return 0;}
 float ds::Texture::GetFloat() const {return 0.f;}
 bool ds::Texture::GetBool() const {return true;}
-REGISTER_DATA_TYPE(ds::Texture,Texture)
+REGISTER_DATA_TYPE(ds::Texture,texture)
 
-ds::Cubemap::Cubemap(ds::Settings &dataSettings,const std::string &value)
+/*ds::Cubemap::Cubemap(ds::Settings &dataSettings,const std::string &value)
 	: Texture(dataSettings,value,true)
 {}
-REGISTER_DATA_TYPE(ds::Cubemap,Cubemap)
+REGISTER_DATA_TYPE(ds::Cubemap,cubemap)*/
 
 ///////////////////////////
 

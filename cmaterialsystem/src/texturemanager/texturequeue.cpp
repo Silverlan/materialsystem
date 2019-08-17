@@ -10,7 +10,7 @@
 #endif
 
 TextureQueueItem::TextureQueueItem()
-	: valid(true),mipmapMode(TextureMipmapMode::LoadOrGenerate),cubemap(false),texturetype(TextureType::Invalid),
+	: valid(true),mipmapMode(TextureMipmapMode::Load),cubemap(false),texturetype(TextureType::Invalid),
 	mipmap(NULL),mipmapid(-1),dxtformat(NULL),format(NULL),initialized(false),context()
 {}
 

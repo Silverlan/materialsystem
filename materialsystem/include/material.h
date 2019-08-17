@@ -39,6 +39,7 @@ protected:
 	TextureInfo *m_texGlow;
 	TextureInfo *m_texAlpha;
 	TextureInfo *m_texParallax;
+	TextureInfo *m_texAo;
 	void *m_userData;
 	template<class TMaterial>
 		TMaterial *Copy() const;
@@ -71,11 +72,14 @@ public:
 	TextureInfo *GetAlphaMap();
 	const TextureInfo *GetParallaxMap() const;
 	TextureInfo *GetParallaxMap();
+	const TextureInfo *GetAmbientOcclusionMap() const;
+	TextureInfo *GetAmbientOcclusionMap();
 	const std::shared_ptr<ds::Block> &GetDataBlock() const;
 	void SetLoaded(bool b);
 	CallbackHandle CallOnLoaded(const std::function<void(void)> &f) const;
 	bool IsValid() const;
 	MaterialManager *GetManager() const;
+	bool Save(const std::string &fileName,const std::string &rootPath="") const;
 
 	// Returns true if all textures associated with this material have been fully loaded
 	bool IsLoaded() const;

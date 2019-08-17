@@ -208,6 +208,7 @@ Material *MaterialManager::FindMaterial(const std::string &identifier) const
 	return FindMaterial(identifier,internalMatId);
 }
 std::shared_ptr<ds::Settings> MaterialManager::CreateDataSettings() const {return ds::create_data_settings(ENUM_VARS);}
+
 bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 {
 	std::string ext;
@@ -315,7 +316,27 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 					bHasGlowMap = true;
 				}
 			}
-			if((node = vmtRoot->GetNode("$basetexture")) != nullptr)
+			auto hasDiffuseMap = false;
+			// Prefer HDR textures over LDR
+			if((node = vmtRoot->GetNode("$hdrcompressedTexture")) != nullptr)
+			{
+				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+				{
+					hasDiffuseMap = true;
+					auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+					root->AddData("diffusemap",std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
+				}
+			}
+			if(hasDiffuseMap == false && (node = vmtRoot->GetNode("$hdrbasetexture")) != nullptr)
+			{
+				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+				{
+					hasDiffuseMap = true;
+					auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+					root->AddData("diffusemap",std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
+				}
+			}
+			if(hasDiffuseMap == false && (node = vmtRoot->GetNode("$basetexture")) != nullptr)
 			{
 				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 				{
@@ -359,6 +380,14 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 					ustring::to_lower(lval);
 					if(lval != "env_cubemap")
 						root->AddData("specularmap",std::make_shared<ds::Texture>(*dataSettings,val));
+				}
+			}
+			if((node = vmtRoot->GetNode("$envmapmask")) != nullptr)
+			{
+				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+				{
+					auto *specularMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+					root->AddData("specularmap",std::make_shared<ds::Texture>(*dataSettings,specularMapNode->GetValue()));
 				}
 			}
 			if((node = vmtRoot->GetNode("$additive")) != nullptr)

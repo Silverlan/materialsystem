@@ -33,6 +33,7 @@ namespace ds
 		TextureInfo &GetValue();
 
 		virtual std::string GetString() const override;
+		virtual std::string GetTypeString() const override;
 		virtual int GetInt() const override;
 		virtual float GetFloat() const override;
 		virtual bool GetBool() const override;
@@ -42,13 +43,14 @@ namespace ds
 		TextureInfo m_value;
 	};
 
-	class DLLMATSYS Cubemap
+	/*class DLLMATSYS Cubemap
 		: public Texture
 	{
 	public:
 		using Texture::Texture;
 		Cubemap(ds::Settings &dataSettings,const std::string &value);
-	};
+		virtual std::string GetTypeString() const override;
+	};*/
 };
 #pragma warning(pop)
 

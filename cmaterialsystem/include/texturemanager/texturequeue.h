@@ -55,7 +55,7 @@ class DLLCMATSYS TextureQueueItemPNG
 public:
 	TextureQueueItemPNG();
 	virtual ~TextureQueueItemPNG() override;
-	std::shared_ptr<uimg::Image> pnginfo;
+	std::shared_ptr<uimg::Image> pnginfo = nullptr;
 };
 
 class DLLCMATSYS TextureQueueItemTGA
@@ -63,7 +63,7 @@ class DLLCMATSYS TextureQueueItemTGA
 {
 public:
 	TextureQueueItemTGA();
-	std::shared_ptr<uimg::Image> tgainfo;
+	std::shared_ptr<uimg::Image> tgainfo = nullptr;
 };
 #ifdef ENABLE_VTF_SUPPORT
 class DLLCMATSYS TextureQueueItemVTF
@@ -72,7 +72,7 @@ class DLLCMATSYS TextureQueueItemVTF
 public:
 	TextureQueueItemVTF();
 	virtual ~TextureQueueItemVTF() override;
-	std::vector<std::shared_ptr<VTFLib::CVTFFile>> textures;
+	std::shared_ptr<VTFLib::CVTFFile> texture = nullptr;
 };
 #endif
 class DLLCMATSYS TextureQueueItemSurface
@@ -83,7 +83,7 @@ public:
 	TextureQueueItemSurface(const TextureQueueItemSurface&)=delete;
 	TextureQueueItemSurface &operator=(const TextureQueueItemSurface&)=delete;
 	virtual ~TextureQueueItemSurface() override;
-	std::vector<std::unique_ptr<gli::texture2d>> textures;
+	std::shared_ptr<gli::texture2d> texture = nullptr;
 	unsigned char **compressed;
 	unsigned int *compressedsize;
 };

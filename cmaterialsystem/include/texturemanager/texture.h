@@ -23,8 +23,7 @@ public:
 		None = 0u,
 		Indexed = 1u,
 		Loaded = Indexed<<1u,
-		Error = Loaded<<1u,
-		Cubemap = Error<<1u
+		Error = Loaded<<1u
 	};
 	Texture();
 	~Texture();
@@ -42,7 +41,6 @@ public:
 	bool IsIndexed() const;
 	bool IsLoaded() const;
 	bool IsError() const;
-	bool IsCubemap() const;
 private:
 	Flags GetFlags() const;
 	void SetFlags(Flags flags);

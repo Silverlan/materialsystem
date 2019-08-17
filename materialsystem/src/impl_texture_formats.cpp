@@ -20,7 +20,7 @@ const std::vector<MaterialManager::ImageFormat> &MaterialManager::get_supported_
 	return s_supportedImageFormats;
 }
 
-std::string translate_image_path(const std::string &imgFile,bool bCubemap,TextureType &type,std::string path)
+std::string translate_image_path(const std::string &imgFile,TextureType &type,std::string path)
 {
 	path += FileManager::GetNormalizedPath(imgFile);
 	ustring::to_lower(path);
@@ -43,36 +43,17 @@ std::string translate_image_path(const std::string &imgFile,bool bCubemap,Textur
 		for(auto &format : formats)
 		{
 			auto formatPath = path;
-			if(bCubemap == true)
-				formatPath += "bk";
 			formatPath += format.extension;
 			if(FileManager::Exists(formatPath))
 			{
-				path = (bCubemap == false) ? formatPath : path;
+				path = formatPath;
 				type = format.type;
 				bFoundType = true;
 				break;
 			}
 		}
 		if(bFoundType == false)
-		{
-			if(bCubemap == false)
-				path += formats.front().extension;
-#ifdef ENABLE_VTF_SUPPORT
-			else
-				type = TextureType::VTF; // Hack: Assume it's a VTF cubemap if no texture files have been found!
-#endif
-		}
-	}
-	if(bCubemap == true)
-	{
-		if(type != TextureType::DDS)
-		{
-#ifdef ENABLE_VTF_SUPPORT
-			if(type != TextureType::VTF)
-#endif
-				type = TextureType::KTX;
-		}
+			path += formats.front().extension;
 	}
 	return path;
 }
