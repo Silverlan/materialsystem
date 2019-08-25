@@ -59,7 +59,7 @@ static vlUInt vtf_read_tell(vlVoid *handle)
 #endif
 
 TextureManager::LoadInfo::LoadInfo()
-	: mipmapLoadMode(TextureMipmapMode::LoadOrGenerate)
+	: mipmapLoadMode(TextureMipmapMode::Load)
 {}
 
 TextureManager::TextureManager(prosper::Context &context)
@@ -67,7 +67,7 @@ TextureManager::TextureManager(prosper::Context &context)
 	m_textureSamplerNoMipmap(nullptr),m_bThreadActive(false)
 {
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
-	TextureManager::SetupSamplerMipmapMode(samplerCreateInfo,TextureMipmapMode::LoadOrGenerate);
+	TextureManager::SetupSamplerMipmapMode(samplerCreateInfo,TextureMipmapMode::Load);
 	m_textureSampler = prosper::util::create_sampler(context.GetDevice(),samplerCreateInfo);
 
 	samplerCreateInfo = {};

@@ -75,6 +75,10 @@ void Material::UpdateTextures()
 	m_texDiffuse = GetTextureInfo("diffusemap");
 	if(!m_texDiffuse)
 		m_texDiffuse = GetTextureInfo("diffuse_map");
+	if(!m_texDiffuse)
+		m_texDiffuse = GetTextureInfo("albedomap");
+	if(!m_texDiffuse)
+		m_texDiffuse = GetTextureInfo("albedo_map");
 
 	m_texNormal = GetTextureInfo("normalmap");
 	if(!m_texNormal)

@@ -114,6 +114,7 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 			}
 			if(data == nullptr)
 				continue;
+
 			// Initialize buffer with source image data
 			prosper::util::BufferCreateInfo createInfo {};
 			createInfo.usageFlags = Anvil::BufferUsageFlagBits::TRANSFER_SRC_BIT;
@@ -121,7 +122,7 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 			createInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::CPUToGPU;
 			auto buf = prosper::util::create_buffer(dev,createInfo,data);
 			buffers.push_back(buf); // We need to keep the buffers alive until the copy has completed
-
+			
 			// Copy buffer contents to output image
 			auto extent = (*outImage)->get_image_extent_2D(iMipmap);
 			prosper::util::BufferImageCopyInfo copyInfo {};
@@ -385,6 +386,8 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 							outCubemap = vtfFile.GetFaceCount() == 6;
 							outLayerCount = vtfFile.GetFaceCount();
 							outMipmapCount = vtfFile.GetMipmapCount();
+							if(vtfFile.GetFlag(VTFImageFlag::TEXTUREFLAGS_NOMIP))
+								outMipmapCount = 0u;
 						};
 						vtfLoader.get_image_data = [](void *userData,const TextureQueueItem &item,uint32_t layer,uint32_t mipmapIdx,uint32_t &outDataSize) -> const void* {
 							auto &vtfFile = *static_cast<VTFLib::CVTFFile*>(userData);
@@ -408,6 +411,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 			imgViewCreateInfo.swizzleGreen = swizzle.at(1);
 			imgViewCreateInfo.swizzleBlue = swizzle.at(2);
 			imgViewCreateInfo.swizzleAlpha = swizzle.at(3);
+			createInfo.flags |= prosper::util::TextureCreateInfo::Flags::CreateImageViewForEachLayer;
 			texture->texture = prosper::util::create_texture(dev,createInfo,std::move(image),&imgViewCreateInfo);
 
 			texture->SetFlags(texture->GetFlags() & ~Texture::Flags::Error);

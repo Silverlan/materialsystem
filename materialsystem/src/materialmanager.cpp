@@ -161,7 +161,7 @@ Material *MaterialManager::CreateMaterial(const std::string *identifier,const st
 	}
 	auto *mat = CreateMaterial<Material>(shader,root); // Claims ownership of 'root' and frees the memory at destruction
 	mat->SetName(matId);
-	m_materials.insert(decltype(m_materials)::value_type{matId,mat->GetHandle()});
+	m_materials.insert(decltype(m_materials)::value_type{ToMaterialIdentifier(matId),mat->GetHandle()});
 	return mat;
 }
 
@@ -197,7 +197,7 @@ std::string MaterialManager::PathToIdentifier(const std::string &path) const
 Material *MaterialManager::FindMaterial(const std::string &identifier,std::string &internalMatId) const
 {
 	internalMatId = PathToIdentifier(identifier);
-	auto it = m_materials.find(internalMatId);
+	auto it = m_materials.find(ToMaterialIdentifier(internalMatId));
 	if(it == m_materials.end())
 		return nullptr;
 	return it->second.get();
@@ -209,6 +209,14 @@ Material *MaterialManager::FindMaterial(const std::string &identifier) const
 }
 std::shared_ptr<ds::Settings> MaterialManager::CreateDataSettings() const {return ds::create_data_settings(ENUM_VARS);}
 
+std::string MaterialManager::ToMaterialIdentifier(const std::string &id) const
+{
+	auto identifier = id;
+	ufile::remove_extension_from_filename(identifier);
+	ustring::to_lower(identifier);
+	return identifier;
+}
+
 bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 {
 	std::string ext;
@@ -217,7 +225,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 	matId = PathToIdentifier(path,&ext,bHadExtension);
 	matId = FileManager::GetCanonicalizedPath(matId);
 
-	auto it = m_materials.find(matId);
+	auto it = m_materials.find(ToMaterialIdentifier(matId));
 	if(it != m_materials.end())
 	{
 		if(!it->second.IsValid())
@@ -243,7 +251,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 		//if(matErr == m_materials.end())
 		//	return false;
 		auto *nmat = CreateMaterial<Material>();
-		m_materials.insert(decltype(m_materials)::value_type{matId,nmat->GetHandle()});
+		m_materials.insert(decltype(m_materials)::value_type{ToMaterialIdentifier(matId),nmat->GetHandle()});
 		*mat = nmat;
 		return true;
 	};
@@ -508,7 +516,7 @@ Material *MaterialManager::Load(const std::string &path,bool bReload,bool *bFirs
 		info.material->SetLoaded(true);
 	}
 	info.material->SetName(info.identifier);
-	m_materials.insert(decltype(m_materials)::value_type{info.identifier,info.material->GetHandle()});
+	m_materials.insert(decltype(m_materials)::value_type{ToMaterialIdentifier(info.identifier),info.material->GetHandle()});
 	return info.material;
 }
 void MaterialManager::SetErrorMaterial(Material *mat)

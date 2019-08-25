@@ -46,7 +46,7 @@ Material *CMaterialManager::CreateMaterial(const std::string *identifier,const s
 	}
 	auto *mat = CreateMaterial<CMaterial>(shaderManager.PreRegisterShader(shader),root); // Claims ownership of 'root' and frees the memory at destruction
 	mat->SetLoaded(true);
-	m_materials.insert(decltype(m_materials)::value_type{matId,mat->GetHandle()});
+	m_materials.insert(decltype(m_materials)::value_type{ToMaterialIdentifier(matId),mat->GetHandle()});
 	return mat;
 }
 Material *CMaterialManager::CreateMaterial(const std::string &identifier,const std::string &shader,const std::shared_ptr<ds::Block> &root) {return CreateMaterial(&identifier,shader,root);}
@@ -137,7 +137,7 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 			m_shaderHandler(info.material);
 	}
 
-	m_materials.insert(decltype(m_materials)::value_type{info.identifier,info.material->GetHandle()});
+	m_materials.insert(decltype(m_materials)::value_type{ToMaterialIdentifier(info.identifier),info.material->GetHandle()});
 	return info.material;
 }
 

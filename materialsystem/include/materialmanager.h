@@ -35,6 +35,7 @@ protected:
 		TMaterial *CreateMaterial(TARGS...);
 
 	std::shared_ptr<ds::Settings> CreateDataSettings() const;
+	std::string ToMaterialIdentifier(const std::string &id) const;
 public:
 	struct DLLMATSYS ImageFormat
 	{

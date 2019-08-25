@@ -154,7 +154,7 @@ void CMaterial::SetDescriptorSetGroup(prosper::Shader &shader,const std::shared_
 }
 uint32_t CMaterial::GetMipmapMode(const std::shared_ptr<ds::Block> &data) const
 {
-	auto mipmapMode = TextureMipmapMode::LoadOrGenerate;
+	auto mipmapMode = TextureMipmapMode::Load;
 	data->GetInt("mipmap_load_mode",reinterpret_cast<std::underlying_type<decltype(mipmapMode)>::type*>(&mipmapMode));
 	return umath::to_integral(mipmapMode);
 }
