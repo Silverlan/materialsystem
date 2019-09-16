@@ -25,12 +25,14 @@ Texture::~Texture()
 	}
 }
 
+bool Texture::HasFlag(Flags flag) const {return umath::is_flag_set(m_flags,flag);}
 bool Texture::IsIndexed() const {return (m_flags &Flags::Indexed) != Flags::None;}
 bool Texture::IsLoaded() const {return (m_flags &Flags::Loaded) != Flags::None;}
 bool Texture::IsError() const {return (m_flags &Flags::Error) != Flags::None;}
 
 Texture::Flags Texture::GetFlags() const {return m_flags;}
 void Texture::SetFlags(Flags flags) {m_flags = flags;}
+void Texture::AddFlags(Flags flags) {m_flags |= flags;}
 
 void Texture::CallOnLoaded(const std::function<void(std::shared_ptr<Texture>)> &callback)
 {

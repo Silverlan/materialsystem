@@ -267,7 +267,10 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 			texture->width = extent.x;
 			texture->height = extent.y;
 			texture->internalFormat = static_cast<Anvil::Format>(img->format());
-
+			// In theory the input image should have a srgb flag if it's srgb, but in practice that's almost never the case,
+			// so we just assume the image is srgb by default.
+			// if(gli::is_srgb(img->format()))
+			texture->SetFlags(Texture::Flags::SRGB);
 			ImageFormatLoader gliLoader {};
 			gliLoader.userData = static_cast<gli::texture2d*>(img.get());
 			gliLoader.get_image_info = [](
@@ -302,6 +305,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 				texture->width = pngInfo.GetWidth();
 				texture->height = pngInfo.GetHeight();
 				texture->internalFormat = prosper::util::get_vk_format(pngInfo.GetType());
+				texture->SetFlags(Texture::Flags::SRGB);
 
 				ImageFormatLoader pngLoader {};
 				pngLoader.userData = static_cast<uimg::Image*>(png->pnginfo.get());
@@ -335,6 +339,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 					texture->width = tgaInfo.GetWidth();
 					texture->height = tgaInfo.GetHeight();
 					texture->internalFormat = TGA_VK_FORMAT;
+					texture->SetFlags(Texture::Flags::SRGB);
 
 					ImageFormatLoader tgaLoader {};
 					tgaLoader.userData = static_cast<uimg::Image*>(tga->tgainfo.get());
@@ -369,6 +374,11 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 						texture->height = vtfFile->GetHeight();
 						auto vkImgData = vtf_format_to_vulkan_format(vtfFile->GetFormat());
 						texture->internalFormat = vkImgData.conversionFormat.has_value() ? *vkImgData.conversionFormat : vkImgData.format;
+						
+						//if(vtfFile->GetFlag(VTFImageFlag::TEXTUREFLAGS_SRGB))
+						// In theory the input image should have a srgb flag if it's srgb, but in practice that's almost never the case,
+						// so we just assume the image is srgb by default.
+						texture->SetFlags(Texture::Flags::SRGB);
 						// swizzle = vkImgData.swizzle;
 
 						ImageFormatLoader vtfLoader {};
@@ -384,7 +394,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 							outFormat = vkFormat.format;
 							outConversionFormat = vkFormat.conversionFormat;
 							outCubemap = vtfFile.GetFaceCount() == 6;
-							outLayerCount = vtfFile.GetFaceCount();
+							outLayerCount = outCubemap ? 6 : 1;
 							outMipmapCount = vtfFile.GetMipmapCount();
 							if(vtfFile.GetFlag(VTFImageFlag::TEXTUREFLAGS_NOMIP))
 								outMipmapCount = 0u;

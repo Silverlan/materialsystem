@@ -23,7 +23,9 @@ public:
 		None = 0u,
 		Indexed = 1u,
 		Loaded = Indexed<<1u,
-		Error = Loaded<<1u
+		Error = Loaded<<1u,
+		SRGB = Error<<1u,
+		NormalMap = SRGB<<1u
 	};
 	Texture();
 	~Texture();
@@ -38,12 +40,14 @@ public:
 	CallbackHandle CallOnRemove(const std::function<void()> &callback);
 	void RunOnLoadedCallbacks();
 
+	bool HasFlag(Flags flag) const;
 	bool IsIndexed() const;
 	bool IsLoaded() const;
 	bool IsError() const;
-private:
+	void AddFlags(Flags flags);
 	Flags GetFlags() const;
 	void SetFlags(Flags flags);
+private:
 	std::queue<std::function<void(std::shared_ptr<Texture>)>> m_onLoadCallbacks;
 	std::queue<CallbackHandle> m_onRemoveCallbacks;
 	Flags m_flags = Flags::None;

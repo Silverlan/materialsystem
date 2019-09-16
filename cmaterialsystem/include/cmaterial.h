@@ -34,9 +34,9 @@ public:
 		std::function<void(std::shared_ptr<Texture>)> onload;
 	};
 public:
-	CMaterial(MaterialManager *manager);
-	CMaterial(MaterialManager *manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data);
-	CMaterial(MaterialManager *manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
+	CMaterial(MaterialManager &manager);
+	CMaterial(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data);
+	CMaterial(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
 	void SetOnLoadedCallback(const std::function<void(void)> &f);
 	void SetTexture(const std::string &identifier,Texture *texture);
 	void SetTexture(const std::string &identifier,const std::string &texture);
@@ -47,6 +47,7 @@ public:
 	void SetDescriptorSetGroup(prosper::Shader &shader,const std::shared_ptr<prosper::DescriptorSetGroup> &descSetGroup);
 	util::WeakHandle<prosper::Shader> GetPrimaryShader();
 	std::shared_ptr<prosper::Sampler> GetSampler();
+	virtual void SetLoaded(bool b) override;
 protected:
 	void LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &texInfo,TextureLoadFlags flags=TextureLoadFlags::None,const std::shared_ptr<CallbackInfo> &callbackInfo=nullptr);
 	void InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::function<void(void)> &onAllTexturesLoaded=nullptr,const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded=nullptr,bool bLoadInstantly=false);

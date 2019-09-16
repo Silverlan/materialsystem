@@ -10,6 +10,7 @@
 #include <sharedutils/util_weak_handle.hpp>
 #include <sharedutils/def_handle.h>
 #include <sharedutils/functioncallback.h>
+#include <mathutil/umath.h>
 
 class Material;
 DECLARE_BASE_HANDLE(DLLMATSYS,Material,Material);
@@ -22,31 +23,34 @@ namespace ds {class Block;};
 #pragma warning(disable : 4251)
 class DLLMATSYS Material
 {
-protected:
-	virtual ~Material();
-	MaterialHandle m_handle;
-	util::WeakHandle<util::ShaderInfo> m_shaderInfo = {};
-	std::unique_ptr<std::string> m_shader;
-	std::string m_name;
-	std::shared_ptr<ds::Block> m_data;
-	bool m_bLoaded;
-	mutable std::vector<CallbackHandle> m_callOnLoaded;
-	MaterialManager *m_manager;
-	bool m_bTranslucent;
-	TextureInfo *m_texDiffuse;
-	TextureInfo *m_texNormal;
-	TextureInfo *m_texSpecular;
-	TextureInfo *m_texGlow;
-	TextureInfo *m_texAlpha;
-	TextureInfo *m_texParallax;
-	TextureInfo *m_texAo;
-	void *m_userData;
-	template<class TMaterial>
-		TMaterial *Copy() const;
 public:
-	Material(MaterialManager *manager);
-	Material(MaterialManager *manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
-	Material(MaterialManager *manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
+	// inline static class-strings cause an internal compiler error with VS2019, so we can't use them for the time being
+	// inline static const std::string DIFFUSE_MAP_IDENTIFIER = "diffuse_map";
+	static const std::string DIFFUSE_MAP_IDENTIFIER;
+	static const std::string ALBEDO_MAP_IDENTIFIER;
+	static const std::string NORMAL_MAP_IDENTIFIER;
+	static const std::string SPECULAR_MAP_IDENTIFIER;
+	static const std::string GLOW_MAP_IDENTIFIER;
+	static const std::string EMISSION_MAP_IDENTIFIER;
+	static const std::string PARALLAX_MAP_IDENTIFIER;
+	static const std::string AO_MAP_IDENTIFIER;
+	static const std::string ALPHA_MAP_IDENTIFIER;
+	static const std::string METALNESS_MAP_IDENTIFIER;
+	static const std::string ROUGHNESS_MAP_IDENTIFIER;
+	static const std::string DUDV_MAP_IDENTIFIER;
+	static const std::string DIFFUSE_MAP2_IDENTIFIER;
+
+	enum class StateFlags : uint32_t
+	{
+		None = 0u,
+		Translucent = 1u,
+		Loaded = Translucent<<1u,
+		ExecutingOnLoadCallbacks = Loaded<<1u
+	};
+	
+	Material(MaterialManager &manager);
+	Material(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
+	Material(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
 	Material(const Material&)=delete;
 	void Remove();
 	MaterialHandle GetHandle();
@@ -60,25 +64,42 @@ public:
 	bool IsTranslucent() const;
 	virtual TextureInfo *GetTextureInfo(const std::string &key);
 	const TextureInfo *GetTextureInfo(const std::string &key) const;
+
 	const TextureInfo *GetDiffuseMap() const;
 	TextureInfo *GetDiffuseMap();
+
+	const TextureInfo *GetAlbedoMap() const;
+	TextureInfo *GetAlbedoMap();
+
 	const TextureInfo *GetNormalMap() const;
 	TextureInfo *GetNormalMap();
+
 	const TextureInfo *GetSpecularMap() const;
 	TextureInfo *GetSpecularMap();
+
 	const TextureInfo *GetGlowMap() const;
 	TextureInfo *GetGlowMap();
+
 	const TextureInfo *GetAlphaMap() const;
 	TextureInfo *GetAlphaMap();
+
 	const TextureInfo *GetParallaxMap() const;
 	TextureInfo *GetParallaxMap();
+
 	const TextureInfo *GetAmbientOcclusionMap() const;
 	TextureInfo *GetAmbientOcclusionMap();
+
+	const TextureInfo *GetMetalnessMap() const;
+	TextureInfo *GetMetalnessMap();
+
+	const TextureInfo *GetRoughnessMap() const;
+	TextureInfo *GetRoughnessMap();
+
 	const std::shared_ptr<ds::Block> &GetDataBlock() const;
-	void SetLoaded(bool b);
+	virtual void SetLoaded(bool b);
 	CallbackHandle CallOnLoaded(const std::function<void(void)> &f) const;
 	bool IsValid() const;
-	MaterialManager *GetManager() const;
+	MaterialManager &GetManager() const;
 	bool Save(const std::string &fileName,const std::string &rootPath="") const;
 
 	// Returns true if all textures associated with this material have been fully loaded
@@ -88,7 +109,30 @@ public:
 	void Reset();
 	void Initialize(const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
 	void Initialize(const std::string &shader,const std::shared_ptr<ds::Block> &data);
+protected:
+	virtual ~Material();
+	MaterialHandle m_handle;
+	util::WeakHandle<util::ShaderInfo> m_shaderInfo = {};
+	std::unique_ptr<std::string> m_shader;
+	std::string m_name;
+	std::shared_ptr<ds::Block> m_data;
+	StateFlags m_stateFlags = StateFlags::None;
+	mutable std::vector<CallbackHandle> m_callOnLoaded;
+	MaterialManager &m_manager;
+	TextureInfo *m_texDiffuse = nullptr;
+	TextureInfo *m_texNormal = nullptr;
+	TextureInfo *m_texSpecular = nullptr;
+	TextureInfo *m_texGlow = nullptr;
+	TextureInfo *m_texAlpha = nullptr;
+	TextureInfo *m_texParallax = nullptr;
+	TextureInfo *m_texAo = nullptr;
+	TextureInfo *m_texMetalness = nullptr;
+	TextureInfo *m_texRoughness = nullptr;
+	void *m_userData;
+	template<class TMaterial>
+	TMaterial *Copy() const;
 };
+REGISTER_BASIC_ARITHMETIC_OPERATORS(Material::StateFlags)
 #pragma warning(pop)
 
 template<class TMaterial>

@@ -88,6 +88,30 @@ TextureManager::~TextureManager()
 	Clear();
 }
 
+bool TextureManager::HasWork()
+{
+	if(m_bThreadActive == false)
+		return false;
+	if(m_bBusy)
+		return true;
+	m_loadMutex->lock();
+		auto hasLoadItem = (m_loadQueue.empty() == false);
+	m_loadMutex->unlock();
+	if(hasLoadItem)
+		return true;
+	m_queueMutex->lock();
+		auto hasInitItem = (m_initQueue.empty() == false);
+	m_queueMutex->unlock();
+	return hasInitItem;
+}
+
+void TextureManager::WaitForTextures()
+{
+	while(HasWork())
+		Update();
+	Update();
+}
+
 void TextureManager::SetupSamplerMipmapMode(prosper::util::SamplerCreateInfo &createInfo,TextureMipmapMode mode)
 {
 	switch(mode)

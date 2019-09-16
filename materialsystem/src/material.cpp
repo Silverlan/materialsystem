@@ -10,20 +10,33 @@
 
 DEFINE_BASE_HANDLE(DLLMATSYS,Material,Material);
 
-Material::Material(MaterialManager *manager)
-	: m_handle(new PtrMaterial(this)),m_data(nullptr),m_shader(nullptr),
-	m_bLoaded(false),m_manager(manager)
+decltype(Material::DIFFUSE_MAP_IDENTIFIER) Material::DIFFUSE_MAP_IDENTIFIER = "diffuse_map";
+decltype(Material::ALBEDO_MAP_IDENTIFIER) Material::ALBEDO_MAP_IDENTIFIER = "albedo_map";
+decltype(Material::NORMAL_MAP_IDENTIFIER) Material::NORMAL_MAP_IDENTIFIER = "normal_map";
+decltype(Material::SPECULAR_MAP_IDENTIFIER) Material::SPECULAR_MAP_IDENTIFIER = "specular_map";
+decltype(Material::GLOW_MAP_IDENTIFIER) Material::GLOW_MAP_IDENTIFIER = "emission_map";
+decltype(Material::EMISSION_MAP_IDENTIFIER) Material::EMISSION_MAP_IDENTIFIER = GLOW_MAP_IDENTIFIER;
+decltype(Material::PARALLAX_MAP_IDENTIFIER) Material::PARALLAX_MAP_IDENTIFIER = "parallax_map";
+decltype(Material::AO_MAP_IDENTIFIER) Material::AO_MAP_IDENTIFIER = "ao_map";
+decltype(Material::ALPHA_MAP_IDENTIFIER) Material::ALPHA_MAP_IDENTIFIER = "alpha_map";
+decltype(Material::METALNESS_MAP_IDENTIFIER) Material::METALNESS_MAP_IDENTIFIER = "metalness_map";
+decltype(Material::ROUGHNESS_MAP_IDENTIFIER) Material::ROUGHNESS_MAP_IDENTIFIER = "roughness_map";
+decltype(Material::DUDV_MAP_IDENTIFIER) Material::DUDV_MAP_IDENTIFIER = "dudv_map";
+decltype(Material::DIFFUSE_MAP2_IDENTIFIER) Material::DIFFUSE_MAP2_IDENTIFIER = "diffuse_map2";
+
+Material::Material(MaterialManager &manager)
+	: m_handle(new PtrMaterial(this)),m_data(nullptr),m_shader(nullptr),m_manager(manager)
 {
 	Reset();
 }
 
-Material::Material(MaterialManager *manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data)
+Material::Material(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data)
 	: Material(manager)
 {
 	Initialize(shaderInfo,data);
 }
 
-Material::Material(MaterialManager *manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
+Material::Material(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
 	: Material(manager)
 {
 	Initialize(shader,data);
@@ -34,8 +47,8 @@ void Material::Remove() {delete this;}
 
 void Material::Reset()
 {
-	m_bTranslucent = false;
-	m_bLoaded = false;
+	umath::set_flag(m_stateFlags,StateFlags::Translucent,false);
+	umath::set_flag(m_stateFlags,StateFlags::Loaded,false);
 	m_data = nullptr;
 	m_shaderInfo.reset();
 	m_shader = nullptr;
@@ -68,47 +81,24 @@ void Material::Initialize(const std::string &shader,const std::shared_ptr<ds::Bl
 void *Material::GetUserData() {return m_userData;}
 void Material::SetUserData(void *data) {m_userData = data;}
 
-bool Material::IsTranslucent() const {return m_bTranslucent;}
+bool Material::IsTranslucent() const {return umath::is_flag_set(m_stateFlags,StateFlags::Translucent);}
 
 void Material::UpdateTextures()
 {
-	m_texDiffuse = GetTextureInfo("diffusemap");
+	m_texDiffuse = GetTextureInfo(DIFFUSE_MAP_IDENTIFIER);
 	if(!m_texDiffuse)
-		m_texDiffuse = GetTextureInfo("diffuse_map");
-	if(!m_texDiffuse)
-		m_texDiffuse = GetTextureInfo("albedomap");
-	if(!m_texDiffuse)
-		m_texDiffuse = GetTextureInfo("albedo_map");
+		m_texDiffuse = GetTextureInfo(ALBEDO_MAP_IDENTIFIER);
 
-	m_texNormal = GetTextureInfo("normalmap");
-	if(!m_texNormal)
-		m_texNormal = GetTextureInfo("normal_map");
+	m_texNormal = GetTextureInfo(NORMAL_MAP_IDENTIFIER);
+	m_texSpecular = GetTextureInfo(SPECULAR_MAP_IDENTIFIER);
+	m_texGlow = GetTextureInfo(EMISSION_MAP_IDENTIFIER);
+	m_texParallax = GetTextureInfo(PARALLAX_MAP_IDENTIFIER);
+	m_texAo = GetTextureInfo(AO_MAP_IDENTIFIER);
+	m_texAlpha = GetTextureInfo(ALPHA_MAP_IDENTIFIER);
+	m_texMetalness = GetTextureInfo(METALNESS_MAP_IDENTIFIER);
+	m_texRoughness = GetTextureInfo(ROUGHNESS_MAP_IDENTIFIER);
 
-	m_texSpecular = GetTextureInfo("specularmap");
-	if(!m_texSpecular)
-		m_texSpecular = GetTextureInfo("specular_map");
-
-	m_texGlow = GetTextureInfo("glowmap");
-	if(!m_texGlow)
-		m_texGlow = GetTextureInfo("glow_map");
-	if(!m_texGlow)
-		m_texGlow = GetTextureInfo("emission_map");
-
-	m_texParallax = GetTextureInfo("parallaxmap");
-	if(!m_texParallax)
-		m_texParallax = GetTextureInfo("parallax_map");
-
-	m_texAo = GetTextureInfo("ambientocclusionmap");
-	if(!m_texAo)
-		m_texAo = GetTextureInfo("ambient_occlusion_map");
-	if(!m_texAo)
-		m_texAo = GetTextureInfo("ao_map");
-
-	m_texAlpha = GetTextureInfo("alphamap");
-	if(!m_texAlpha)
-		m_texAlpha = GetTextureInfo("alpha_map");
-
-	m_bTranslucent = m_data->GetBool("translucent");
+	umath::set_flag(m_stateFlags,StateFlags::Translucent,m_data->GetBool("translucent"));
 }
 
 void Material::SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo)
@@ -130,18 +120,22 @@ Material::~Material()
 Material *Material::Copy() const {return Copy<Material>();}
 
 bool Material::IsValid() const {return (m_data != nullptr) ? true : false;}
-MaterialManager *Material::GetManager() const {return m_manager;}
+MaterialManager &Material::GetManager() const {return m_manager;}
 void Material::SetLoaded(bool b)
 {
-	m_bLoaded = b;
+	if(umath::is_flag_set(m_stateFlags,StateFlags::ExecutingOnLoadCallbacks))
+		return; // Prevent possible recursion while on-load callbacks are being executed
+	umath::set_flag(m_stateFlags,StateFlags::Loaded,b);
 	if(b == true)
 	{
+		umath::set_flag(m_stateFlags,StateFlags::ExecutingOnLoadCallbacks,true);
 		for(auto &f : m_callOnLoaded)
 		{
 			if(f.IsValid())
 				f();
 		}
 		m_callOnLoaded.clear();
+		umath::set_flag(m_stateFlags,StateFlags::ExecutingOnLoadCallbacks,false);
 	}
 }
 bool Material::Save(const std::string &fileName,const std::string &inRootPath) const
@@ -215,21 +209,38 @@ CallbackHandle Material::CallOnLoaded(const std::function<void(void)> &f) const
 	m_callOnLoaded.push_back(FunctionCallback<>::Create(f));
 	return m_callOnLoaded.back();
 }
-bool Material::IsLoaded() const {return m_bLoaded;}
+bool Material::IsLoaded() const {return umath::is_flag_set(m_stateFlags,StateFlags::Loaded);}
+
 const TextureInfo *Material::GetDiffuseMap() const {return const_cast<Material*>(this)->GetDiffuseMap();}
 TextureInfo *Material::GetDiffuseMap() {return m_texDiffuse;}
+
+const TextureInfo *Material::GetAlbedoMap() const {return GetDiffuseMap();}
+TextureInfo *Material::GetAlbedoMap() {return GetDiffuseMap();}
+
 const TextureInfo *Material::GetNormalMap() const {return const_cast<Material*>(this)->GetNormalMap();}
 TextureInfo *Material::GetNormalMap() {return m_texNormal;}
+
 const TextureInfo *Material::GetSpecularMap() const {return const_cast<Material*>(this)->GetSpecularMap();}
 TextureInfo *Material::GetSpecularMap() {return m_texSpecular;}
+
 const TextureInfo *Material::GetGlowMap() const {return const_cast<Material*>(this)->GetGlowMap();}
 TextureInfo *Material::GetGlowMap() {return m_texGlow;}
+
 const TextureInfo *Material::GetAlphaMap() const {return const_cast<Material*>(this)->GetAlphaMap();}
 TextureInfo *Material::GetAlphaMap() {return m_texAlpha;}
+
 const TextureInfo *Material::GetParallaxMap() const {return const_cast<Material*>(this)->GetParallaxMap();}
 TextureInfo *Material::GetParallaxMap() {return m_texParallax;}
+
 const TextureInfo *Material::GetAmbientOcclusionMap() const {return const_cast<Material*>(this)->GetAmbientOcclusionMap();}
 TextureInfo *Material::GetAmbientOcclusionMap() {return m_texAo;}
+
+const TextureInfo *Material::GetMetalnessMap() const {return const_cast<Material*>(this)->GetMetalnessMap();}
+TextureInfo *Material::GetMetalnessMap() {return m_texMetalness;}
+
+const TextureInfo *Material::GetRoughnessMap() const {return const_cast<Material*>(this)->GetRoughnessMap();}
+TextureInfo *Material::GetRoughnessMap() {return m_texRoughness;}
+
 void Material::SetName(const std::string &name) {m_name = name;}
 const std::string &Material::GetName() {return m_name;}
 

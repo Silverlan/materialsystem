@@ -89,6 +89,7 @@ void TextureManager::TextureThread()
 		m_loadMutex->lock();
 			auto item = std::move(m_loadQueue.front());
 			m_loadQueue.pop();
+			m_bBusy = true;
 		m_loadMutex->unlock();
 		if(item->mipmapid == -1)
 		{
@@ -100,6 +101,7 @@ void TextureManager::TextureThread()
 			;//GenerateNextMipmap(item);
 		m_queueMutex->lock();
 			m_initQueue.push(item);
+			m_bBusy = false;
 		m_queueMutex->unlock();
 	}
 }

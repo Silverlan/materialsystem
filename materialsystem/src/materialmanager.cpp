@@ -294,7 +294,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 					if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 					{
 						auto *bumpMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-						root->AddData("dudvmap",std::make_shared<ds::Texture>(*dataSettings,bumpMapNode->GetValue()));
+						root->AddData(Material::DUDV_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,bumpMapNode->GetValue()));
 					}
 				}
 				if((node = vmtRoot->GetNode("$normalmap")) != nullptr)
@@ -302,7 +302,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 					if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 					{
 						auto *normalMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-						root->AddData("normalmap",std::make_shared<ds::Texture>(*dataSettings,normalMapNode->GetValue()));
+						root->AddData(Material::NORMAL_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,normalMapNode->GetValue()));
 					}
 				}
 			}
@@ -320,7 +320,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 				{
 					auto *selfIllumMaskNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData("glowmap",std::make_shared<ds::Texture>(*dataSettings,selfIllumMaskNode->GetValue()));
+					root->AddData(Material::GLOW_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,selfIllumMaskNode->GetValue()));
 					bHasGlowMap = true;
 				}
 			}
@@ -332,7 +332,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 				{
 					hasDiffuseMap = true;
 					auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData("diffusemap",std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
+					root->AddData(Material::DIFFUSE_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
 				}
 			}
 			if(hasDiffuseMap == false && (node = vmtRoot->GetNode("$hdrbasetexture")) != nullptr)
@@ -341,7 +341,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 				{
 					hasDiffuseMap = true;
 					auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData("diffusemap",std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
+					root->AddData(Material::DIFFUSE_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
 				}
 			}
 			if(hasDiffuseMap == false && (node = vmtRoot->GetNode("$basetexture")) != nullptr)
@@ -349,11 +349,11 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 				{
 					auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData("diffusemap",std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
+					root->AddData(Material::DIFFUSE_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
 
 					if(bHasGlowMap == false && (node = vmtRoot->GetNode("$selfillum")) != nullptr)
 					{
-						root->AddData("glowmap",std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
+						root->AddData(Material::GLOW_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
 						root->AddValue("int","glow_blend_diffuse_mode","1");
 						root->AddValue("float","glow_blend_diffuse_scale","6");
 						root->AddValue("bool","glow_alpha_only","1");
@@ -367,7 +367,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 				{
 					auto *baseTexture2StringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData("diffusemap2",std::make_shared<ds::Texture>(*dataSettings,baseTexture2StringNode->GetValue()));
+					root->AddData(Material::DIFFUSE_MAP2_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTexture2StringNode->GetValue()));
 				}
 			}
 			if(bWater == false && (node = vmtRoot->GetNode("$bumpmap")) != nullptr)
@@ -375,7 +375,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 				{
 					auto *bumpMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData("normalmap",std::make_shared<ds::Texture>(*dataSettings,bumpMapNode->GetValue()));
+					root->AddData(Material::NORMAL_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,bumpMapNode->GetValue()));
 				}
 			}
 			if((node = vmtRoot->GetNode("$envmap")) != nullptr)
@@ -387,7 +387,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 					auto lval = val;
 					ustring::to_lower(lval);
 					if(lval != "env_cubemap")
-						root->AddData("specularmap",std::make_shared<ds::Texture>(*dataSettings,val));
+						root->AddData(Material::SPECULAR_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,val));
 				}
 			}
 			if((node = vmtRoot->GetNode("$envmapmask")) != nullptr)
@@ -395,7 +395,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 				{
 					auto *specularMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData("specularmap",std::make_shared<ds::Texture>(*dataSettings,specularMapNode->GetValue()));
+					root->AddData(Material::SPECULAR_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,specularMapNode->GetValue()));
 				}
 			}
 			if((node = vmtRoot->GetNode("$additive")) != nullptr)
@@ -424,7 +424,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 				{
 					auto *parallaxMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData("parallaxmap",std::make_shared<ds::Texture>(*dataSettings,parallaxMapNode->GetValue()));
+					root->AddData(Material::PARALLAX_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,parallaxMapNode->GetValue()));
 				}
 			}
 			if((node = vmtRoot->GetNode("$parallaxmapscale")) != nullptr)
@@ -512,7 +512,7 @@ Material *MaterialManager::Load(const std::string &path,bool bReload,bool *bFirs
 	}
 	else
 	{
-		info.material = new Material{this,info.shader,info.root};
+		info.material = new Material{*this,info.shader,info.root};
 		info.material->SetLoaded(true);
 	}
 	info.material->SetName(info.identifier);

@@ -29,13 +29,13 @@ bool CMaterial::ShaderEqualFn::operator()(const util::WeakHandle<prosper::Shader
 
 ////////////////////////////////
 
-CMaterial::CMaterial(MaterialManager *manager)
+CMaterial::CMaterial(MaterialManager &manager)
 	: Material(manager)
 {}
-CMaterial::CMaterial(MaterialManager *manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data)
+CMaterial::CMaterial(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data)
 	: Material(manager,shader,data)
 {}
-CMaterial::CMaterial(MaterialManager *manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
+CMaterial::CMaterial(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
 	: Material(manager,shader,data)
 {}
 
@@ -120,8 +120,8 @@ void CMaterial::InitializeSampler()
 
 std::shared_ptr<prosper::Sampler> CMaterial::GetSampler() {return m_sampler;}
 
-prosper::Context &CMaterial::GetContext() {return static_cast<CMaterialManager*>(m_manager)->GetContext();}
-TextureManager &CMaterial::GetTextureManager() {return static_cast<CMaterialManager*>(m_manager)->GetTextureManager();}
+prosper::Context &CMaterial::GetContext() {return static_cast<CMaterialManager&>(m_manager).GetContext();}
+TextureManager &CMaterial::GetTextureManager() {return static_cast<CMaterialManager&>(m_manager).GetTextureManager();}
 std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::DescriptorSetGroup>,CMaterial::ShaderHash,CMaterial::ShaderEqualFn>::iterator CMaterial::FindShaderDescriptorSetGroup(prosper::Shader &shader)
 {
 	return std::find_if(m_descriptorSetGroups.begin(),m_descriptorSetGroups.end(),[&shader](const std::pair<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::DescriptorSetGroup>> &pair) {
@@ -157,6 +157,13 @@ uint32_t CMaterial::GetMipmapMode(const std::shared_ptr<ds::Block> &data) const
 	auto mipmapMode = TextureMipmapMode::Load;
 	data->GetInt("mipmap_load_mode",reinterpret_cast<std::underlying_type<decltype(mipmapMode)>::type*>(&mipmapMode));
 	return umath::to_integral(mipmapMode);
+}
+void CMaterial::SetLoaded(bool b)
+{
+	auto *texNormalMap = GetNormalMap();
+	if(texNormalMap && texNormalMap->texture)
+		std::static_pointer_cast<Texture>(texNormalMap->texture)->AddFlags(Texture::Flags::NormalMap);
+	Material::SetLoaded(b);
 }
 void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &texInfo,TextureLoadFlags loadFlags,const std::shared_ptr<CallbackInfo> &callbackInfo)
 {
@@ -196,7 +203,7 @@ void CMaterial::SetTexture(const std::string &identifier,Texture *texture)
 	m_data->AddData(identifier,dataTex);
 
 	UpdateTextures();
-	auto shaderHandler = static_cast<CMaterialManager*>(GetManager())->GetShaderHandler();
+	auto shaderHandler = static_cast<CMaterialManager&>(GetManager()).GetShaderHandler();
 	if(shaderHandler != nullptr)
 		shaderHandler(this);
 }
@@ -215,7 +222,7 @@ void CMaterial::SetTexture(const std::string &identifier,const std::string &text
 		if(m_fOnLoaded != nullptr)
 			m_fOnLoaded();
 		UpdateTextures();
-		auto shaderHandler = static_cast<CMaterialManager*>(GetManager())->GetShaderHandler();
+		auto shaderHandler = static_cast<CMaterialManager&>(GetManager()).GetShaderHandler();
 		if(shaderHandler != nullptr)
 			shaderHandler(this);
 	},nullptr);

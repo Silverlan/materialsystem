@@ -45,7 +45,7 @@ std::optional<prosper::Buffer::SubBufferIndex> MaterialDescriptorArrayManager::R
 	else
 		it = m_materialRenderBuffers.insert(std::make_pair(&mat,std::shared_ptr<prosper::Buffer>{})).first;
 
-	auto *errMat = mat.GetManager()->GetErrorMaterial();
+	auto *errMat = mat.GetManager().GetErrorMaterial();
 	if(errMat == nullptr)
 		return {};
 	auto *errTex = errMat->GetDiffuseMap();
