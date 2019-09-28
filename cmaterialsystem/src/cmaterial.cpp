@@ -7,6 +7,7 @@
 #include "texture_type.h"
 #include <prosper_util.hpp>
 #include <prosper_context.hpp>
+#include <buffers/prosper_buffer.hpp>
 #include <image/prosper_sampler.hpp>
 #include <sharedutils/util_string.h>
 
@@ -119,6 +120,9 @@ void CMaterial::InitializeSampler()
 }
 
 std::shared_ptr<prosper::Sampler> CMaterial::GetSampler() {return m_sampler;}
+
+prosper::Buffer *CMaterial::GetSettingsBuffer() {return m_settingsBuffer.get();}
+void CMaterial::SetSettingsBuffer(prosper::Buffer &buffer) {m_settingsBuffer = buffer.shared_from_this();}
 
 prosper::Context &CMaterial::GetContext() {return static_cast<CMaterialManager&>(m_manager).GetContext();}
 TextureManager &CMaterial::GetTextureManager() {return static_cast<CMaterialManager&>(m_manager).GetTextureManager();}

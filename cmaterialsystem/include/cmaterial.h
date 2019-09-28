@@ -13,7 +13,7 @@
 #include <material.h>
 #include <functional>
 
-namespace prosper {class Sampler;};
+namespace prosper {class Sampler; class Buffer;};
 
 class CMaterialManager;
 class TextureManager;
@@ -47,6 +47,8 @@ public:
 	void SetDescriptorSetGroup(prosper::Shader &shader,const std::shared_ptr<prosper::DescriptorSetGroup> &descSetGroup);
 	util::WeakHandle<prosper::Shader> GetPrimaryShader();
 	std::shared_ptr<prosper::Sampler> GetSampler();
+	void SetSettingsBuffer(prosper::Buffer &buffer);
+	prosper::Buffer *GetSettingsBuffer();
 	virtual void SetLoaded(bool b) override;
 protected:
 	void LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &texInfo,TextureLoadFlags flags=TextureLoadFlags::None,const std::shared_ptr<CallbackInfo> &callbackInfo=nullptr);
@@ -67,6 +69,7 @@ private:
 	std::function<void(void)> m_fOnLoaded;
 	std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::DescriptorSetGroup>,ShaderHash,ShaderEqualFn> m_descriptorSetGroups;
 	std::shared_ptr<prosper::Sampler> m_sampler = nullptr;
+	std::shared_ptr<prosper::Buffer> m_settingsBuffer = nullptr;
 	std::shared_ptr<CallbackInfo> m_callbackInfo;
 	std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::DescriptorSetGroup>,ShaderHash,ShaderEqualFn>::iterator FindShaderDescriptorSetGroup(prosper::Shader &shader);
 	std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::DescriptorSetGroup>,ShaderHash,ShaderEqualFn>::const_iterator FindShaderDescriptorSetGroup(prosper::Shader &shader) const;

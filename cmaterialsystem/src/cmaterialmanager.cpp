@@ -114,6 +114,8 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 		bInitializeTextures = true;
 	}
 	info.material->SetName(info.identifier);
+	// The material has to be registered before calling the callbacks below
+	m_materials.insert(decltype(m_materials)::value_type{ToMaterialIdentifier(info.identifier),info.material->GetHandle()});
 	if(bInitializeTextures == true)
 	{
 		auto *mat = info.material;
@@ -137,7 +139,6 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 			m_shaderHandler(info.material);
 	}
 
-	m_materials.insert(decltype(m_materials)::value_type{ToMaterialIdentifier(info.identifier),info.material->GetHandle()});
 	return info.material;
 }
 

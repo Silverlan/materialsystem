@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// TODO: Match these with pr_source/src/mdl.cpp
 {"default","concrete"},
 {"default_silent","concrete"},
 {"floatingstandable","concrete"},
