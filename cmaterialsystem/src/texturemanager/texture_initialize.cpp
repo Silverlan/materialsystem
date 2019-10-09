@@ -395,9 +395,9 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 							outConversionFormat = vkFormat.conversionFormat;
 							outCubemap = vtfFile.GetFaceCount() == 6;
 							outLayerCount = outCubemap ? 6 : 1;
-							outMipmapCount = vtfFile.GetMipmapCount();
+							outMipmapCount = vtfFile.GetMipmapCount() +1u; // The VTF library does not count the main image as a mipmap, but we do!
 							if(vtfFile.GetFlag(VTFImageFlag::TEXTUREFLAGS_NOMIP))
-								outMipmapCount = 0u;
+								outMipmapCount = 1u;
 						};
 						vtfLoader.get_image_data = [](void *userData,const TextureQueueItem &item,uint32_t layer,uint32_t mipmapIdx,uint32_t &outDataSize) -> const void* {
 							auto &vtfFile = *static_cast<VTFLib::CVTFFile*>(userData);
