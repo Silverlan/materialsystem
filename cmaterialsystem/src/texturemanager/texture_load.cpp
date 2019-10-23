@@ -37,24 +37,31 @@ bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,c
 	if(ufile::get_extension(imgFileNoExt,&ext) == true)
 		imgFileNoExt = imgFileNoExt.substr(0,imgFileNoExt.length() -ext.length() -1);
 	auto bLoading = false;
-	auto tCur = FindTexture(imgFileNoExt,&pathCache,&bLoading);
+	auto cachedTexture = FindTexture(imgFileNoExt,&pathCache,&bLoading);
 
 	ext.clear();
 	if(ufile::get_extension(pathCache,&ext) == true)
 		pathCache = pathCache.substr(0,pathCache.length() -ext.length() -1);
 	//
 
-	if((loadInfo.flags &TextureLoadFlags::Reload) != TextureLoadFlags::None)
-		text = *outTexture;
-	else
+	auto loadFlags = loadInfo.flags;
+	if(outTexture == nullptr || *outTexture == nullptr)
 	{
-		text = tCur;
+		text = cachedTexture;
+		if(text == nullptr)
+			umath::set_flag(loadFlags,TextureLoadFlags::Reload,false);
+	}
+	else
+		text = *outTexture;
+	if(umath::is_flag_set(loadFlags,TextureLoadFlags::Reload) == false)
+	{
+		text = cachedTexture;
 		if(text != NULL)
 		{
 			auto bReloadInternalTex = false;
 			if(outTexture != NULL)
 			{
-				if(static_cast<Texture*>(text.get())->texture == nullptr && bLoading == false)
+				if(static_cast<Texture*>(text.get())->HasValidVkTexture() == false && bLoading == false)
 					bReloadInternalTex = true;
 				else
 					*outTexture = text;
@@ -100,16 +107,15 @@ bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,c
 	item->mipmapMode = loadInfo.mipmapLoadMode;
 	item->sampler = loadInfo.sampler;
 
-	auto bReload = (loadInfo.flags &TextureLoadFlags::Reload) != TextureLoadFlags::None;
+	auto bReload = umath::is_flag_set(loadFlags,TextureLoadFlags::Reload);
 	if(bReload == false)
-		text = std::make_shared<Texture>();
+		text = std::make_shared<Texture>(GetContext());
 	auto *ptrTexture = static_cast<Texture*>(text.get());
 	ptrTexture->SetFlags(ptrTexture->GetFlags() &~Texture::Flags::Loaded);
 	if(loadInfo.onLoadCallback != nullptr)
 		ptrTexture->CallOnLoaded(loadInfo.onLoadCallback);
-	ptrTexture->width = 0;
-	ptrTexture->height = 0;
-	ptrTexture->name = item->cache;
+	ptrTexture->ClearVkTexture();
+	ptrTexture->SetName(item->cache);
 	item->context = context.shared_from_this();
 
 	m_texturesTmp.push_back(std::static_pointer_cast<Texture>(text));

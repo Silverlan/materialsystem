@@ -4,14 +4,10 @@
 
 #include "texturemanager/texture.h"
 #include <image/prosper_texture.hpp>
+#include <prosper_context.hpp>
 
-Texture::Texture()
-	: width(0),height(0),texture(nullptr),
-	m_flags(Flags::Error)
-{}
-
-Texture::Texture(std::shared_ptr<prosper::Texture> &tex)
-	: texture(tex),width((*tex->GetImage())->get_image_extent_2D(0u).width),height((*tex->GetImage())->get_image_extent_2D(0u).height)
+Texture::Texture(prosper::Context &context,std::shared_ptr<prosper::Texture> tex)
+	: m_context{context},m_texture(tex)
 {}
 
 Texture::~Texture()
@@ -23,12 +19,31 @@ Texture::~Texture()
 			cb();
 		m_onRemoveCallbacks.pop();
 	}
+	ClearVkTexture();
 }
 
 bool Texture::HasFlag(Flags flag) const {return umath::is_flag_set(m_flags,flag);}
 bool Texture::IsIndexed() const {return (m_flags &Flags::Indexed) != Flags::None;}
 bool Texture::IsLoaded() const {return (m_flags &Flags::Loaded) != Flags::None;}
 bool Texture::IsError() const {return (m_flags &Flags::Error) != Flags::None;}
+
+void Texture::SetName(const std::string &name) {m_name = name;}
+const std::string &Texture::GetName() const {return m_name;}
+uint32_t Texture::GetWidth() const {return m_texture ? m_texture->GetImage()->GetExtents().width : 0u;}
+uint32_t Texture::GetHeight() const {return m_texture ? m_texture->GetImage()->GetExtents().height : 0u;}
+const std::shared_ptr<prosper::Texture> &Texture::GetVkTexture() const {return m_texture;}
+void Texture::SetVkTexture(prosper::Texture &texture) {SetVkTexture(texture.shared_from_this());}
+void Texture::ClearVkTexture() {SetVkTexture(nullptr);}
+void Texture::SetVkTexture(std::shared_ptr<prosper::Texture> texture)
+{
+	if(m_texture)
+	{
+		// Make sure the old texture/image/image view/sampler are kept alive until rendering is complete
+		m_context.KeepResourceAliveUntilPresentationComplete(m_texture);
+	}
+	m_texture = texture;
+}
+bool Texture::HasValidVkTexture() const {return m_texture != nullptr;}
 
 Texture::Flags Texture::GetFlags() const {return m_flags;}
 void Texture::SetFlags(Flags flags) {m_flags = flags;}
@@ -55,15 +70,15 @@ void Texture::RunOnLoadedCallbacks()
 	auto ptr = shared_from_this();
 	while(!m_onLoadCallbacks.empty())
 	{
-		auto &callback = m_onLoadCallbacks.front();
-		callback(ptr);
+		auto callback = m_onLoadCallbacks.front();
 		m_onLoadCallbacks.pop();
+		callback(ptr);
 	}
 }
 
 void Texture::Reset()
 {
-	if(name == "error") // Never remove error texture! TODO: Do this properly
+	if(m_name == "error") // Never remove error texture! TODO: Do this properly
 		return;
-	texture = nullptr;
+	ClearVkTexture();
 }

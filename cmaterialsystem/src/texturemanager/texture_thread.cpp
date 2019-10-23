@@ -61,7 +61,7 @@ std::shared_ptr<Texture> TextureManager::GetQueuedTexture(TextureQueueItem &item
 	std::shared_ptr<Texture> texture = nullptr;
 	for(unsigned int i=0;i<m_texturesTmp.size();i++)
 	{
-		if(m_texturesTmp[i]->name == item.cache)
+		if(m_texturesTmp[i]->GetName() == item.cache)
 		{
 			texture = m_texturesTmp[i];
 			if(bErase == true)

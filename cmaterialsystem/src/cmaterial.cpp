@@ -190,6 +190,12 @@ void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &
 	else if(callbackInfo != nullptr)
 		callbackInfo->onload(nullptr);
 }
+void CMaterial::ClearDescriptorSets()
+{
+	for(auto &pair : m_descriptorSetGroups)
+		GetContext().KeepResourceAliveUntilPresentationComplete(pair.second);
+	m_descriptorSetGroups.clear();
+}
 void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data,const std::shared_ptr<ds::Texture> &dataTexture,TextureLoadFlags loadFlags,const std::shared_ptr<CallbackInfo> &callbackInfo)
 {
 	LoadTexture(data,dataTexture->GetValue(),loadFlags,callbackInfo);
@@ -201,9 +207,9 @@ void CMaterial::SetTexture(const std::string &identifier,Texture *texture)
 	auto dataTex = std::make_shared<ds::Texture>(*dsSettingsTmp,""); // Data settings will be overwrriten by AddData-call below
 	auto &v = dataTex->GetValue();
 	v.texture = texture->shared_from_this();
-	v.width = texture->width;
-	v.height = texture->height;
-	v.name = texture->name;
+	v.width = texture->GetWidth();
+	v.height = texture->GetHeight();
+	v.name = texture->GetName();
 	m_data->AddData(identifier,dataTex);
 
 	UpdateTextures();
@@ -241,13 +247,14 @@ void CMaterial::SetTexture(const std::string &identifier,const std::string &text
 void CMaterial::SetTexture(const std::string &identifier,prosper::Texture &texture)
 {
 	auto ptrProsperTex = texture.shared_from_this();
-	auto tex = std::make_shared<Texture>(ptrProsperTex);
+	auto tex = std::make_shared<Texture>(GetContext(),ptrProsperTex);
 	SetTexture(identifier,tex.get());
 }
 
-void CMaterial::InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::shared_ptr<CallbackInfo> &info,bool bLoadInstantly)
+void CMaterial::InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::shared_ptr<CallbackInfo> &info,TextureLoadFlags loadFlags)
 {
 	InitializeSampler();
+	ClearDescriptorSets();
 	const auto &typeTexture = typeid(ds::Texture);
 	auto *values = data->GetData();
 	for(auto &it : *values)
@@ -257,7 +264,7 @@ void CMaterial::InitializeTextures(const std::shared_ptr<ds::Block> &data,const 
 		{
 			auto &type = typeid(*value);
 			if(type == typeTexture)
-				LoadTexture(data,std::static_pointer_cast<ds::Texture>(value),bLoadInstantly ? TextureLoadFlags::LoadInstantly : TextureLoadFlags::None,info);
+				LoadTexture(data,std::static_pointer_cast<ds::Texture>(value),loadFlags,info);
 			else
 				continue;
 			++info->count;
@@ -265,7 +272,7 @@ void CMaterial::InitializeTextures(const std::shared_ptr<ds::Block> &data,const 
 		else
 		{
 			auto dataBlock = std::static_pointer_cast<ds::Block>(value);
-			InitializeTextures(dataBlock,info,bLoadInstantly);
+			InitializeTextures(dataBlock,info,loadFlags);
 		}
 	}
 }
@@ -287,10 +294,10 @@ std::shared_ptr<CMaterial::CallbackInfo> CMaterial::InitializeCallbackInfo(const
 	return m_callbackInfo;
 }
 
-void CMaterial::InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::function<void(void)> &onAllTexturesLoaded,const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded,bool bLoadInstantly)
+void CMaterial::InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::function<void(void)> &onAllTexturesLoaded,const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded,TextureLoadFlags loadFlags)
 {
 	auto callbackInfo = InitializeCallbackInfo(onAllTexturesLoaded,onTextureLoaded);
 	++callbackInfo->count; // Dummy, in case all textures are loaded immediately (In which case the final callback would be triggered multiple times.).
-	InitializeTextures(data,callbackInfo,bLoadInstantly);
+	InitializeTextures(data,callbackInfo,loadFlags);
 	callbackInfo->onload(nullptr); // Clear dummy
 }

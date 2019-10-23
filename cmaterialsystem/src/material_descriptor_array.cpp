@@ -188,8 +188,8 @@ std::optional<prosper::DescriptorArrayManager::ArrayIndex> MaterialDescriptorArr
 	auto it = m_texData.find(&tex);
 	if(it != m_texData.end())
 		return it->second.arrayIndex; // Texture is already in array?
-	auto index = DescriptorArrayManager::AddItem([&tex](Anvil::DescriptorSet &ds,ArrayIndex index,uint32_t bindingIndex) -> bool {
-		return prosper::util::set_descriptor_set_binding_array_texture(ds,*tex.texture,bindingIndex,index);
+	auto index = DescriptorArrayManager::AddItem([&tex](prosper::DescriptorSet &ds,ArrayIndex index,uint32_t bindingIndex) -> bool {
+		return prosper::util::set_descriptor_set_binding_array_texture(ds,*tex.GetVkTexture(),bindingIndex,index);
 	});
 	if(index.has_value() == false)
 		return {};

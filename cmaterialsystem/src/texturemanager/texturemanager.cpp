@@ -145,13 +145,13 @@ void TextureManager::SetTextureFileHandler(const std::function<VFilePtr(const st
 std::shared_ptr<Texture> TextureManager::CreateTexture(const std::string &name,prosper::Texture &texture)
 {
 	auto it = std::find_if(m_textures.begin(),m_textures.end(),[&name](std::shared_ptr<Texture> &tex) {
-		return (tex->name == name) ? true : false;
+		return (tex->GetName() == name) ? true : false;
 	});
 	if(it != m_textures.end())
 		return *it;
-	auto tex = std::make_shared<Texture>();
-	tex->texture = texture.shared_from_this();
-	tex->name = name;
+	auto tex = std::make_shared<Texture>(GetContext());
+	tex->SetVkTexture(texture.shared_from_this());
+	tex->SetName(name);
 	m_textures.push_back(tex);
 	return tex;
 }
@@ -192,7 +192,7 @@ std::shared_ptr<Texture> TextureManager::GetTexture(const std::string &name)
 	auto nameNoExt = name;
 	ufile::remove_extension_from_filename(nameNoExt);
 	auto it = std::find_if(m_textures.begin(),m_textures.end(),[&nameNoExt](const std::shared_ptr<Texture> &tex) {
-		auto texNoExt = tex->name;
+		auto texNoExt = tex->GetName();
 		ufile::remove_extension_from_filename(texNoExt);
 		return FileManager::ComparePath(nameNoExt,texNoExt);
 	});
@@ -213,13 +213,13 @@ void TextureManager::ReloadTexture(uint32_t texId,const LoadInfo &loadInfo)
 	if(texId >= m_textures.size())
 		return;
 	auto &texture = m_textures[texId];
-	if(texture->texture == nullptr)
+	if(texture->HasValidVkTexture() == false)
 		return;
-	auto &tex = texture->texture;
+	auto &tex = texture->GetVkTexture();
 	auto &context = tex->GetContext();
 	auto sampler = tex->GetSampler();
 	auto ptr = std::static_pointer_cast<void>(texture->shared_from_this());
-	Load(context,texture->name,loadInfo,&ptr);
+	Load(context,texture->GetName(),loadInfo,&ptr);
 	texture = std::static_pointer_cast<Texture>(ptr);
 }
 
@@ -235,7 +235,15 @@ void TextureManager::ReloadTexture(Texture &texture,const LoadInfo &loadInfo)
 
 void TextureManager::SetErrorTexture(const std::shared_ptr<Texture> &tex)
 {
+	if(m_error)
+	{
+		auto flags = m_error->GetFlags();
+		umath::set_flag(flags,Texture::Flags::Error,false);
+		m_error->SetFlags(flags);
+	}
 	m_error = tex;
+	if(tex)
+		tex->AddFlags(Texture::Flags::Error);
 }
 
 void TextureManager::Clear()
@@ -300,7 +308,7 @@ std::shared_ptr<Texture> TextureManager::FindTexture(const std::string &imgFile,
 	}
 	*cache = pathCache;
 	const auto find = [&pathCache](decltype(m_textures.front()) &tex) {
-		return (tex->name == pathCache) ? true : false;
+		return (tex->GetName() == pathCache) ? true : false;
 	};
 	auto itTex = std::find_if(m_textures.begin(),m_textures.end(),find);
 	if(itTex != m_textures.end())

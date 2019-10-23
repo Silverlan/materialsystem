@@ -120,6 +120,9 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 	{
 		auto *mat = info.material;
 		auto shaderHandler = m_shaderHandler;
+		auto texLoadFlags = TextureLoadFlags::None;
+		umath::set_flag(texLoadFlags,TextureLoadFlags::LoadInstantly,bLoadInstantly);
+		umath::set_flag(texLoadFlags,TextureLoadFlags::Reload,bReload);
 		static_cast<CMaterial*>(info.material)->InitializeTextures(info.material->GetDataBlock(),[shaderHandler,onMaterialLoaded,mat]() {
 			mat->SetLoaded(true);
 			if(onMaterialLoaded != nullptr)
@@ -129,7 +132,7 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 		},[onTextureLoaded](std::shared_ptr<Texture> texture) {
 			if(onTextureLoaded != nullptr)
 				onTextureLoaded(texture);
-		},bLoadInstantly);
+		},texLoadFlags);
 	}
 	else if(bCopied == true) // Material has been copied; Callbacks will have to be called anyway (To make sure descriptor set is initialized properly!)
 	{

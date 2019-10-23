@@ -52,7 +52,8 @@ public:
 	virtual void SetLoaded(bool b) override;
 protected:
 	void LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &texInfo,TextureLoadFlags flags=TextureLoadFlags::None,const std::shared_ptr<CallbackInfo> &callbackInfo=nullptr);
-	void InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::function<void(void)> &onAllTexturesLoaded=nullptr,const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded=nullptr,bool bLoadInstantly=false);
+	void ClearDescriptorSets();
+	void InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::function<void(void)> &onAllTexturesLoaded=nullptr,const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded=nullptr,TextureLoadFlags loadFlags=TextureLoadFlags::None);
 	friend CMaterialManager;
 	TextureManager &GetTextureManager();
 private:
@@ -79,7 +80,7 @@ private:
 	prosper::Context &GetContext();
 	void LoadTexture(const std::shared_ptr<ds::Block> &data,const std::shared_ptr<ds::Texture> &texture,TextureLoadFlags flags=TextureLoadFlags::None,const std::shared_ptr<CallbackInfo> &callbackInfo=nullptr);
 	void InitializeSampler();
-	void InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::shared_ptr<CallbackInfo> &info,bool bLoadInstantly);
+	void InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::shared_ptr<CallbackInfo> &info,TextureLoadFlags loadFlags);
 };
 #pragma warning(pop)
 

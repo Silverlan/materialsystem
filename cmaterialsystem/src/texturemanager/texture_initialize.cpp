@@ -7,6 +7,7 @@
 #include "textureinfo.h"
 #include "texturemanager/texture.h"
 #include <prosper_context.hpp>
+#include <sharedutils/util_image_buffer.hpp>
 #include <image/prosper_texture.hpp>
 #include <prosper_util.hpp>
 #include <prosper_command_buffer.hpp>
@@ -28,8 +29,8 @@ static void change_image_transfer_dst_layout_to_shader_read(Anvil::CommandBuffer
 struct ImageFormatLoader
 {
 	void *userData = nullptr;
-	void(*get_image_info)(void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,Anvil::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,std::optional<Anvil::Format> &outConversionFormat) = nullptr;
-	const void*(*get_image_data)(void *userData,const TextureQueueItem &item,uint32_t layer,uint32_t mipmapIdx,uint32_t &outDataSize) = nullptr;
+	std::function<void(void*,const TextureQueueItem&,uint32_t&,uint32_t&,Anvil::Format&,bool&,uint32_t&,uint32_t&,std::optional<Anvil::Format>&)> get_image_info = nullptr;
+	std::function<const void*(void*,const TextureQueueItem&,uint32_t,uint32_t,uint32_t&)> get_image_data = nullptr;
 };
 
 static void initialize_image(TextureQueueItem &item,const Texture &texture,const ImageFormatLoader &imgLoader,std::shared_ptr<prosper::Image> &outImage)
@@ -45,17 +46,19 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 	uint32_t numMipMaps = 1u;
 	imgLoader.get_image_info(imgLoader.userData,item,width,height,format,item.cubemap,numLayers,numMipMaps,conversionFormat);
 
+	// In some cases the format may not be supported by the GPU altogether. We may still be able to convert it to a compatible format by hand.
+	std::function<void(const void*,std::shared_ptr<util::ImageBuffer>&,uint32_t,uint32_t)> manualConverter = nullptr;
 	const auto usage = Anvil::ImageUsageFlagBits::TRANSFER_SRC_BIT | Anvil::ImageUsageFlagBits::TRANSFER_DST_BIT | Anvil::ImageUsageFlagBits::SAMPLED_BIT;
-	if(conversionFormat.has_value())
+	if(format == Anvil::Format::B8G8R8_UNORM && context.IsImageFormatSupported(format,usage,Anvil::ImageType::_2D,Anvil::ImageTiling::OPTIMAL) == false)
 	{
-		auto isFormatManuallySupported = (format == Anvil::Format::B8G8R8_UNORM);
-		if(
-			(isFormatManuallySupported == false && context.IsImageFormatSupported(format,usage,Anvil::ImageType::_2D,Anvil::ImageTiling::LINEAR) == false) ||
-			context.IsImageFormatSupported(*conversionFormat,usage) == false
-		)
-			return;
+		manualConverter = [](const void *imgData,std::shared_ptr<util::ImageBuffer> &outImg,uint32_t width,uint32_t height) {
+			outImg = util::ImageBuffer::Create(imgData,width,height,util::ImageBuffer::Format::RGB8);
+			outImg->Convert(util::ImageBuffer::Format::RGBA8);
+		};
+		format = Anvil::Format::B8G8R8A8_UNORM;
+		conversionFormat = {};
 	}
-	else if(context.IsImageFormatSupported(format,usage) == false)
+	if(context.IsImageFormatSupported(format,usage) == false || (conversionFormat.has_value() && context.IsImageFormatSupported(*conversionFormat,usage) == false))
 		return;
 
 	auto numMipMapsLoad = numMipMaps;
@@ -69,22 +72,22 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 	prosper::util::ImageCreateInfo createInfo {};
 	createInfo.width = width;
 	createInfo.height = height;
-	createInfo.format = texture.internalFormat;
+	createInfo.format = format;
 	if(numMipMaps > 1u)
 		createInfo.flags |= prosper::util::ImageCreateInfo::Flags::FullMipmapChain;
 	createInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::DeviceLocal;
-	createInfo.tiling = conversionFormat.has_value() ? Anvil::ImageTiling::LINEAR : Anvil::ImageTiling::OPTIMAL;
+	createInfo.tiling = Anvil::ImageTiling::OPTIMAL;
 	createInfo.usage = usage;
 	createInfo.layers = (bCubemap == true) ? 6 : 1;
 	createInfo.postCreateLayout = Anvil::ImageLayout::TRANSFER_DST_OPTIMAL;
 	if(bCubemap == true)
 		createInfo.flags |= prosper::util::ImageCreateInfo::Flags::Cubemap;
 	outImage = prosper::util::create_image(dev,createInfo);
+	if(outImage == nullptr)
+		return;
 	outImage->SetDebugName("texture_asset_img");
 
-	// Note: We need to use staging buffers instead of images, because compressed image data does not work well with
-	// the staging image method.
-
+	// Initialize image data as buffers, then copy to output image
 	std::vector<std::shared_ptr<prosper::Buffer>> buffers {};
 	buffers.reserve(numLayers *numMipMapsLoad);
 	auto &setupCmd = context.GetSetupCommandBuffer();
@@ -95,32 +98,21 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 			uint32_t dataSize;
 			auto *data = imgLoader.get_image_data(imgLoader.userData,item,iLayer,iMipmap,dataSize);
 
-			// Note: Some formats are very uncommonly supported, even in linear format.
-			// These should generally be avoided, but some exceptions are handled here by
-			// being converted manually.
-			std::vector<uint8_t> tmpData {};
-			if(format == Anvil::Format::B8G8R8_UNORM)
-			{
-				using PixelData = std::array<uint8_t,4>;
-				tmpData.resize(width *height *sizeof(PixelData));
-				for(uint32_t px=0u;px<(width *height);++px)
-				{
-					auto &srcColor = static_cast<const std::array<uint8_t,3>*>(data)[px];
-					auto &dstColor = reinterpret_cast<PixelData*>(tmpData.data())[px];
-					dstColor = {srcColor.at(0),srcColor.at(1),srcColor.at(2),std::numeric_limits<uint8_t>::max()};
-				}
-				data = tmpData.data();
-				dataSize = tmpData.size() *sizeof(tmpData.front());
-			}
 			if(data == nullptr)
 				continue;
 
+			std::shared_ptr<util::ImageBuffer> imgBuffer = nullptr;
+			if(manualConverter)
+			{
+				uint32_t wMipmap,hMipmap;
+				prosper::util::calculate_mipmap_size(width,height,&wMipmap,&hMipmap,iMipmap);
+				manualConverter(data,imgBuffer,wMipmap,hMipmap);
+				data = imgBuffer->GetData();
+				dataSize = imgBuffer->GetSize();
+			}
+
 			// Initialize buffer with source image data
-			prosper::util::BufferCreateInfo createInfo {};
-			createInfo.usageFlags = Anvil::BufferUsageFlagBits::TRANSFER_SRC_BIT;
-			createInfo.size = dataSize;
-			createInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::CPUToGPU;
-			auto buf = prosper::util::create_buffer(dev,createInfo,data);
+			auto buf = context.AllocateTemporaryBuffer(dataSize,data);
 			buffers.push_back(buf); // We need to keep the buffers alive until the copy has completed
 			
 			// Copy buffer contents to output image
@@ -235,7 +227,6 @@ static VulkanImageData vtf_format_to_vulkan_format(VTFImageFormat format)
 
 #endif
 
-#include <iostream>
 void TextureManager::InitializeImage(TextureQueueItem &item)
 {
 	item.initialized = true;
@@ -244,16 +235,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 	if(item.valid == false)
 	{
 		auto texError = GetErrorTexture();
-		if(texError != nullptr)
-		{
-			texture->texture = texError->texture;
-			texture->width = texError->width;
-			texture->height = texError->height;
-			if(texError->texture != nullptr)
-				texture->internalFormat = texError->texture->GetImage()->GetFormat();
-		}
-		else
-			texture->texture = nullptr;
+		texture->SetVkTexture(texError ? texError->GetVkTexture() : nullptr);
 	}
 	else
 	{
@@ -263,10 +245,6 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 		if(surface != nullptr)
 		{
 			auto &img = surface->texture;
-			auto extent = img->extent();
-			texture->width = extent.x;
-			texture->height = extent.y;
-			texture->internalFormat = static_cast<Anvil::Format>(img->format());
 			// In theory the input image should have a srgb flag if it's srgb, but in practice that's almost never the case,
 			// so we just assume the image is srgb by default.
 			// if(gli::is_srgb(img->format()))
@@ -301,10 +279,6 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 			auto *png = dynamic_cast<TextureQueueItemPNG*>(&item);
 			if(png != nullptr && png->pnginfo->GetChannelCount() == 4)
 			{
-				auto &pngInfo = *png->pnginfo;
-				texture->width = pngInfo.GetWidth();
-				texture->height = pngInfo.GetHeight();
-				texture->internalFormat = prosper::util::get_vk_format(pngInfo.GetType());
 				texture->SetFlags(Texture::Flags::SRGB);
 
 				ImageFormatLoader pngLoader {};
@@ -332,14 +306,15 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 			else
 			{
 				auto *tga = dynamic_cast<TextureQueueItemTGA*>(&item);
-				if(tga != nullptr && tga->tgainfo->GetChannelCount() == 4)
+				if(tga != nullptr && (tga->tgainfo->GetChannelCount() == 3 || tga->tgainfo->GetChannelCount() == 4))
 				{
 					static constexpr auto TGA_VK_FORMAT = Anvil::Format::R8G8B8A8_UNORM;
-					auto &tgaInfo = *tga->tgainfo;
-					texture->width = tgaInfo.GetWidth();
-					texture->height = tgaInfo.GetHeight();
-					texture->internalFormat = TGA_VK_FORMAT;
 					texture->SetFlags(Texture::Flags::SRGB);
+
+					auto &tgaInfo = *tga->tgainfo;
+					auto imgBuffer = util::ImageBuffer::Create(tgaInfo.GetData().data(),tgaInfo.GetWidth(),tgaInfo.GetHeight(),(tga->tgainfo->GetChannelCount() == 3) ? util::ImageBuffer::Format::RGB8 : util::ImageBuffer::Format::RGBA8);
+					imgBuffer->Convert(util::ImageBuffer::Format::RGBA8);
+					imgBuffer->FlipVertically();
 
 					ImageFormatLoader tgaLoader {};
 					tgaLoader.userData = static_cast<uimg::Image*>(tga->tgainfo.get());
@@ -355,11 +330,11 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 						outLayerCount = 1;
 						outMipmapCount = 1;
 					};
-					tgaLoader.get_image_data = [](void *userData,const TextureQueueItem &item,uint32_t layer,uint32_t mipmapIdx,uint32_t &outDataSize) -> const void* {
+
+					tgaLoader.get_image_data = [imgBuffer](void *userData,const TextureQueueItem &item,uint32_t layer,uint32_t mipmapIdx,uint32_t &outDataSize) -> const void* {
 						auto &tga = *static_cast<uimg::Image*>(userData);
-						auto &data = tga.GetData();
-						outDataSize = data.size() *sizeof(data.front());
-						return data.data();
+						outDataSize = imgBuffer->GetSize();
+						return imgBuffer->GetData();
 					};
 					initialize_image(item,*texture,tgaLoader,image);
 				}
@@ -369,18 +344,13 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 					auto *vtf = dynamic_cast<TextureQueueItemVTF*>(&item);
 					if(vtf != nullptr)
 					{
-						auto &vtfFile = vtf->texture;
-						texture->width = vtfFile->GetWidth();
-						texture->height = vtfFile->GetHeight();
-						auto vkImgData = vtf_format_to_vulkan_format(vtfFile->GetFormat());
-						texture->internalFormat = vkImgData.conversionFormat.has_value() ? *vkImgData.conversionFormat : vkImgData.format;
-						
 						//if(vtfFile->GetFlag(VTFImageFlag::TEXTUREFLAGS_SRGB))
 						// In theory the input image should have a srgb flag if it's srgb, but in practice that's almost never the case,
 						// so we just assume the image is srgb by default.
 						texture->SetFlags(Texture::Flags::SRGB);
 						// swizzle = vkImgData.swizzle;
 
+						auto &vtfFile = vtf->texture;
 						ImageFormatLoader vtfLoader {};
 						vtfLoader.userData = static_cast<VTFLib::CVTFFile*>(vtfFile.get());
 						vtfLoader.get_image_info = [](
@@ -395,7 +365,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 							outConversionFormat = vkFormat.conversionFormat;
 							outCubemap = vtfFile.GetFaceCount() == 6;
 							outLayerCount = outCubemap ? 6 : 1;
-							outMipmapCount = vtfFile.GetMipmapCount() +1u; // The VTF library does not count the main image as a mipmap, but we do!
+							outMipmapCount = vtfFile.GetMipmapCount();
 							if(vtfFile.GetFlag(VTFImageFlag::TEXTUREFLAGS_NOMIP))
 								outMipmapCount = 1u;
 						};
@@ -422,7 +392,9 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 			imgViewCreateInfo.swizzleBlue = swizzle.at(2);
 			imgViewCreateInfo.swizzleAlpha = swizzle.at(3);
 			createInfo.flags |= prosper::util::TextureCreateInfo::Flags::CreateImageViewForEachLayer;
-			texture->texture = prosper::util::create_texture(dev,createInfo,std::move(image),&imgViewCreateInfo);
+			auto vkTex = prosper::util::create_texture(dev,createInfo,std::move(image),&imgViewCreateInfo);
+			vkTex->SetDebugName(item.name);
+			texture->SetVkTexture(vkTex);
 
 			texture->SetFlags(texture->GetFlags() & ~Texture::Flags::Error);
 		}
