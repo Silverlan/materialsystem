@@ -454,6 +454,30 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 					root->AddData("surfacematerial",std::make_shared<ds::String>(*dataSettings,surfaceMaterial));
 				}
 			}
+			if((node = vmtRoot->GetNode("$compress")) != nullptr)
+			{
+				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+				{
+					auto *compressMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+					root->AddData(Material::WRINKLE_COMPRESS_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,compressMapNode->GetValue()));
+				}
+			}
+			if((node = vmtRoot->GetNode("$stretch")) != nullptr)
+			{
+				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+				{
+					auto *stretchMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+					root->AddData(Material::WRINKLE_STRETCH_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,stretchMapNode->GetValue()));
+				}
+			}
+			if((node = vmtRoot->GetNode("$phongexponenttexture")) != nullptr)
+			{
+				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+				{
+					auto *phongExponentTexture = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+					root->AddData(Material::EXPONENT_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,phongExponentTexture->GetValue()));
+				}
+			}
 			info.shader = shaderName;
 			info.root = root;
 			return true;

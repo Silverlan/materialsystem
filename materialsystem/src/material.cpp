@@ -23,6 +23,9 @@ decltype(Material::METALNESS_MAP_IDENTIFIER) Material::METALNESS_MAP_IDENTIFIER 
 decltype(Material::ROUGHNESS_MAP_IDENTIFIER) Material::ROUGHNESS_MAP_IDENTIFIER = "roughness_map";
 decltype(Material::DUDV_MAP_IDENTIFIER) Material::DUDV_MAP_IDENTIFIER = "dudv_map";
 decltype(Material::DIFFUSE_MAP2_IDENTIFIER) Material::DIFFUSE_MAP2_IDENTIFIER = "diffuse_map2";
+decltype(Material::WRINKLE_STRETCH_MAP_IDENTIFIER) Material::WRINKLE_STRETCH_MAP_IDENTIFIER = "wrinkle_stretch_map";
+decltype(Material::WRINKLE_COMPRESS_MAP_IDENTIFIER) Material::WRINKLE_COMPRESS_MAP_IDENTIFIER = "wrinkle_compress_map";
+decltype(Material::EXPONENT_MAP_IDENTIFIER) Material::EXPONENT_MAP_IDENTIFIER = "exponent_map";
 
 Material::Material(MaterialManager &manager)
 	: m_handle(new PtrMaterial(this)),m_data(nullptr),m_shader(nullptr),m_manager(manager)

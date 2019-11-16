@@ -264,10 +264,12 @@ void CMaterial::InitializeTextures(const std::shared_ptr<ds::Block> &data,const 
 		{
 			auto &type = typeid(*value);
 			if(type == typeTexture)
+			{
+				++info->count;
 				LoadTexture(data,std::static_pointer_cast<ds::Texture>(value),loadFlags,info);
+			}
 			else
 				continue;
-			++info->count;
 		}
 		else
 		{

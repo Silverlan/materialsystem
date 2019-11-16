@@ -39,6 +39,9 @@ public:
 	static const std::string ROUGHNESS_MAP_IDENTIFIER;
 	static const std::string DUDV_MAP_IDENTIFIER;
 	static const std::string DIFFUSE_MAP2_IDENTIFIER;
+	static const std::string WRINKLE_STRETCH_MAP_IDENTIFIER;
+	static const std::string WRINKLE_COMPRESS_MAP_IDENTIFIER;
+	static const std::string EXPONENT_MAP_IDENTIFIER;
 
 	enum class StateFlags : uint32_t
 	{
