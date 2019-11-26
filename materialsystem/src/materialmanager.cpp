@@ -13,6 +13,7 @@
 #include <VMTFile.h>
 #endif
 
+#pragma optimize("",off)
 static const std::unordered_map<std::string,std::string> ENUM_VARS = { // These have to correspond with their respective vulkan enum values!
 	{"SAMPLER_ADDRESS_MODE_REPEAT","0"},
 	{"SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT","1"},
@@ -217,6 +218,24 @@ std::string MaterialManager::ToMaterialIdentifier(const std::string &id) const
 	return identifier;
 }
 
+static std::array<float,3> get_vmt_matrix(VTFLib::Nodes::CVMTStringNode &node)
+{
+	std::string value = node.GetValue();
+	if(value.front() == '[')
+		value = value.substr(1);
+	if(value.back() == ']')
+		value = value.substr(0,value.length() -1);
+	std::vector<std::string> substrings {};
+	ustring::explode_whitespace(value,substrings);
+
+	std::array<float,3> data {
+		(substrings.size() > 0) ? util::to_float(substrings.at(0)) : 0.f,
+		(substrings.size() > 1) ? util::to_float(substrings.at(1)) : 0.f,
+		(substrings.size() > 2) ? util::to_float(substrings.at(2)) : 0.f,
+	};
+	return data;
+}
+#include <iostream>
 bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 {
 	std::string ext;
@@ -315,6 +334,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 				shaderName = "textured";
 
 			auto bHasGlowMap = false;
+			auto bHasGlow = false;
 			if((node = vmtRoot->GetNode("$selfillummask")) != nullptr)
 			{
 				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
@@ -322,6 +342,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 					auto *selfIllumMaskNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
 					root->AddData(Material::GLOW_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,selfIllumMaskNode->GetValue()));
 					bHasGlowMap = true;
+					bHasGlow = true;
 				}
 			}
 			auto hasDiffuseMap = false;
@@ -357,6 +378,20 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 						root->AddValue("int","glow_blend_diffuse_mode","1");
 						root->AddValue("float","glow_blend_diffuse_scale","6");
 						root->AddValue("bool","glow_alpha_only","1");
+						bHasGlow = true;
+					}
+				}
+			}
+			if(bHasGlow)
+			{
+				auto *nodeFresnel = vmtRoot->GetNode("$selfillumfresnelminmaxexp");
+				if(nodeFresnel->GetType() == VMTNodeType::NODE_TYPE_STRING)
+				{
+					auto values = get_vmt_matrix(*static_cast<VTFLib::Nodes::CVMTStringNode*>(nodeFresnel));
+					if(values.at(2) == 0.f) // TODO: Not entirely sure this is sensible
+					{
+						root->AddValue("int","glow_blend_diffuse_mode","4");
+						root->AddValue("float","glow_blend_diffuse_scale","1");
 					}
 				}
 			}
@@ -576,3 +611,4 @@ void MaterialManager::ClearUnused()
 			++it;
 	}
 }
+#pragma optimize("",on)
