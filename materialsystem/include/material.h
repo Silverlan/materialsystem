@@ -141,16 +141,16 @@ REGISTER_BASIC_ARITHMETIC_OPERATORS(Material::StateFlags)
 template<class TMaterial>
 	TMaterial *Material::Copy() const
 {
-	TMaterial *r = nullptr;
+	Material *r = nullptr;
 	if(!IsValid())
-		r = new TMaterial{GetManager()};
+		r = GetManager().CreateMaterial("pbr");
 	else if(m_shaderInfo.expired() == false)
-		r = new TMaterial{GetManager(),m_shaderInfo,std::shared_ptr<ds::Block>(m_data->Copy())};
+		r = GetManager().CreateMaterial(m_shaderInfo->GetIdentifier(),std::shared_ptr<ds::Block>(m_data->Copy()));
 	else
-		r = new TMaterial{GetManager(),*m_shader,std::shared_ptr<ds::Block>(m_data->Copy())};
+		r = GetManager().CreateMaterial(*m_shader,std::shared_ptr<ds::Block>(m_data->Copy()));
 	if(IsLoaded())
 		r->SetLoaded(true);
-	return r;
+	return static_cast<TMaterial*>(r);
 }
 
 

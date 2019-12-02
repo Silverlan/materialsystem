@@ -330,6 +330,8 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 				shaderName = "textured";
 				phongOverride = 1.f; // Hack
 			}
+			else if(shader == "unlitgeneric")
+				shaderName = "unlit";
 			else //if(shader == "LightmappedGeneric")
 				shaderName = "textured";
 
@@ -353,7 +355,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 				{
 					hasDiffuseMap = true;
 					auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData(Material::DIFFUSE_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
+					root->AddData(Material::ALBEDO_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
 				}
 			}
 			if(hasDiffuseMap == false && (node = vmtRoot->GetNode("$hdrbasetexture")) != nullptr)
@@ -362,7 +364,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 				{
 					hasDiffuseMap = true;
 					auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData(Material::DIFFUSE_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
+					root->AddData(Material::ALBEDO_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
 				}
 			}
 			if(hasDiffuseMap == false && (node = vmtRoot->GetNode("$basetexture")) != nullptr)
@@ -370,7 +372,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 				{
 					auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData(Material::DIFFUSE_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
+					root->AddData(Material::ALBEDO_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
 
 					if(bHasGlowMap == false && (node = vmtRoot->GetNode("$selfillum")) != nullptr)
 					{
@@ -385,7 +387,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 			if(bHasGlow)
 			{
 				auto *nodeFresnel = vmtRoot->GetNode("$selfillumfresnelminmaxexp");
-				if(nodeFresnel->GetType() == VMTNodeType::NODE_TYPE_STRING)
+				if(nodeFresnel && nodeFresnel->GetType() == VMTNodeType::NODE_TYPE_STRING)
 				{
 					auto values = get_vmt_matrix(*static_cast<VTFLib::Nodes::CVMTStringNode*>(nodeFresnel));
 					if(values.at(2) == 0.f) // TODO: Not entirely sure this is sensible

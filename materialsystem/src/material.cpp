@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "material.h"
+#include "materialmanager.h"
 #include <sharedutils/util_shaderinfo.hpp>
 #include <sstream>
 #include <fsys/filesystem.h>
