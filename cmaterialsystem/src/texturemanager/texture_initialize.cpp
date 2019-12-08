@@ -20,7 +20,6 @@
 
 #define FLUSH_INIT_CMD 1
 
-#pragma optimize("",off)
 static void change_image_transfer_dst_layout_to_shader_read(Anvil::CommandBufferBase &cmdBuffer,Anvil::Image &img)
 {
 	prosper::util::record_image_barrier(cmdBuffer,img,Anvil::ImageLayout::TRANSFER_DST_OPTIMAL,Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL);
@@ -412,4 +411,3 @@ void TextureManager::FinalizeTexture(TextureQueueItem &item)
 	texture->SetFlags(texture->GetFlags() | Texture::Flags::Loaded);
 	texture->RunOnLoadedCallbacks();
 }
-#pragma optimize("",on)

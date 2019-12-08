@@ -23,7 +23,6 @@
 
 decltype(TextureManager::MAX_TEXTURE_COUNT) TextureManager::MAX_TEXTURE_COUNT = 4096;
 
-#pragma optimize("",off)
 #ifdef ENABLE_VTF_SUPPORT
 static vlVoid vtf_read_close() {}
 static vlBool vtf_read_open() {return true;}
@@ -322,4 +321,3 @@ std::shared_ptr<Texture> TextureManager::FindTexture(const std::string &imgFile,
 	}
 	return nullptr;
 }
-#pragma optimize("",on)

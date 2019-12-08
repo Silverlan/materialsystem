@@ -6,7 +6,6 @@
 #include <fsys/filesystem.h>
 #include <sharedutils/util_file.h>
 
-#pragma optimize("",off)
 const std::vector<MaterialManager::ImageFormat> &MaterialManager::get_supported_image_formats()
 {
 	static std::vector<ImageFormat> s_supportedImageFormats = { // Order of preference
@@ -59,4 +58,3 @@ std::string translate_image_path(const std::string &imgFile,TextureType &type,st
 	}
 	return path;
 }
-#pragma optimize("",on)

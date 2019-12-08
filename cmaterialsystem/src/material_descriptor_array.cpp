@@ -11,7 +11,6 @@
 #include <prosper_util.hpp>
 #include <datasystem.h>
 
-#pragma optimize("",off)
 MaterialDescriptorArrayManager::~MaterialDescriptorArrayManager()
 {
 	for(auto &pair : m_texData)
@@ -210,4 +209,3 @@ void MaterialDescriptorArrayManager::RemoveItem(const Texture &tex)
 		texData.onRemoveCallback.Remove();
 	m_texData.erase(it);
 }
-#pragma optimize("",on)
