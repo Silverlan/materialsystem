@@ -217,6 +217,7 @@ std::string MaterialManager::ToMaterialIdentifier(const std::string &id) const
 	return identifier;
 }
 
+#ifdef ENABLE_VMT_SUPPORT
 static std::array<float,3> get_vmt_matrix(VTFLib::Nodes::CVMTStringNode &node)
 {
 	std::string value = node.GetValue();
@@ -234,7 +235,8 @@ static std::array<float,3> get_vmt_matrix(VTFLib::Nodes::CVMTStringNode &node)
 	};
 	return data;
 }
-#include <iostream>
+#endif
+
 bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 {
 	std::string ext;
