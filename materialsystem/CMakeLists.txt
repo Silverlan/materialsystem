@@ -67,22 +67,22 @@ add_include_dir(zlib)
 add_include_dir(vtflib_build)
 add_include_dir(lpng_build)
 
-set(CONFIG_ENABLE_VTF_SUPPORT "1" CACHE BOOL "Enable support for VMT/VTF files.")
+option(CONFIG_ENABLE_VTF_SUPPORT "Enable support for VMT/VTF files." ON)
 
 set(DEFINITIONS
 	MATSYS_DLL
 	GLM_FORCE_DEPTH_ZERO_TO_ONE
 )
 
-if(CONFIG_ENABLE_VTF_SUPPORT MATCHES 1)
+if(CONFIG_ENABLE_VTF_SUPPORT)
 	list(APPEND DEFINITIONS ENABLE_VMT_SUPPORT)
 endif()
 
 ##### CONFIGURATION #####
 
 set(LIB_TYPE SHARED)
-if(ENABLE_STATIC_LIBRARY_FLAG MATCHES 1)
-	set(CONFIG_STATIC_LIBRARY 0 CACHE BOOL "Build as static library?")
+if(ENABLE_STATIC_LIBRARY_FLAG)
+	option(CONFIG_STATIC_LIBRARY "Build as static library?" OFF)
 endif()
 if(DEFINED ${CONFIG_STATIC_LIBRARY} AND ${CONFIG_STATIC_LIBRARY})
 	set(LIB_TYPE STATIC)
