@@ -46,6 +46,7 @@ Material *CMaterialManager::CreateMaterial(const std::string *identifier,const s
 	}
 	auto *mat = CreateMaterial<CMaterial>(shaderManager.PreRegisterShader(shader),root); // Claims ownership of 'root' and frees the memory at destruction
 	mat->SetLoaded(true);
+	mat->SetName(matId);
 	m_materials.insert(decltype(m_materials)::value_type{ToMaterialIdentifier(matId),mat->GetHandle()});
 	return mat;
 }
