@@ -60,5 +60,5 @@ std::string translate_image_path(const std::string &imgFile,TextureType &type,st
 }
 std::string translate_image_path(const std::string &imgFile,TextureType &type)
 {
-	return translate_image_path(imgFile,type,MaterialManager::GetRootMaterialLocation());
+	return translate_image_path(imgFile,type,MaterialManager::GetRootMaterialLocation() +'/');
 }
