@@ -87,8 +87,16 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 	outImage->SetDebugName("texture_asset_img");
 
 	// Initialize image data as buffers, then copy to output image
-	std::vector<std::shared_ptr<prosper::Buffer>> buffers {};
+	struct BufferInfo
+	{
+		std::shared_ptr<prosper::Buffer> buffer = nullptr;
+		uint32_t layerIndex = 0u;
+		uint32_t mipmapIndex = 0u;
+	};
+	std::vector<BufferInfo> buffers {};
 	buffers.reserve(numLayers *numMipMapsLoad);
+	std::vector<std::shared_ptr<util::ImageBuffer>> imgBuffers {};
+	imgBuffers.reserve(numLayers *numMipMapsLoad);
 	auto &setupCmd = context.GetSetupCommandBuffer();
 	for(auto iLayer=decltype(numLayers){0u};iLayer<numLayers;++iLayer)
 	{
@@ -100,34 +108,45 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 			if(data == nullptr)
 				continue;
 
-			std::shared_ptr<util::ImageBuffer> imgBuffer = nullptr;
 			if(manualConverter)
 			{
 				uint32_t wMipmap,hMipmap;
 				prosper::util::calculate_mipmap_size(width,height,&wMipmap,&hMipmap,iMipmap);
+				std::shared_ptr<util::ImageBuffer> imgBuffer = nullptr;
 				manualConverter(data,imgBuffer,wMipmap,hMipmap);
 				data = imgBuffer->GetData();
 				dataSize = imgBuffer->GetSize();
+
+				imgBuffers.push_back(imgBuffer);
 			}
 
 			// Initialize buffer with source image data
 			auto buf = context.AllocateTemporaryBuffer(dataSize,data);
-			buffers.push_back(buf); // We need to keep the buffers alive until the copy has completed
-			
-			// Copy buffer contents to output image
-			auto extent = (*outImage)->get_image_extent_2D(iMipmap);
-			prosper::util::BufferImageCopyInfo copyInfo {};
-			copyInfo.mipLevel = iMipmap;
-			copyInfo.baseArrayLayer = iLayer;
-			copyInfo.width = extent.width;
-			copyInfo.height = extent.height;
-			prosper::util::record_copy_buffer_to_image(setupCmd->GetAnvilCommandBuffer(),copyInfo,*buf,outImage->GetAnvilImage());
+			buffers.push_back({buf,iLayer,iMipmap}); // We need to keep the buffers alive until the copy has completed
 		}
+	}
+
+	// Note: We need a separate loop here, because the underlying VkBuffer of 'AllocateTemporaryBuffer' may get invalidated if the function
+	// is called multiple times.
+	for(auto &bufInfo : buffers)
+	{
+		// Copy buffer contents to output image
+		auto extent = (*outImage)->get_image_extent_2D(bufInfo.mipmapIndex);
+		prosper::util::BufferImageCopyInfo copyInfo {};
+		copyInfo.mipLevel = bufInfo.mipmapIndex;
+		copyInfo.baseArrayLayer = bufInfo.layerIndex;
+		copyInfo.width = extent.width;
+		copyInfo.height = extent.height;
+		prosper::util::record_copy_buffer_to_image(setupCmd->GetAnvilCommandBuffer(),copyInfo,*bufInfo.buffer,outImage->GetAnvilImage());
 	}
 
 	if(bGenerateMipmaps == false)
 		change_image_transfer_dst_layout_to_shader_read(setupCmd->GetAnvilCommandBuffer(),outImage->GetAnvilImage());
 	context.FlushSetupCommandBuffer(); // Make sure image copy is complete before generating mipmaps
+
+	// Don't need these anymore
+	buffers.clear();
+	imgBuffers.clear();
 
 	if(conversionFormat.has_value())
 	{

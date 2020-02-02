@@ -75,7 +75,7 @@ bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,c
 	}
 	TextureType type;
 	auto bLoadInstantly = (loadInfo.flags &TextureLoadFlags::LoadInstantly) != TextureLoadFlags::None;
-	auto path = translate_image_path(imgFile,type,(bAbsolutePath == false) ? "materials/" : "");
+	auto path = translate_image_path(imgFile,type,(bAbsolutePath == false) ? (MaterialManager::GetRootMaterialLocation() +"/") : "");
 	//if(bReload == true)
 	//	bLoadInstantly = true;
 	if(bLoadInstantly == false && m_threadLoad == nullptr)

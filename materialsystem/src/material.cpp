@@ -147,7 +147,7 @@ bool Material::Save(const std::string &fileName,const std::string &inRootPath) c
 	auto rootPath = inRootPath;
 	if(rootPath.empty() == false && rootPath.back() != '/' && rootPath.back() != '\\')
 		rootPath += '/';
-	auto fullPath = rootPath +"materials/" +fileName;
+	auto fullPath = rootPath +MaterialManager::GetRootMaterialLocation() +"/" +fileName;
 	ufile::remove_extension_from_filename(fullPath);
 	fullPath += ".wmi";
 

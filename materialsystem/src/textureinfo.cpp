@@ -13,7 +13,8 @@ static bool read_image_size(std::string &imgFile,uint32_t &width,uint32_t &heigh
 	TextureType type;
 	imgFile = translate_image_path(imgFile,type);
 	auto r = uimg::read_image_size(imgFile,width,height);
-	imgFile = imgFile.substr(strlen("materials/"));
+	auto rootPath = MaterialManager::GetRootMaterialLocation() +"/";
+	imgFile = imgFile.substr(rootPath.length());
 	return r;
 }
 

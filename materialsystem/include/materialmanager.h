@@ -63,6 +63,8 @@ public:
 	void ClearUnused();
 
 	static const std::vector<ImageFormat> &get_supported_image_formats();
+	static void SetRootMaterialLocation(const std::string &location);
+	static const std::string &GetRootMaterialLocation();
 };
 #pragma warning(pop)
 

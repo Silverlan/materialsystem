@@ -139,6 +139,13 @@ MaterialManager::~MaterialManager()
 	Clear();
 }
 
+static std::string g_materialLocation = "materials";
+void MaterialManager::SetRootMaterialLocation(const std::string &location)
+{
+	g_materialLocation = location;
+}
+const std::string &MaterialManager::GetRootMaterialLocation() {return g_materialLocation;}
+
 Material *MaterialManager::CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &root) {return CreateMaterial(nullptr,shader,root);}
 Material *MaterialManager::CreateMaterial(const std::string &identifier,const std::string &shader,const std::shared_ptr<ds::Block> &root) {return CreateMaterial(&identifier,shader,root);}
 Material *MaterialManager::CreateMaterial(const std::string *identifier,const std::string &shader,std::shared_ptr<ds::Block> root)
@@ -173,7 +180,7 @@ std::string MaterialManager::PathToIdentifier(const std::string &path,std::strin
 		hadExtension = false;
 		*ext = "wmi";
 #ifdef ENABLE_VMT_SUPPORT
-		if(!FileManager::Exists("materials\\" +matPath +'.' +*ext))
+		if(!FileManager::Exists(g_materialLocation +"\\" +matPath +'.' +*ext))
 			*ext = "vmt";
 #endif
 		matPath += '.' +*ext;
@@ -258,7 +265,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 				return true;
 		}
 	}
-	std::string absPath = "materials\\";
+	std::string absPath = g_materialLocation +"\\";
 	absPath += path;
 	if(bHadExtension == false)
 		absPath += '.' +ext;
@@ -378,8 +385,8 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 					if(bHasGlowMap == false && (node = vmtRoot->GetNode("$selfillum")) != nullptr)
 					{
 						root->AddData(Material::GLOW_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
-						root->AddValue("int","glow_blend_diffuse_mode","1");
-						root->AddValue("float","glow_blend_diffuse_scale","6");
+						root->AddValue("int","glow_blend_diffuse_mode","3");
+						root->AddValue("float","glow_blend_diffuse_scale","1");
 						root->AddValue("bool","glow_alpha_only","1");
 						bHasGlow = true;
 					}
