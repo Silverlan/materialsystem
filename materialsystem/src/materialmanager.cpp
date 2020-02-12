@@ -11,8 +11,10 @@
 #include <array>
 #ifdef ENABLE_VMT_SUPPORT
 #include <VMTFile.h>
+#include "util_vmt.hpp"
 #endif
 
+#pragma optimize("",off)
 static const std::unordered_map<std::string,std::string> ENUM_VARS = { // These have to correspond with their respective vulkan enum values!
 	{"SAMPLER_ADDRESS_MODE_REPEAT","0"},
 	{"SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT","1"},
@@ -34,36 +36,6 @@ static const std::unordered_map<std::string,std::string> ENUM_VARS = { // These 
 };
 
 #ifdef ENABLE_VMT_SUPPORT
-template<class TData,typename TInternal>
-	static void get_vmt_data(const std::shared_ptr<ds::Block> &root,ds::Settings &dataSettings,const std::string &key,VTFLib::Nodes::CVMTNode *node,const std::function<TInternal(TInternal)> &translate=nullptr)
-{
-	auto type = node->GetType();
-	if(type == VMTNodeType::NODE_TYPE_SINGLE)
-	{
-		auto *singleNode = static_cast<VTFLib::Nodes::CVMTSingleNode*>(node);
-		auto v = singleNode->GetValue();
-		if(translate != nullptr)
-			v = translate(v);
-		root->AddData(key,std::make_shared<TData>(dataSettings,std::to_string(v)));
-	}
-	else if(type == VMTNodeType::NODE_TYPE_INTEGER)
-	{
-		auto *integerNode = static_cast<VTFLib::Nodes::CVMTIntegerNode*>(node);
-		auto v = static_cast<float>(integerNode->GetValue());
-		if(translate != nullptr)
-			v = translate(v);
-		root->AddData(key,std::make_shared<TData>(dataSettings,std::to_string(v)));
-	}
-	else if(type == VMTNodeType::NODE_TYPE_STRING)
-	{
-		auto *stringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-		auto v = util::to_float(stringNode->GetValue());
-		if(translate != nullptr)
-			v = translate(v);
-		root->AddData(key,std::make_shared<TData>(dataSettings,std::to_string(v)));
-	}
-}
-
 // Find highest dx node version and merge its values with the specified node
 static void merge_dx_node_values(VTFLib::Nodes::CVMTGroupNode &node)
 {
@@ -242,6 +214,244 @@ static std::array<float,3> get_vmt_matrix(VTFLib::Nodes::CVMTStringNode &node)
 	};
 	return data;
 }
+
+bool MaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader) {return true;}
+
+bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
+{
+	auto *vmtRoot = vmt.GetRoot();
+	std::string shader = vmtRoot->GetName();
+	ustring::to_lower(shader);
+
+	merge_dx_node_values(*vmtRoot);
+	auto phongOverride = std::numeric_limits<float>::quiet_NaN();
+	auto bWater = false;
+	std::string shaderName;
+	VTFLib::Nodes::CVMTNode *node = nullptr;
+	auto dataSettings = CreateDataSettings();
+	auto root = std::make_shared<ds::Block>(*dataSettings);
+	if(shader == "worldvertextransition")
+		shaderName = "texturedalphatransition";
+	else if(shader == "sprite")
+	{
+		shaderName = "particle";
+		root->AddValue("bool","black_to_alpha","1");
+	}
+	else if(shader == "water")
+	{
+		bWater = true;
+		shaderName = "water";
+		if((node = vmtRoot->GetNode("$bumpmap")) != nullptr)
+		{
+			if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+			{
+				auto *bumpMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+				root->AddData(Material::DUDV_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,bumpMapNode->GetValue()));
+			}
+		}
+		if((node = vmtRoot->GetNode("$normalmap")) != nullptr)
+		{
+			if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+			{
+				auto *normalMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+				root->AddData(Material::NORMAL_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,normalMapNode->GetValue()));
+			}
+		}
+	}
+	else if(shader == "teeth")
+	{
+		shaderName = "textured";
+		phongOverride = 1.f; // Hack
+	}
+	else if(shader == "unlitgeneric")
+		shaderName = "unlit";
+	else //if(shader == "LightmappedGeneric")
+		shaderName = "textured";
+
+	auto bHasGlowMap = false;
+	auto bHasGlow = false;
+	if((node = vmtRoot->GetNode("$selfillummask")) != nullptr)
+	{
+		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			auto *selfIllumMaskNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+			root->AddData(Material::GLOW_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,selfIllumMaskNode->GetValue()));
+			bHasGlowMap = true;
+			bHasGlow = true;
+		}
+	}
+	auto hasDiffuseMap = false;
+	// Prefer HDR textures over LDR
+	if((node = vmtRoot->GetNode("$hdrcompressedTexture")) != nullptr)
+	{
+		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			hasDiffuseMap = true;
+			auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+			root->AddData(Material::ALBEDO_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
+		}
+	}
+	if(hasDiffuseMap == false && (node = vmtRoot->GetNode("$hdrbasetexture")) != nullptr)
+	{
+		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			hasDiffuseMap = true;
+			auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+			root->AddData(Material::ALBEDO_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
+		}
+	}
+	if(hasDiffuseMap == false && (node = vmtRoot->GetNode("$basetexture")) != nullptr)
+	{
+		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+			root->AddData(Material::ALBEDO_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
+
+			if(bHasGlowMap == false && (node = vmtRoot->GetNode("$selfillum")) != nullptr)
+			{
+				root->AddData(Material::GLOW_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
+				root->AddValue("int","glow_blend_diffuse_mode","3");
+				root->AddValue("float","glow_blend_diffuse_scale","1");
+				root->AddValue("bool","glow_alpha_only","1");
+				bHasGlow = true;
+			}
+		}
+	}
+	if(bHasGlow)
+	{
+		auto *nodeFresnel = vmtRoot->GetNode("$selfillumfresnelminmaxexp");
+		if(nodeFresnel && nodeFresnel->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			auto values = get_vmt_matrix(*static_cast<VTFLib::Nodes::CVMTStringNode*>(nodeFresnel));
+			if(values.at(2) == 0.f) // TODO: Not entirely sure this is sensible
+			{
+				root->AddValue("int","glow_blend_diffuse_mode","4");
+				root->AddValue("float","glow_blend_diffuse_scale","1");
+			}
+		}
+	}
+	if((node = vmtRoot->GetNode("$basetexture2")) != nullptr)
+	{
+		if(shaderName == "textured")
+			shaderName = "texturedalphatransition";
+		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			auto *baseTexture2StringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+			root->AddData(Material::DIFFUSE_MAP2_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTexture2StringNode->GetValue()));
+		}
+	}
+	if(bWater == false && (node = vmtRoot->GetNode("$bumpmap")) != nullptr)
+	{
+		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			auto *bumpMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+			root->AddData(Material::NORMAL_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,bumpMapNode->GetValue()));
+		}
+	}
+	if((node = vmtRoot->GetNode("$envmap")) != nullptr)
+	{
+		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			auto *envMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+			std::string val = envMapNode->GetValue();
+			auto lval = val;
+			ustring::to_lower(lval);
+			if(lval != "env_cubemap")
+				root->AddData(Material::SPECULAR_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,val));
+		}
+	}
+	if((node = vmtRoot->GetNode("$envmapmask")) != nullptr)
+	{
+		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			auto *specularMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+			root->AddData(Material::SPECULAR_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,specularMapNode->GetValue()));
+		}
+	}
+	if((node = vmtRoot->GetNode("$additive")) != nullptr)
+		get_vmt_data<ds::Bool,int32_t>(root,*dataSettings,"black_to_alpha",node);
+	if((node = vmtRoot->GetNode("$phong")) != nullptr)
+		get_vmt_data<ds::Bool,int32_t>(root,*dataSettings,"phong_normal_alpha",node);
+	if((node = vmtRoot->GetNode("$phongexponent")) != nullptr)
+	{
+		if(std::isnan(phongOverride))
+		{
+			get_vmt_data<ds::Float,float>(root,*dataSettings,"phong_intensity",node,[](float v) -> float {
+				return sqrtf(v);
+				});
+		}
+		else
+			root->AddData("phong_intensity",std::make_shared<ds::Float>(*dataSettings,std::to_string(phongOverride)));
+	}
+	if((node = vmtRoot->GetNode("$phongboost")) != nullptr)
+	{
+		get_vmt_data<ds::Float,float>(root,*dataSettings,"phong_shininess",node,[](float v) -> float {
+			return v *2.f;
+			});
+	}
+	if((node = vmtRoot->GetNode("$parallaxmap")) != nullptr)
+	{
+		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			auto *parallaxMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+			root->AddData(Material::PARALLAX_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,parallaxMapNode->GetValue()));
+		}
+	}
+	if((node = vmtRoot->GetNode("$parallaxmapscale")) != nullptr)
+	{
+		get_vmt_data<ds::Float,float>(root,*dataSettings,"parallax_height_scale",node,[](float v) -> float {
+			return v *0.025f;
+			});
+	}
+	if((node = vmtRoot->GetNode("$translucent")) != nullptr)
+		get_vmt_data<ds::Bool,int32_t>(root,*dataSettings,"translucent",node);
+	if((node = vmtRoot->GetNode("$alphatest")) != nullptr)
+		get_vmt_data<ds::Bool,int32_t>(root,*dataSettings,"translucent",node);
+	if((node = vmtRoot->GetNode("$surfaceprop")) != nullptr)
+	{
+		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			auto *surfacePropNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+			std::string surfaceProp = surfacePropNode->GetValue();
+			ustring::to_lower(surfaceProp);
+			std::string surfaceMaterial = "concrete";
+			std::unordered_map<std::string,std::string> translateMaterial = {
+#include "impl_surfacematerials.h"
+			};
+			auto it = translateMaterial.find(surfaceProp);
+			if(it != translateMaterial.end())
+				surfaceMaterial = it->second;
+			root->AddData("surfacematerial",std::make_shared<ds::String>(*dataSettings,surfaceMaterial));
+		}
+	}
+	if((node = vmtRoot->GetNode("$compress")) != nullptr)
+	{
+		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			auto *compressMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+			root->AddData(Material::WRINKLE_COMPRESS_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,compressMapNode->GetValue()));
+		}
+	}
+	if((node = vmtRoot->GetNode("$stretch")) != nullptr)
+	{
+		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			auto *stretchMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+			root->AddData(Material::WRINKLE_STRETCH_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,stretchMapNode->GetValue()));
+		}
+	}
+	if((node = vmtRoot->GetNode("$phongexponenttexture")) != nullptr)
+	{
+		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			auto *phongExponentTexture = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+			root->AddData(Material::EXPONENT_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,phongExponentTexture->GetValue()));
+		}
+	}
+	info.shader = shaderName;
+	info.root = root;
+	return InitializeVMTData(vmt,info,*root,*dataSettings,shader);
+}
 #endif
 
 bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
@@ -293,240 +503,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 			--sz;
 		VTFLib::CVMTFile vmt {};
 		if(vmt.Load(data.data(),static_cast<vlUInt>(sz)) == vlTrue)
-		{
-			auto *vmtRoot = vmt.GetRoot();
-			std::string shader = vmtRoot->GetName();
-			ustring::to_lower(shader);
-
-			merge_dx_node_values(*vmtRoot);
-			auto phongOverride = std::numeric_limits<float>::quiet_NaN();
-			auto bWater = false;
-			std::string shaderName;
-			VTFLib::Nodes::CVMTNode *node = nullptr;
-			auto dataSettings = CreateDataSettings();
-			auto root = std::make_shared<ds::Block>(*dataSettings);
-			if(shader == "worldvertextransition")
-				shaderName = "texturedalphatransition";
-			else if(shader == "sprite")
-			{
-				shaderName = "particle";
-				root->AddValue("bool","black_to_alpha","1");
-			}
-			else if(shader == "water")
-			{
-				bWater = true;
-				shaderName = "water";
-				if((node = vmtRoot->GetNode("$bumpmap")) != nullptr)
-				{
-					if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
-					{
-						auto *bumpMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-						root->AddData(Material::DUDV_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,bumpMapNode->GetValue()));
-					}
-				}
-				if((node = vmtRoot->GetNode("$normalmap")) != nullptr)
-				{
-					if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
-					{
-						auto *normalMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-						root->AddData(Material::NORMAL_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,normalMapNode->GetValue()));
-					}
-				}
-			}
-			else if(shader == "teeth")
-			{
-				shaderName = "textured";
-				phongOverride = 1.f; // Hack
-			}
-			else if(shader == "unlitgeneric")
-				shaderName = "unlit";
-			else //if(shader == "LightmappedGeneric")
-				shaderName = "textured";
-
-			auto bHasGlowMap = false;
-			auto bHasGlow = false;
-			if((node = vmtRoot->GetNode("$selfillummask")) != nullptr)
-			{
-				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
-				{
-					auto *selfIllumMaskNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData(Material::GLOW_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,selfIllumMaskNode->GetValue()));
-					bHasGlowMap = true;
-					bHasGlow = true;
-				}
-			}
-			auto hasDiffuseMap = false;
-			// Prefer HDR textures over LDR
-			if((node = vmtRoot->GetNode("$hdrcompressedTexture")) != nullptr)
-			{
-				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
-				{
-					hasDiffuseMap = true;
-					auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData(Material::ALBEDO_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
-				}
-			}
-			if(hasDiffuseMap == false && (node = vmtRoot->GetNode("$hdrbasetexture")) != nullptr)
-			{
-				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
-				{
-					hasDiffuseMap = true;
-					auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData(Material::ALBEDO_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
-				}
-			}
-			if(hasDiffuseMap == false && (node = vmtRoot->GetNode("$basetexture")) != nullptr)
-			{
-				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
-				{
-					auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData(Material::ALBEDO_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
-
-					if(bHasGlowMap == false && (node = vmtRoot->GetNode("$selfillum")) != nullptr)
-					{
-						root->AddData(Material::GLOW_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTextureStringNode->GetValue()));
-						root->AddValue("int","glow_blend_diffuse_mode","3");
-						root->AddValue("float","glow_blend_diffuse_scale","1");
-						root->AddValue("bool","glow_alpha_only","1");
-						bHasGlow = true;
-					}
-				}
-			}
-			if(bHasGlow)
-			{
-				auto *nodeFresnel = vmtRoot->GetNode("$selfillumfresnelminmaxexp");
-				if(nodeFresnel && nodeFresnel->GetType() == VMTNodeType::NODE_TYPE_STRING)
-				{
-					auto values = get_vmt_matrix(*static_cast<VTFLib::Nodes::CVMTStringNode*>(nodeFresnel));
-					if(values.at(2) == 0.f) // TODO: Not entirely sure this is sensible
-					{
-						root->AddValue("int","glow_blend_diffuse_mode","4");
-						root->AddValue("float","glow_blend_diffuse_scale","1");
-					}
-				}
-			}
-			if((node = vmtRoot->GetNode("$basetexture2")) != nullptr)
-			{
-				if(shaderName == "textured")
-					shaderName = "texturedalphatransition";
-				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
-				{
-					auto *baseTexture2StringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData(Material::DIFFUSE_MAP2_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTexture2StringNode->GetValue()));
-				}
-			}
-			if(bWater == false && (node = vmtRoot->GetNode("$bumpmap")) != nullptr)
-			{
-				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
-				{
-					auto *bumpMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData(Material::NORMAL_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,bumpMapNode->GetValue()));
-				}
-			}
-			if((node = vmtRoot->GetNode("$envmap")) != nullptr)
-			{
-				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
-				{
-					auto *envMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					std::string val = envMapNode->GetValue();
-					auto lval = val;
-					ustring::to_lower(lval);
-					if(lval != "env_cubemap")
-						root->AddData(Material::SPECULAR_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,val));
-				}
-			}
-			if((node = vmtRoot->GetNode("$envmapmask")) != nullptr)
-			{
-				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
-				{
-					auto *specularMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData(Material::SPECULAR_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,specularMapNode->GetValue()));
-				}
-			}
-			if((node = vmtRoot->GetNode("$additive")) != nullptr)
-				get_vmt_data<ds::Bool,int32_t>(root,*dataSettings,"black_to_alpha",node);
-			if((node = vmtRoot->GetNode("$phong")) != nullptr)
-				get_vmt_data<ds::Bool,int32_t>(root,*dataSettings,"phong_normal_alpha",node);
-			if((node = vmtRoot->GetNode("$phongexponent")) != nullptr)
-			{
-				if(std::isnan(phongOverride))
-				{
-					get_vmt_data<ds::Float,float>(root,*dataSettings,"phong_intensity",node,[](float v) -> float {
-						return sqrtf(v);
-					});
-				}
-				else
-					root->AddData("phong_intensity",std::make_shared<ds::Float>(*dataSettings,std::to_string(phongOverride)));
-			}
-			if((node = vmtRoot->GetNode("$phongboost")) != nullptr)
-			{
-				get_vmt_data<ds::Float,float>(root,*dataSettings,"phong_shininess",node,[](float v) -> float {
-					return v *2.f;
-				});
-			}
-			if((node = vmtRoot->GetNode("$parallaxmap")) != nullptr)
-			{
-				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
-				{
-					auto *parallaxMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData(Material::PARALLAX_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,parallaxMapNode->GetValue()));
-				}
-			}
-			if((node = vmtRoot->GetNode("$parallaxmapscale")) != nullptr)
-			{
-				get_vmt_data<ds::Float,float>(root,*dataSettings,"parallax_height_scale",node,[](float v) -> float {
-					return v *0.025f;
-				});
-			}
-			if((node = vmtRoot->GetNode("$translucent")) != nullptr)
-				get_vmt_data<ds::Bool,int32_t>(root,*dataSettings,"translucent",node);
-			if((node = vmtRoot->GetNode("$alphatest")) != nullptr)
-				get_vmt_data<ds::Bool,int32_t>(root,*dataSettings,"translucent",node);
-			if((node = vmtRoot->GetNode("$surfaceprop")) != nullptr)
-			{
-				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
-				{
-					auto *surfacePropNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					std::string surfaceProp = surfacePropNode->GetValue();
-					ustring::to_lower(surfaceProp);
-					std::string surfaceMaterial = "concrete";
-					std::unordered_map<std::string,std::string> translateMaterial = {
-						#include "impl_surfacematerials.h"
-					};
-					auto it = translateMaterial.find(surfaceProp);
-					if(it != translateMaterial.end())
-						surfaceMaterial = it->second;
-					root->AddData("surfacematerial",std::make_shared<ds::String>(*dataSettings,surfaceMaterial));
-				}
-			}
-			if((node = vmtRoot->GetNode("$compress")) != nullptr)
-			{
-				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
-				{
-					auto *compressMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData(Material::WRINKLE_COMPRESS_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,compressMapNode->GetValue()));
-				}
-			}
-			if((node = vmtRoot->GetNode("$stretch")) != nullptr)
-			{
-				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
-				{
-					auto *stretchMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData(Material::WRINKLE_STRETCH_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,stretchMapNode->GetValue()));
-				}
-			}
-			if((node = vmtRoot->GetNode("$phongexponenttexture")) != nullptr)
-			{
-				if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
-				{
-					auto *phongExponentTexture = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-					root->AddData(Material::EXPONENT_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,phongExponentTexture->GetValue()));
-				}
-			}
-			info.shader = shaderName;
-			info.root = root;
-			return true;
-		}
+			return LoadVMT(vmt,info);
 		return false;
 	}
 #endif
@@ -621,3 +598,4 @@ void MaterialManager::ClearUnused()
 			++it;
 	}
 }
+#pragma optimize("",on)

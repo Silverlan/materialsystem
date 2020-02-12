@@ -4,7 +4,7 @@
 
 #include "texturemanager/texturequeue.h"
 #include <sharedutils/functioncallback.h>
-#include <util_image.h>
+#include <util_image.hpp>
 #ifdef ENABLE_VTF_SUPPORT
 #include <VTFWrapper.h>
 #endif

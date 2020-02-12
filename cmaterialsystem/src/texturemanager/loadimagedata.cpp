@@ -7,7 +7,7 @@
 #include <fsys/filesystem.h>
 #include "texturemanager/texturequeue.h"
 #include "virtualfile.h"
-#include <util_image.h>
+#include <util_image.hpp>
 
 VFilePtr TextureManager::OpenTextureFile(const std::string &fpath)
 {

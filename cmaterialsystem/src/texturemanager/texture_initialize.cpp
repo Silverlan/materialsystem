@@ -7,16 +7,17 @@
 #include "textureinfo.h"
 #include "texturemanager/texture.h"
 #include <prosper_context.hpp>
-#include <sharedutils/util_image_buffer.hpp>
+#include <util_image_buffer.hpp>
 #include <image/prosper_texture.hpp>
 #include <prosper_util.hpp>
+#include <prosper_util_image_buffer.hpp>
 #include <prosper_command_buffer.hpp>
 #include <config.h>
 #include <wrappers/image.h>
 #include <wrappers/memory_block.h>
 #include <mathutil/glmutil.h>
 #include <gli/gli.hpp>
-#include <util_image.h>
+#include <util_image.hpp>
 
 #define FLUSH_INIT_CMD 1
 
@@ -46,13 +47,13 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 	imgLoader.get_image_info(imgLoader.userData,item,width,height,format,item.cubemap,numLayers,numMipMaps,conversionFormat);
 
 	// In some cases the format may not be supported by the GPU altogether. We may still be able to convert it to a compatible format by hand.
-	std::function<void(const void*,std::shared_ptr<util::ImageBuffer>&,uint32_t,uint32_t)> manualConverter = nullptr;
+	std::function<void(const void*,std::shared_ptr<uimg::ImageBuffer>&,uint32_t,uint32_t)> manualConverter = nullptr;
 	const auto usage = Anvil::ImageUsageFlagBits::TRANSFER_SRC_BIT | Anvil::ImageUsageFlagBits::TRANSFER_DST_BIT | Anvil::ImageUsageFlagBits::SAMPLED_BIT;
 	if(format == Anvil::Format::B8G8R8_UNORM && context.IsImageFormatSupported(format,usage,Anvil::ImageType::_2D,Anvil::ImageTiling::OPTIMAL) == false)
 	{
-		manualConverter = [](const void *imgData,std::shared_ptr<util::ImageBuffer> &outImg,uint32_t width,uint32_t height) {
-			outImg = util::ImageBuffer::Create(imgData,width,height,util::ImageBuffer::Format::RGB8);
-			outImg->Convert(util::ImageBuffer::Format::RGBA8);
+		manualConverter = [](const void *imgData,std::shared_ptr<uimg::ImageBuffer> &outImg,uint32_t width,uint32_t height) {
+			outImg = uimg::ImageBuffer::Create(imgData,width,height,uimg::ImageBuffer::Format::RGB8);
+			outImg->Convert(uimg::ImageBuffer::Format::RGBA8);
 		};
 		format = Anvil::Format::B8G8R8A8_UNORM;
 		conversionFormat = {};
@@ -95,7 +96,7 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 	};
 	std::vector<BufferInfo> buffers {};
 	buffers.reserve(numLayers *numMipMapsLoad);
-	std::vector<std::shared_ptr<util::ImageBuffer>> imgBuffers {};
+	std::vector<std::shared_ptr<uimg::ImageBuffer>> imgBuffers {};
 	imgBuffers.reserve(numLayers *numMipMapsLoad);
 	auto &setupCmd = context.GetSetupCommandBuffer();
 	for(auto iLayer=decltype(numLayers){0u};iLayer<numLayers;++iLayer)
@@ -112,7 +113,7 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 			{
 				uint32_t wMipmap,hMipmap;
 				prosper::util::calculate_mipmap_size(width,height,&wMipmap,&hMipmap,iMipmap);
-				std::shared_ptr<util::ImageBuffer> imgBuffer = nullptr;
+				std::shared_ptr<uimg::ImageBuffer> imgBuffer = nullptr;
 				manualConverter(data,imgBuffer,wMipmap,hMipmap);
 				data = imgBuffer->GetData();
 				dataSize = imgBuffer->GetSize();
@@ -300,24 +301,23 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 				texture->SetFlags(Texture::Flags::SRGB);
 
 				ImageFormatLoader pngLoader {};
-				pngLoader.userData = static_cast<uimg::Image*>(png->pnginfo.get());
+				pngLoader.userData = static_cast<uimg::ImageBuffer*>(png->pnginfo.get());
 				pngLoader.get_image_info = [](
 					void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,Anvil::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
 					std::optional<Anvil::Format> &outConversionFormat
 				) -> void {
-					auto &png = *static_cast<uimg::Image*>(userData);
+					auto &png = *static_cast<uimg::ImageBuffer*>(userData);
 					outWidth = png.GetWidth();
 					outHeight = png.GetHeight();
-					outFormat = prosper::util::get_vk_format(png.GetType());
+					outFormat = prosper::util::get_vk_format(png.GetFormat());
 					outCubemap = false;
 					outLayerCount = 1;
 					outMipmapCount = 1;
 				};
 				pngLoader.get_image_data = [](void *userData,const TextureQueueItem &item,uint32_t layer,uint32_t mipmapIdx,uint32_t &outDataSize) -> const void* {
-					auto &png = *static_cast<uimg::Image*>(userData);
-					auto &data = png.GetData();
-					outDataSize = data.size() *sizeof(data.front());
-					return data.data();
+					auto &png = *static_cast<uimg::ImageBuffer*>(userData);
+					outDataSize = png.GetSize();
+					return png.GetData();
 				};
 				initialize_image(item,*texture,pngLoader,image);
 			}
@@ -330,17 +330,17 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 					texture->SetFlags(Texture::Flags::SRGB);
 
 					auto &tgaInfo = *tga->tgainfo;
-					auto imgBuffer = util::ImageBuffer::Create(tgaInfo.GetData().data(),tgaInfo.GetWidth(),tgaInfo.GetHeight(),(tga->tgainfo->GetChannelCount() == 3) ? util::ImageBuffer::Format::RGB8 : util::ImageBuffer::Format::RGBA8);
-					imgBuffer->Convert(util::ImageBuffer::Format::RGBA8);
+					auto imgBuffer = uimg::ImageBuffer::Create(tgaInfo.GetData(),tgaInfo.GetWidth(),tgaInfo.GetHeight(),(tga->tgainfo->GetChannelCount() == 3) ? uimg::ImageBuffer::Format::RGB8 : uimg::ImageBuffer::Format::RGBA8);
+					imgBuffer->Convert(uimg::ImageBuffer::Format::RGBA8);
 					imgBuffer->FlipVertically();
 
 					ImageFormatLoader tgaLoader {};
-					tgaLoader.userData = static_cast<uimg::Image*>(tga->tgainfo.get());
+					tgaLoader.userData = static_cast<uimg::ImageBuffer*>(tga->tgainfo.get());
 					tgaLoader.get_image_info = [](
 						void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,Anvil::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
 						std::optional<Anvil::Format> &outConversionFormat
 					) -> void {
-						auto &tga = *static_cast<uimg::Image*>(userData);
+						auto &tga = *static_cast<uimg::ImageBuffer*>(userData);
 						outWidth = tga.GetWidth();
 						outHeight = tga.GetHeight();
 						outFormat = TGA_VK_FORMAT;
@@ -350,7 +350,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 					};
 
 					tgaLoader.get_image_data = [imgBuffer](void *userData,const TextureQueueItem &item,uint32_t layer,uint32_t mipmapIdx,uint32_t &outDataSize) -> const void* {
-						auto &tga = *static_cast<uimg::Image*>(userData);
+						auto &tga = *static_cast<uimg::ImageBuffer*>(userData);
 						outDataSize = imgBuffer->GetSize();
 						return imgBuffer->GetData();
 					};

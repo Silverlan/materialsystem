@@ -23,7 +23,7 @@ namespace prosper
 	class Sampler;
 };
 
-namespace uimg {class Image;};
+namespace uimg {class ImageBuffer;};
 class TCallback;
 class DLLCMATSYS TextureQueueItem
 {
@@ -55,7 +55,7 @@ class DLLCMATSYS TextureQueueItemPNG
 public:
 	TextureQueueItemPNG();
 	virtual ~TextureQueueItemPNG() override;
-	std::shared_ptr<uimg::Image> pnginfo = nullptr;
+	std::shared_ptr<uimg::ImageBuffer> pnginfo = nullptr;
 };
 
 class DLLCMATSYS TextureQueueItemTGA
@@ -63,7 +63,7 @@ class DLLCMATSYS TextureQueueItemTGA
 {
 public:
 	TextureQueueItemTGA();
-	std::shared_ptr<uimg::Image> tgainfo = nullptr;
+	std::shared_ptr<uimg::ImageBuffer> tgainfo = nullptr;
 };
 #ifdef ENABLE_VTF_SUPPORT
 class DLLCMATSYS TextureQueueItemVTF

@@ -4,7 +4,7 @@
 
 #include "textureinfo.h"
 #include "impl_texture_formats.h"
-#include <util_image.h>
+#include <util_image.hpp>
 #include <sharedutils/util_file.h>
 #include <cstring>
 
