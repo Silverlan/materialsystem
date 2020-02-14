@@ -32,7 +32,8 @@ void msys::ShaderDecomposeCornea::InitializeRenderPass(std::shared_ptr<prosper::
 		std::vector<prosper::util::RenderPassCreateInfo::AttachmentInfo>{
 			{Anvil::Format::R8G8B8A8_UNORM}, // Albedo
 			{Anvil::Format::R8G8B8A8_UNORM}, // Normal
-			{Anvil::Format::R8G8B8A8_UNORM} // Parallax
+			{Anvil::Format::R8G8B8A8_UNORM}, // Parallax
+			{Anvil::Format::R8G8B8A8_UNORM} // Noise
 	},outRenderPass,pipelineIdx);
 }
 #pragma optimize("",on)

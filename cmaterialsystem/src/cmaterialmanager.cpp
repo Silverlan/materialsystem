@@ -146,12 +146,14 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				imgCreateInfo.format = Anvil::Format::R32G32B32A32_SFLOAT;
 				auto imgNormal = prosper::util::create_image(context.GetDevice(),imgCreateInfo);
 				auto imgParallax = prosper::util::create_image(context.GetDevice(),imgCreateInfo);
+				auto imgNoise = prosper::util::create_image(context.GetDevice(),imgCreateInfo);
 
 				prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
 				auto texAlbedo = prosper::util::create_texture(dev,{},imgAlbedo,&imgViewCreateInfo);
 				auto texNormal = prosper::util::create_texture(dev,{},imgNormal,&imgViewCreateInfo);
 				auto texParallax = prosper::util::create_texture(dev,{},imgParallax,&imgViewCreateInfo);
-				auto rt = prosper::util::create_render_target(dev,{texAlbedo,texNormal,texParallax},shaderDecomposeCornea->GetRenderPass());
+				auto texNoise = prosper::util::create_texture(dev,{},imgNoise,&imgViewCreateInfo);
+				auto rt = prosper::util::create_render_target(dev,{texAlbedo,texNormal,texParallax,texNoise},shaderDecomposeCornea->GetRenderPass());
 
 				auto dsg = shaderDecomposeCornea->CreateDescriptorSetGroup(msys::ShaderDecomposeCornea::DESCRIPTOR_SET_TEXTURE.setIndex);
 				auto &ds = *dsg->GetDescriptorSet();
@@ -179,6 +181,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				auto albedoTexName = irisTextureNoExt +"_albedo";
 				auto normalTexName = corneaTextureNoExt +"_normal";
 				auto parallaxTexName = corneaTextureNoExt +"_parallax";
+				auto noiseTexName = corneaTextureNoExt +"_noise";
 
 				auto errHandler = [](const std::string &err) {
 					std::cout<<"WARNING: Unable to save eyeball image(s) as DDS: "<<err<<std::endl;
@@ -196,6 +199,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				texInfo.outputFormat = uimg::TextureInfo::OutputFormat::GradientMap;
 				texInfo.inputFormat = uimg::TextureInfo::InputFormat::R32G32B32A32_Float;
 				prosper::util::save_texture(rootPath +'/' +parallaxTexName,*texParallax->GetImage(),texInfo,errHandler);
+				prosper::util::save_texture(rootPath +'/' +noiseTexName,*texNoise->GetImage(),texInfo,errHandler);
 
 				texInfo.outputFormat = uimg::TextureInfo::OutputFormat::NormalMap;
 				texInfo.flags |= uimg::TextureInfo::Flags::NormalMap;
@@ -206,6 +210,14 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				rootData.AddData("albedo_map",std::make_shared<ds::Texture>(settings,albedoTexName));
 				rootData.AddData("normal_map",std::make_shared<ds::Texture>(settings,normalTexName));
 				rootData.AddData("parallax_map",std::make_shared<ds::Texture>(settings,parallaxTexName));
+				rootData.AddData("noise_map",std::make_shared<ds::Texture>(settings,noiseTexName));
+
+				// Default subsurface scattering values
+				rootData.AddValue("float","subsurface_multiplier","0.0375");
+				rootData.AddValue("color","subsurface_color","242 210 157");
+				rootData.AddValue("int","subsurface_method","5");
+				rootData.AddValue("vector","subsurface_radius","112 52.8 1.6");
+
 			}
 		}
 
