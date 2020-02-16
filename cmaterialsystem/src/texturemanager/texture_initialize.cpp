@@ -18,9 +18,14 @@
 #include <mathutil/glmutil.h>
 #include <gli/gli.hpp>
 #include <util_image.hpp>
+#ifndef DISABLE_VTEX_SUPPORT
+#include <util_source2.hpp>
+#include <source2/resource_data.hpp>
+#endif
 
 #define FLUSH_INIT_CMD 1
 
+#pragma optimize("",off)
 static void change_image_transfer_dst_layout_to_shader_read(Anvil::CommandBufferBase &cmdBuffer,Anvil::Image &img)
 {
 	prosper::util::record_image_barrier(cmdBuffer,img,Anvil::ImageLayout::TRANSFER_DST_OPTIMAL,Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL);
@@ -177,8 +182,6 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 	}
 }
 
-#ifdef ENABLE_VTF_SUPPORT
-
 struct VulkanImageData
 {
 	// Original image format
@@ -189,6 +192,7 @@ struct VulkanImageData
 
 	std::array<Anvil::ComponentSwizzle,4> swizzle = {Anvil::ComponentSwizzle::R,Anvil::ComponentSwizzle::G,Anvil::ComponentSwizzle::B,Anvil::ComponentSwizzle::A};
 };
+#ifndef DISABLE_VTF_SUPPORT
 static VulkanImageData vtf_format_to_vulkan_format(VTFImageFormat format)
 {
 	VulkanImageData vkImgData {};
@@ -239,6 +243,54 @@ static VulkanImageData vtf_format_to_vulkan_format(VTFImageFormat format)
 		default:
 			vkImgData.format = Anvil::Format::BC1_RGBA_UNORM_BLOCK;
 			break;
+	}
+	// Note: When adding a new format, make sure to also add it to TextureManager::InitializeTextureData
+	return vkImgData;
+}
+
+#endif
+
+#ifndef DISABLE_VTEX_SUPPORT
+static VulkanImageData vtex_format_to_vulkan_format(source2::VTexFormat format)
+{
+	VulkanImageData vkImgData {};
+	switch(format)
+	{
+	case source2::VTexFormat::DXT1:
+		vkImgData.format = Anvil::Format::BC1_RGBA_UNORM_BLOCK;
+		break;
+	case source2::VTexFormat::DXT5:
+		vkImgData.format = Anvil::Format::BC3_UNORM_BLOCK;
+		break;
+	case source2::VTexFormat::RGBA8888:
+		vkImgData.format = Anvil::Format::R8G8B8A8_UNORM;
+		break;
+	case source2::VTexFormat::RGBA16161616:
+		vkImgData.format = Anvil::Format::R16G16B16A16_SNORM;
+		break;
+	case source2::VTexFormat::RGBA16161616F:
+		vkImgData.format = Anvil::Format::R16G16B16A16_SFLOAT;
+		break;
+	case source2::VTexFormat::RGB323232F: // Needs to be converted
+		vkImgData.conversionFormat = Anvil::Format::R32G32B32A32_SFLOAT;
+		vkImgData.format = Anvil::Format::R32G32B32_SFLOAT;
+		break;
+	case source2::VTexFormat::RGBA32323232F:
+		vkImgData.format = Anvil::Format::R32G32B32A32_SFLOAT;
+		break;
+	case source2::VTexFormat::BC6H:
+		vkImgData.format = Anvil::Format::BC6H_SFLOAT_BLOCK;
+		break;
+	case source2::VTexFormat::BC7:
+		vkImgData.format = Anvil::Format::BC7_SRGB_BLOCK;
+		break;
+	case source2::VTexFormat::BGRA8888:
+		vkImgData.swizzle = {Anvil::ComponentSwizzle::B,Anvil::ComponentSwizzle::G,Anvil::ComponentSwizzle::R,Anvil::ComponentSwizzle::A};
+		vkImgData.format = Anvil::Format::B8G8R8A8_UNORM;
+		break;
+	default:
+		vkImgData.format = Anvil::Format::BC1_RGBA_UNORM_BLOCK;
+		break;
 	}
 	// Note: When adding a new format, make sure to also add it to TextureManager::InitializeTextureData
 	return vkImgData;
@@ -356,9 +408,9 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 					};
 					initialize_image(item,*texture,tgaLoader,image);
 				}
-#ifdef ENABLE_VTF_SUPPORT
 				else
 				{
+#ifndef DISABLE_VTF_SUPPORT
 					auto *vtf = dynamic_cast<TextureQueueItemVTF*>(&item);
 					if(vtf != nullptr)
 					{
@@ -394,8 +446,42 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 						};
 						initialize_image(item,*texture,vtfLoader,image);
 					}
-				}
 #endif
+#ifndef DISABLE_VTEX_SUPPORT
+					auto *vtex = dynamic_cast<TextureQueueItemVTex*>(&item);
+					if(vtex != nullptr)
+					{
+						texture->SetFlags(Texture::Flags::SRGB);
+
+						auto &vtexFile = vtex->texture;
+						ImageFormatLoader vtexLoader {};
+						vtexLoader.userData = static_cast<source2::resource::Texture*>(vtexFile.get());
+						vtexLoader.get_image_info = [](
+							void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,Anvil::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
+							std::optional<Anvil::Format> &outConversionFormat
+							) -> void {
+								auto &vtexFile = *static_cast<source2::resource::Texture*>(userData);
+								auto vkFormat = vtex_format_to_vulkan_format(vtexFile.GetFormat());
+								outWidth = vtexFile.GetWidth();
+								outHeight = vtexFile.GetHeight();
+								outFormat = vkFormat.format;
+								outConversionFormat = vkFormat.conversionFormat;
+								outCubemap = false; // TODO
+								outLayerCount = outCubemap ? 6 : 1;
+								outMipmapCount = vtexFile.GetMipMapCount();
+						};
+						std::vector<uint8_t> mipmapData {};
+						vtexLoader.get_image_data = [&mipmapData](void *userData,const TextureQueueItem &item,uint32_t layer,uint32_t mipmapIdx,uint32_t &outDataSize) -> const void* {
+							auto &vtexFile = *static_cast<source2::resource::Texture*>(userData);
+							outDataSize = vtexFile.CalculateBufferSizeForMipLevel(mipmapIdx);
+							mipmapData.clear();
+							vtexFile.ReadTextureData(mipmapIdx,mipmapData);
+							return mipmapData.data();
+						};
+						initialize_image(item,*texture,vtexLoader,image);
+					}
+#endif
+				}
 			}
 		}
 		if(image != nullptr)
@@ -430,3 +516,4 @@ void TextureManager::FinalizeTexture(TextureQueueItem &item)
 	texture->SetFlags(texture->GetFlags() | Texture::Flags::Loaded);
 	texture->RunOnLoadedCallbacks();
 }
+#pragma optimize("",on)

@@ -14,7 +14,7 @@
 #include <image/prosper_render_target.hpp>
 #include <util_texture_info.hpp>
 #include <util_image.hpp>
-#ifdef ENABLE_VMT_SUPPORT
+#ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include "util_vmt.hpp"
 #endif
@@ -211,9 +211,11 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				rootData.AddData("normal_map",std::make_shared<ds::Texture>(settings,normalTexName));
 				rootData.AddData("parallax_map",std::make_shared<ds::Texture>(settings,parallaxTexName));
 				rootData.AddData("noise_map",std::make_shared<ds::Texture>(settings,noiseTexName));
+				rootData.AddValue("float","metalness_factor","0.0");
+				rootData.AddValue("float","roughness_factor","0.0");
 
 				// Default subsurface scattering values
-				rootData.AddValue("float","subsurface_multiplier","0.0375");
+				rootData.AddValue("float","subsurface_multiplier","0.01");
 				rootData.AddValue("color","subsurface_color","242 210 157");
 				rootData.AddValue("int","subsurface_method","5");
 				rootData.AddValue("vector","subsurface_radius","112 52.8 1.6");

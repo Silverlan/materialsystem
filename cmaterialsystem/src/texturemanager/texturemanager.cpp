@@ -16,14 +16,14 @@
 #include <gli/gli.hpp>
 #include <gli/texture2d.hpp>
 #include <sharedutils/util_file.h>
-#ifdef ENABLE_VTF_SUPPORT
+#ifndef DISABLE_VTF_SUPPORT
 #include <Proc.h>
 #include "virtualfile.h"
 #endif
 
 decltype(TextureManager::MAX_TEXTURE_COUNT) TextureManager::MAX_TEXTURE_COUNT = 4096;
 
-#ifdef ENABLE_VTF_SUPPORT
+#ifndef DISABLE_VTF_SUPPORT
 static vlVoid vtf_read_close() {}
 static vlBool vtf_read_open() {return true;}
 static vlUInt vtf_read_read(vlVoid *buf,vlUInt bytes,vlVoid *handle)
@@ -72,7 +72,7 @@ TextureManager::TextureManager(prosper::Context &context)
 	samplerCreateInfo = {};
 	TextureManager::SetupSamplerMipmapMode(samplerCreateInfo,TextureMipmapMode::Ignore);
 	m_textureSamplerNoMipmap = prosper::util::create_sampler(context.GetDevice(),samplerCreateInfo);
-#ifdef ENABLE_VTF_SUPPORT
+#ifndef DISABLE_VTF_SUPPORT
 	vlSetProc(PROC_READ_CLOSE,reinterpret_cast<void*>(vtf_read_close));
 	vlSetProc(PROC_READ_OPEN,reinterpret_cast<void*>(vtf_read_open));
 	vlSetProc(PROC_READ_READ,reinterpret_cast<void*>(vtf_read_read));

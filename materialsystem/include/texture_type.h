@@ -10,12 +10,15 @@
 enum class TextureType : uint32_t
 {
 	Invalid = 0,
-	DDS = 1,
-	KTX = 2,
-	PNG = 3,
-	TGA = 4,
-#ifdef ENABLE_VTF_SUPPORT
-	VTF = 5
+	DDS,
+	KTX,
+	PNG,
+	TGA,
+#ifndef DISABLE_VTF_SUPPORT
+	VTF,
+#endif
+#ifndef DISABLE_VTEX_SUPPORT
+	VTex
 #endif
 };
 

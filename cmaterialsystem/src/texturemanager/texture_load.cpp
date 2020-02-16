@@ -96,9 +96,13 @@ bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,c
 		item = std::make_unique<TextureQueueItemPNG>();
 	else if(type == TextureType::TGA)
 		item = std::make_unique<TextureQueueItemTGA>();
-#ifdef ENABLE_VTF_SUPPORT
+#ifndef DISABLE_VTF_SUPPORT
 	else if(type == TextureType::VTF)
 		item = std::make_unique<TextureQueueItemVTF>();
+#endif
+#ifndef DISABLE_VTEX_SUPPORT
+	else if(type == TextureType::VTex)
+		item = std::make_unique<TextureQueueItemVTex>();
 #endif
 	item->name = imgFile; // Actual path to file
 	item->path = path;

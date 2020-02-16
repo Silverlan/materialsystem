@@ -8,6 +8,10 @@
 #include "texturemanager/texturequeue.h"
 #include "virtualfile.h"
 #include <util_image.hpp>
+#ifndef DISABLE_VTEX_SUPPORT
+#include <source2/resource.hpp>
+#include <source2/resource_data.hpp>
+#endif
 
 VFilePtr TextureManager::OpenTextureFile(const std::string &fpath)
 {
@@ -22,6 +26,7 @@ VFilePtr TextureManager::OpenTextureFile(const std::string &fpath)
 
 void TextureManager::InitializeTextureData(TextureQueueItem &item)
 {
+	item.valid = false;
 	auto *surface = dynamic_cast<TextureQueueItemSurface*>(&item);
 	if(surface != nullptr)
 	{
@@ -60,18 +65,9 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 					tga->valid = true;
 			}
 			else
-#ifdef ENABLE_VTF_SUPPORT
 			{
+#ifndef DISABLE_VTF_SUPPORT
 				auto *vtf = dynamic_cast<TextureQueueItemVTF*>(&item);
-/*
-#ifdef ENABLE_VTF_SUPPORT
-				if(f == nullptr)
-				{
-					auto pathVtf = path +".vtf";
-					f = OpenTextureFile(pathVtf);
-				}
-#endif
-*/
 				if(vtf != nullptr)
 				{
 					auto fp = OpenTextureFile(vtf->path);
@@ -110,12 +106,48 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 						}
 					}
 				}
-				else
-					item.valid = false;
-			}
-#else
-				item.valid = false;
 #endif
+#ifndef DISABLE_VTEX_SUPPORT
+				auto *vtex = dynamic_cast<TextureQueueItemVTex*>(&item);
+				if(vtex != nullptr)
+				{
+					auto fp = OpenTextureFile(vtex->path);
+					if(fp == nullptr)
+						vtex->valid = false;
+					else
+					{
+						auto resource = source2::load_resource(fp);
+						auto *dataBlock = resource ? resource->FindBlock(source2::BlockType::DATA) : nullptr;
+						if(dataBlock)
+						{
+							auto *texBlock = dynamic_cast<source2::resource::Texture*>(dataBlock);
+							if(texBlock)
+							{
+								vtex->texture = std::static_pointer_cast<source2::resource::Texture>(texBlock->shared_from_this());
+								vtex->valid = true;
+								auto format = vtex->texture->GetFormat();
+								switch(format)
+								{
+								case source2::VTexFormat::DXT1:
+								case source2::VTexFormat::DXT5:
+								case source2::VTexFormat::RGBA8888:
+								case source2::VTexFormat::RGBA16161616:
+								case source2::VTexFormat::RGBA16161616F:
+								case source2::VTexFormat::RGB323232F:
+								case source2::VTexFormat::RGBA32323232F:
+								case source2::VTexFormat::BC6H:
+								case source2::VTexFormat::BC7:
+								case source2::VTexFormat::BGRA8888:
+									break; // Note: When adding new formats, make sure to also add them to texture_initialize.cpp:vtex_format_to_vulkan_format
+								default:
+									vtf->valid = false; // Unsupported format
+								}
+							}
+						}
+					}
+				}
+#endif
+			}
 		}
 	}
 }

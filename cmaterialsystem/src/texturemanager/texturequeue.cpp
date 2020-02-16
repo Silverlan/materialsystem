@@ -5,8 +5,11 @@
 #include "texturemanager/texturequeue.h"
 #include <sharedutils/functioncallback.h>
 #include <util_image.hpp>
-#ifdef ENABLE_VTF_SUPPORT
+#ifndef DISABLE_VTF_SUPPORT
 #include <VTFWrapper.h>
+#endif
+#ifndef DISABLE_VTEX_SUPPORT
+#include <util_source2.hpp>>
 #endif
 
 TextureQueueItem::TextureQueueItem()
@@ -49,7 +52,7 @@ TextureQueueItemTGA::TextureQueueItemTGA()
 
 ////////////////////////
 
-#ifdef ENABLE_VTF_SUPPORT
+#ifndef DISABLE_VTF_SUPPORT
 TextureQueueItemVTF::TextureQueueItemVTF()
 	: TextureQueueItem()
 {
@@ -58,6 +61,26 @@ TextureQueueItemVTF::TextureQueueItemVTF()
 }
 
 TextureQueueItemVTF::~TextureQueueItemVTF()
+{
+	if(mipmap != nullptr)
+	{
+		delete[] mipmap[0];
+		delete[] mipmap;
+	}
+}
+#endif
+
+////////////////////////
+
+#ifndef DISABLE_VTEX_SUPPORT
+TextureQueueItemVTex::TextureQueueItemVTex()
+	: TextureQueueItem()
+{
+	texturetype = TextureType::VTex;
+
+}
+
+TextureQueueItemVTex::~TextureQueueItemVTex()
 {
 	if(mipmap != nullptr)
 	{

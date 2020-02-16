@@ -61,21 +61,30 @@ link_external_library(datasystem)
 link_external_library(VTFLib)
 link_external_library(lpng)
 link_external_library(util_image)
+link_external_library(util_source2)
 
 add_include_dir(glm)
 add_include_dir(zlib)
 add_include_dir(vtflib_build)
 add_include_dir(lpng_build)
 
-option(CONFIG_ENABLE_VTF_SUPPORT "Enable support for VMT/VTF files." ON)
+option(CONFIG_DISABLE_VMT_SUPPORT "Disable support for VMT/VTF files." OFF)
+option(CONFIG_DISABLE_VTF_SUPPORT "Disable support for VMT/VTF files." OFF)
+option(CONFIG_DISABLE_VTEX_SUPPORT "Disable support for VTex files." OFF)
 
 set(DEFINITIONS
 	MATSYS_DLL
 	GLM_FORCE_DEPTH_ZERO_TO_ONE
 )
 
-if(CONFIG_ENABLE_VTF_SUPPORT)
-	list(APPEND DEFINITIONS ENABLE_VMT_SUPPORT)
+if(CONFIG_DISABLE_VMT_SUPPORT)
+	list(APPEND DEFINITIONS DISABLE_VMT_SUPPORT)
+endif()
+if(CONFIG_DISABLE_VTF_SUPPORT)
+	list(APPEND DEFINITIONS DISABLE_VTF_SUPPORT)
+endif()
+if(CONFIG_DISABLE_VTEX_SUPPORT)
+	list(APPEND DEFINITIONS DISABLE_VTEX_SUPPORT)
 endif()
 
 ##### CONFIGURATION #####

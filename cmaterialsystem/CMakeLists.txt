@@ -70,6 +70,7 @@ link_external_library(anvil)
 link_external_library(iglfw)
 link_external_library(glfw)
 link_external_library(glslang)
+link_external_library(util_source2)
 
 add_include_dir(glm)
 add_include_dir(gli)
@@ -89,8 +90,14 @@ set(DEFINITIONS
 	UIMG_ENABLE_NVTT
 )
 
-if(CONFIG_ENABLE_VTF_SUPPORT)
-	list(APPEND DEFINITIONS ENABLE_VTF_SUPPORT)
+if(CONFIG_DISABLE_VMT_SUPPORT)
+	list(APPEND DEFINITIONS DISABLE_VMT_SUPPORT)
+endif()
+if(CONFIG_DISABLE_VTF_SUPPORT)
+	list(APPEND DEFINITIONS DISABLE_VTF_SUPPORT)
+endif()
+if(CONFIG_DISABLE_VTEX_SUPPORT)
+	list(APPEND DEFINITIONS DISABLE_VTEX_SUPPORT)
 endif()
 
 ##### CONFIGURATION #####

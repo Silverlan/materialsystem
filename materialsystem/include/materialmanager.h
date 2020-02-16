@@ -12,12 +12,12 @@
 #pragma warning(disable : 4251)
 enum class TextureType : uint32_t;
 
-//#ifdef ENABLE_VMT_SUPPORT
+#ifndef DISABLE_VMT_SUPPORT
 namespace VTFLib
 {
 	class CVMTFile;
 };
-//#endif
+#endif
 
 class DLLMATSYS MaterialManager
 {
@@ -44,10 +44,10 @@ protected:
 
 	std::shared_ptr<ds::Settings> CreateDataSettings() const;
 	std::string ToMaterialIdentifier(const std::string &id) const;
-//#ifdef ENABLE_VMT_SUPPORT
+#ifndef DISABLE_VMT_SUPPORT
 	bool LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info);
 	virtual bool InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader);
-//#endif
+#endif
 public:
 	struct DLLMATSYS ImageFormat
 	{

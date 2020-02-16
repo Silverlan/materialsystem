@@ -9,7 +9,7 @@
 #include <sharedutils/util_file.h>
 #include <sharedutils/util.h>
 #include <array>
-#ifdef ENABLE_VMT_SUPPORT
+#ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include "util_vmt.hpp"
 #endif
@@ -35,7 +35,7 @@ static const std::unordered_map<std::string,std::string> ENUM_VARS = { // These 
 	{"BORDER_COLOR_INT_OPAQUE_WHITE","5"}
 };
 
-#ifdef ENABLE_VMT_SUPPORT
+#ifndef DISABLE_VMT_SUPPORT
 // Find highest dx node version and merge its values with the specified node
 static void merge_dx_node_values(VTFLib::Nodes::CVMTGroupNode &node)
 {
@@ -151,7 +151,7 @@ std::string MaterialManager::PathToIdentifier(const std::string &path,std::strin
 	{
 		hadExtension = false;
 		*ext = "wmi";
-#ifdef ENABLE_VMT_SUPPORT
+#ifndef DISABLE_VMT_SUPPORT
 		if(!FileManager::Exists(g_materialLocation +"\\" +matPath +'.' +*ext))
 			*ext = "vmt";
 #endif
@@ -196,7 +196,7 @@ std::string MaterialManager::ToMaterialIdentifier(const std::string &id) const
 	return identifier;
 }
 
-#ifdef ENABLE_VMT_SUPPORT
+#ifndef DISABLE_VMT_SUPPORT
 static std::array<float,3> get_vmt_matrix(VTFLib::Nodes::CVMTStringNode &node)
 {
 	std::string value = node.GetValue();
@@ -492,7 +492,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 		*mat = nmat;
 		return true;
 	};
-#ifdef ENABLE_VMT_SUPPORT
+#ifndef DISABLE_VMT_SUPPORT
 	if(ext == "vmt") // Load from vmt-file
 	{
 		auto sz = f->GetSize();

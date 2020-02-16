@@ -13,7 +13,7 @@
 #include <mathutil/glmutil.h>
 #include <gli/gli.hpp>
 #include <gli/texture2d.hpp>
-#ifdef ENABLE_VTF_SUPPORT
+#ifndef DISABLE_VTF_SUPPORT
 #include <VTFFile.h>
 #endif
 
@@ -65,7 +65,7 @@ public:
 	TextureQueueItemTGA();
 	std::shared_ptr<uimg::ImageBuffer> tgainfo = nullptr;
 };
-#ifdef ENABLE_VTF_SUPPORT
+#ifndef DISABLE_VTF_SUPPORT
 class DLLCMATSYS TextureQueueItemVTF
 	: public TextureQueueItem
 {
@@ -73,6 +73,17 @@ public:
 	TextureQueueItemVTF();
 	virtual ~TextureQueueItemVTF() override;
 	std::shared_ptr<VTFLib::CVTFFile> texture = nullptr;
+};
+#endif
+#ifndef DISABLE_VTEX_SUPPORT
+namespace source2::resource {class Texture;};
+class DLLCMATSYS TextureQueueItemVTex
+	: public TextureQueueItem
+{
+public:
+	TextureQueueItemVTex();
+	virtual ~TextureQueueItemVTex() override;
+	std::shared_ptr<source2::resource::Texture> texture = nullptr;
 };
 #endif
 class DLLCMATSYS TextureQueueItemSurface

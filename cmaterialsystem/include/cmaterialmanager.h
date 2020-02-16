@@ -23,9 +23,9 @@ private:
 	using MaterialManager::CreateMaterial;
 	TextureManager m_textureManager;
 	virtual Material *CreateMaterial(const std::string *identifier,const std::string &shader,std::shared_ptr<ds::Block> root=nullptr) override;
-//#ifdef ENABLE_VMT_SUPPORT
+#ifndef DISABLE_VMT_SUPPORT
 	virtual bool InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader) override;
-//#endif
+#endif
 public:
 	CMaterialManager(prosper::Context &context);
 	virtual ~CMaterialManager() override;

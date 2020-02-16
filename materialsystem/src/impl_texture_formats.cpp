@@ -13,9 +13,12 @@ const std::vector<MaterialManager::ImageFormat> &MaterialManager::get_supported_
 		{TextureType::DDS,"dds"},
 		{TextureType::PNG,"png"},
 		{TextureType::TGA,"tga"},
-	#ifdef ENABLE_VTF_SUPPORT
-		{TextureType::VTF,"vtf"}
-	#endif
+#ifndef DISABLE_VTF_SUPPORT
+		{TextureType::VTF,"vtf"},
+#endif
+#ifndef DISABLE_VTEX_SUPPORT
+		{TextureType::VTex,"vtex_c"},
+#endif
 	};
 	return s_supportedImageFormats;
 }
