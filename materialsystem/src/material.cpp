@@ -13,6 +13,8 @@ DEFINE_BASE_HANDLE(DLLMATSYS,Material,Material);
 
 decltype(Material::DIFFUSE_MAP_IDENTIFIER) Material::DIFFUSE_MAP_IDENTIFIER = "diffuse_map";
 decltype(Material::ALBEDO_MAP_IDENTIFIER) Material::ALBEDO_MAP_IDENTIFIER = "albedo_map";
+decltype(Material::ALBEDO_MAP2_IDENTIFIER) Material::ALBEDO_MAP2_IDENTIFIER = "albedo_map2";
+decltype(Material::ALBEDO_MAP3_IDENTIFIER) Material::ALBEDO_MAP3_IDENTIFIER = "albedo_map3";
 decltype(Material::NORMAL_MAP_IDENTIFIER) Material::NORMAL_MAP_IDENTIFIER = "normal_map";
 decltype(Material::SPECULAR_MAP_IDENTIFIER) Material::SPECULAR_MAP_IDENTIFIER = "specular_map";
 decltype(Material::GLOW_MAP_IDENTIFIER) Material::GLOW_MAP_IDENTIFIER = "emission_map";
@@ -23,7 +25,6 @@ decltype(Material::ALPHA_MAP_IDENTIFIER) Material::ALPHA_MAP_IDENTIFIER = "alpha
 decltype(Material::METALNESS_MAP_IDENTIFIER) Material::METALNESS_MAP_IDENTIFIER = "metalness_map";
 decltype(Material::ROUGHNESS_MAP_IDENTIFIER) Material::ROUGHNESS_MAP_IDENTIFIER = "roughness_map";
 decltype(Material::DUDV_MAP_IDENTIFIER) Material::DUDV_MAP_IDENTIFIER = "dudv_map";
-decltype(Material::DIFFUSE_MAP2_IDENTIFIER) Material::DIFFUSE_MAP2_IDENTIFIER = "diffuse_map2";
 decltype(Material::WRINKLE_STRETCH_MAP_IDENTIFIER) Material::WRINKLE_STRETCH_MAP_IDENTIFIER = "wrinkle_stretch_map";
 decltype(Material::WRINKLE_COMPRESS_MAP_IDENTIFIER) Material::WRINKLE_COMPRESS_MAP_IDENTIFIER = "wrinkle_compress_map";
 decltype(Material::EXPONENT_MAP_IDENTIFIER) Material::EXPONENT_MAP_IDENTIFIER = "exponent_map";
@@ -247,6 +248,9 @@ TextureInfo *Material::GetRoughnessMap() {return m_texRoughness;}
 
 void Material::SetName(const std::string &name) {m_name = name;}
 const std::string &Material::GetName() {return m_name;}
+
+bool Material::IsError() const {return umath::is_flag_set(m_stateFlags,StateFlags::Error);}
+void Material::SetErrorFlag(bool set) {umath::set_flag(m_stateFlags,StateFlags::Error,set);}
 
 const util::ShaderInfo *Material::GetShaderInfo() const {return m_shaderInfo.get();}
 const std::string &Material::GetShaderIdentifier() const

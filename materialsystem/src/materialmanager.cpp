@@ -231,7 +231,7 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 	auto dataSettings = CreateDataSettings();
 	auto root = std::make_shared<ds::Block>(*dataSettings);
 	if(shader == "worldvertextransition")
-		shaderName = "texturedalphatransition";
+		shaderName = "textured";
 	else if(shader == "sprite")
 	{
 		shaderName = "particle";
@@ -317,6 +317,33 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 			}
 		}
 	}
+
+	// These are custom parameters; Used to make it easier to import PBR assets into Pragma
+	if((node = vmtRoot->GetNode("$metalnesstexture")) != nullptr && node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+	{
+		auto *metalnessNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+		root->AddData(Material::METALNESS_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,metalnessNode->GetValue()));
+	}
+	auto hasPbrRoughness = false;
+	if((node = vmtRoot->GetNode("$roughnesstexture")) != nullptr && node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+	{
+		auto *roughnessNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+		root->AddData(Material::ROUGHNESS_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,roughnessNode->GetValue()));
+		hasPbrRoughness = true;
+	}
+	auto hasPbrGlossiness = false;
+	if(hasPbrRoughness == false && (node = vmtRoot->GetNode("$glossinesstexture")) != nullptr && node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+	{
+		auto *glossinessNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+		root->AddData(Material::SPECULAR_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,glossinessNode->GetValue()));
+		hasPbrGlossiness = true;
+	}
+	if((node = vmtRoot->GetNode("$emissiontexture")) != nullptr && node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+	{
+		auto *emissionNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+		root->AddData(Material::EMISSION_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,emissionNode->GetValue()));
+	}
+
 	if(bHasGlow)
 	{
 		auto *nodeFresnel = vmtRoot->GetNode("$selfillumfresnelminmaxexp");
@@ -330,14 +357,12 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 			}
 		}
 	}
-	if((node = vmtRoot->GetNode("$basetexture2")) != nullptr)
+	if(shader == "worldvertextransition" && (node = vmtRoot->GetNode("$basetexture2")) != nullptr)
 	{
-		if(shaderName == "textured")
-			shaderName = "texturedalphatransition";
 		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 		{
 			auto *baseTexture2StringNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
-			root->AddData(Material::DIFFUSE_MAP2_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTexture2StringNode->GetValue()));
+			root->AddData(Material::ALBEDO_MAP2_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,baseTexture2StringNode->GetValue()));
 		}
 	}
 	if(bWater == false && (node = vmtRoot->GetNode("$bumpmap")) != nullptr)
@@ -348,7 +373,7 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 			root->AddData(Material::NORMAL_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,bumpMapNode->GetValue()));
 		}
 	}
-	if((node = vmtRoot->GetNode("$envmap")) != nullptr)
+	if((node = vmtRoot->GetNode("$envmap")) != nullptr && hasPbrRoughness == false && hasPbrGlossiness == false)
 	{
 		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 		{
@@ -360,7 +385,7 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 				root->AddData(Material::SPECULAR_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,val));
 		}
 	}
-	if((node = vmtRoot->GetNode("$envmapmask")) != nullptr)
+	if((node = vmtRoot->GetNode("$envmapmask")) != nullptr && hasPbrRoughness == false && hasPbrGlossiness == false)
 	{
 		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 		{
@@ -448,6 +473,14 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 			root->AddData(Material::EXPONENT_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,phongExponentTexture->GetValue()));
 		}
 	}
+
+	if((node = vmtRoot->GetNode("$fakepbr_layer")) != nullptr)
+	{
+		int32_t fakePbrLayer = 0;
+		if(vmt_parameter_to_numeric_type<int32_t>(node,fakePbrLayer))
+			shaderName = "nodraw"; // Fake PBR uses multiple mesh layers; We'll just hide the additional ones
+	}
+
 	info.shader = shaderName;
 	info.root = root;
 	return InitializeVMTData(vmt,info,*root,*dataSettings,shader);
@@ -570,7 +603,10 @@ void MaterialManager::SetErrorMaterial(Material *mat)
 	if(mat == nullptr)
 		m_error = MaterialHandle{};
 	else
+	{
+		mat->SetErrorFlag(true);
 		m_error = mat->GetHandle();
+	}
 }
 Material *MaterialManager::GetErrorMaterial() const {return m_error.get();}
 const std::unordered_map<std::string,MaterialHandle> &MaterialManager::GetMaterials() const {return m_materials;}

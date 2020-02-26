@@ -28,6 +28,8 @@ public:
 	// inline static const std::string DIFFUSE_MAP_IDENTIFIER = "diffuse_map";
 	static const std::string DIFFUSE_MAP_IDENTIFIER;
 	static const std::string ALBEDO_MAP_IDENTIFIER;
+	static const std::string ALBEDO_MAP2_IDENTIFIER;
+	static const std::string ALBEDO_MAP3_IDENTIFIER;
 	static const std::string NORMAL_MAP_IDENTIFIER;
 	static const std::string SPECULAR_MAP_IDENTIFIER;
 	static const std::string GLOW_MAP_IDENTIFIER;
@@ -38,7 +40,6 @@ public:
 	static const std::string METALNESS_MAP_IDENTIFIER;
 	static const std::string ROUGHNESS_MAP_IDENTIFIER;
 	static const std::string DUDV_MAP_IDENTIFIER;
-	static const std::string DIFFUSE_MAP2_IDENTIFIER;
 	static const std::string WRINKLE_STRETCH_MAP_IDENTIFIER;
 	static const std::string WRINKLE_COMPRESS_MAP_IDENTIFIER;
 	static const std::string EXPONENT_MAP_IDENTIFIER;
@@ -48,7 +49,8 @@ public:
 		None = 0u,
 		Translucent = 1u,
 		Loaded = Translucent<<1u,
-		ExecutingOnLoadCallbacks = Loaded<<1u
+		ExecutingOnLoadCallbacks = Loaded<<1u,
+		Error = ExecutingOnLoadCallbacks<<1u
 	};
 	
 	Material(MaterialManager &manager);
@@ -65,6 +67,8 @@ public:
 	void SetName(const std::string &name);
 	const std::string &GetName();
 	bool IsTranslucent() const;
+	bool IsError() const;
+	void SetErrorFlag(bool set);
 	virtual TextureInfo *GetTextureInfo(const std::string &key);
 	const TextureInfo *GetTextureInfo(const std::string &key) const;
 
@@ -150,6 +154,7 @@ template<class TMaterial>
 		r = GetManager().CreateMaterial(*m_shader,std::shared_ptr<ds::Block>(m_data->Copy()));
 	if(IsLoaded())
 		r->SetLoaded(true);
+	r->m_stateFlags = m_stateFlags;
 	return static_cast<TMaterial*>(r);
 }
 

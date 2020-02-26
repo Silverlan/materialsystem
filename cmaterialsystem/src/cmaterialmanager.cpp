@@ -5,6 +5,7 @@
 #include "cmaterialmanager.h"
 #include "cmaterial.h"
 #include "shaders/c_shader_decompose_cornea.hpp"
+#include "shaders/c_shader_ssbumpmap_to_normalmap.hpp"
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
 #include <prosper_context.hpp>
@@ -24,6 +25,7 @@ CMaterialManager::CMaterialManager(prosper::Context &context)
 	: MaterialManager{},prosper::ContextObject(context),m_textureManager(context)
 {
 	context.GetShaderManager().RegisterShader("decompose_cornea",[](prosper::Context &context,const std::string &identifier) {return new msys::ShaderDecomposeCornea(context,identifier);});
+	context.GetShaderManager().RegisterShader("ssbumpmap_to_normalmap",[](prosper::Context &context,const std::string &identifier) {return new msys::ShaderSSBumpMapToNormalMap(context,identifier);});
 }
 
 CMaterialManager::~CMaterialManager()
@@ -84,11 +86,11 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 {
 	if(MaterialManager::InitializeVMTData(vmt,info,rootData,settings,shader) == false)
 		return false;
+	VTFLib::Nodes::CVMTNode *node = nullptr;
+	auto *vmtRoot = vmt.GetRoot();
 	if(ustring::compare(shader,"eyerefract",false))
 	{
 		info.shader = "eye";
-		auto *vmtRoot = vmt.GetRoot();
-		VTFLib::Nodes::CVMTNode *node = nullptr;
 		std::string irisTexture = "";
 		if((node = vmtRoot->GetNode("$iris")) != nullptr)
 		{
@@ -219,7 +221,6 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				rootData.AddValue("color","subsurface_color","242 210 157");
 				rootData.AddValue("int","subsurface_method","5");
 				rootData.AddValue("vector","subsurface_radius","112 52.8 1.6");
-
 			}
 		}
 
@@ -228,6 +229,92 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 			get_vmt_data<ds::Bool,int32_t>(ptrRoot,settings,"eyeball_radius",node);
 		if((node = vmtRoot->GetNode("$dilation")) != nullptr)
 			get_vmt_data<ds::Bool,int32_t>(ptrRoot,settings,"pupil_dilation",node);
+	}
+	int32_t ssBumpmap;
+	if((node = vmtRoot->GetNode("$ssbump")) != nullptr && vmt_parameter_to_numeric_type<int32_t>(node,ssBumpmap) && ssBumpmap != 0)
+	{
+		// Material is using a self-shadowing bump map, which Pragma doesn't support, so we'll convert it to a normal map.
+		std::string bumpMapTexture = "";
+		if((node = vmtRoot->GetNode("$bumpmap")) != nullptr)
+		{
+			if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+			{
+				auto *bumpNapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+				bumpMapTexture = bumpNapNode->GetValue();
+			}
+		}
+
+		auto &context = GetContext();
+		auto *shaderSSBumpMapToNormalMap = static_cast<msys::ShaderSSBumpMapToNormalMap*>(context.GetShader("ssbumpmap_to_normalmap").get());
+		if(shaderSSBumpMapToNormalMap)
+		{
+			auto &textureManager = GetTextureManager();
+			TextureManager::LoadInfo loadInfo {};
+			loadInfo.flags = TextureLoadFlags::LoadInstantly;
+
+			std::shared_ptr<void> bumpMap = nullptr;
+			textureManager.Load(context,bumpMapTexture,loadInfo,&bumpMap);
+
+			auto *pBumpMap = static_cast<Texture*>(bumpMap.get());
+			if(pBumpMap && pBumpMap->HasValidVkTexture())
+			{
+				// Prepare output texture (normal map)
+				prosper::util::ImageCreateInfo imgCreateInfo {};
+				//imgCreateInfo.flags |= prosper::util::ImageCreateInfo::Flags::FullMipmapChain;
+				imgCreateInfo.format = Anvil::Format::R32G32B32A32_SFLOAT;
+				imgCreateInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::GPUBulk;
+				imgCreateInfo.postCreateLayout = Anvil::ImageLayout::COLOR_ATTACHMENT_OPTIMAL;
+				imgCreateInfo.tiling = Anvil::ImageTiling::OPTIMAL;
+				imgCreateInfo.usage = Anvil::ImageUsageFlagBits::COLOR_ATTACHMENT_BIT | Anvil::ImageUsageFlagBits::TRANSFER_SRC_BIT;
+
+				imgCreateInfo.width = pBumpMap->GetWidth();
+				imgCreateInfo.height = pBumpMap->GetHeight();
+				auto &dev = context.GetDevice();
+				auto imgNormal = prosper::util::create_image(dev,imgCreateInfo);
+
+				prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
+				auto texNormal = prosper::util::create_texture(dev,{},imgNormal,&imgViewCreateInfo);
+				auto rt = prosper::util::create_render_target(dev,{texNormal},shaderSSBumpMapToNormalMap->GetRenderPass());
+
+				auto dsg = shaderSSBumpMapToNormalMap->CreateDescriptorSetGroup(msys::ShaderSSBumpMapToNormalMap::DESCRIPTOR_SET_TEXTURE.setIndex);
+				auto &ds = *dsg->GetDescriptorSet();
+				auto &vkBumpMapTex = pBumpMap->GetVkTexture();
+				prosper::util::set_descriptor_set_binding_texture(ds,*vkBumpMapTex,umath::to_integral(msys::ShaderSSBumpMapToNormalMap::TextureBinding::SSBumpMap));
+				auto &setupCmd = context.GetSetupCommandBuffer();
+				if(prosper::util::record_begin_render_pass(**setupCmd,*rt))
+				{
+					if(shaderSSBumpMapToNormalMap->BeginDraw(setupCmd))
+					{
+						shaderSSBumpMapToNormalMap->Draw(*ds);
+						shaderSSBumpMapToNormalMap->EndDraw();
+					}
+					prosper::util::record_end_render_pass(**setupCmd);
+				}
+				context.FlushSetupCommandBuffer();
+
+				auto bumpMapTextureNoExt = bumpMapTexture;
+				ufile::remove_extension_from_filename(bumpMapTexture);
+
+				auto normalTexName = bumpMapTexture +"_normal";
+
+				auto errHandler = [](const std::string &err) {
+					std::cout<<"WARNING: Unable to save converted ss bumpmap as DDS: "<<err<<std::endl;
+				};
+
+				auto rootPath = "addons/converted/" +MaterialManager::GetRootMaterialLocation();
+				uimg::TextureInfo texInfo {};
+				texInfo.containerFormat = uimg::TextureInfo::ContainerFormat::DDS;
+				texInfo.alphaMode = uimg::TextureInfo::AlphaMode::None;
+				texInfo.flags = uimg::TextureInfo::Flags::GenerateMipmaps | uimg::TextureInfo::Flags::NormalMap;
+				texInfo.inputFormat = uimg::TextureInfo::InputFormat::R32G32B32A32_Float;
+				texInfo.outputFormat = uimg::TextureInfo::OutputFormat::NormalMap;
+				prosper::util::save_texture(rootPath +'/' +normalTexName,*texNormal->GetImage(),texInfo,errHandler);
+
+				// TODO: This should be Material::NORMAL_MAP_IDENTIFIER, but
+				// for some reason the linker complains about unresolved symbols?
+				rootData.AddData("normal_map",std::make_shared<ds::Texture>(settings,normalTexName));
+			}
+		}
 	}
 	return true;
 }
@@ -271,6 +358,7 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 	}
 	else if(info.material != nullptr) // Material already exists, reload textured?
 	{
+		info.material->SetErrorFlag(false);
 		if(bReload == false || !info.material->IsLoaded()) // Can't reload if material hasn't even been fully loaded yet
 			return info.material;
 		info.material->Initialize(shaderManager.PreRegisterShader(info.shader),info.root);

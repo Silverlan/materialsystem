@@ -54,7 +54,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(ENABLE_STATIC_LIBRARY_FLAG 0)
 # set(PRECOMPILED_HEADER "stdafx")
 
-option(CONFIG_ENABLE_VTF_SUPPORT "Enable support for VMT/VTF files." ON)
+option(CONFIG_DISABLE_VTF_SUPPORT "Enable support for VMT/VTF files." OFF)
 
 link_external_library(sharedutils)
 link_external_library(mathutil)
@@ -80,6 +80,7 @@ add_include_dir(vtflib_build)
 add_include_dir(lpng_build)
 
 add_external_library(materialsystem)
+add_external_library(lz4) # Required for source2
 
 set(DEFINITIONS
 	DLLCMATSYS_EX
