@@ -62,6 +62,7 @@ link_external_library(VTFLib)
 link_external_library(lpng)
 link_external_library(util_image)
 link_external_library(util_source2)
+add_external_library(lz4)
 
 add_include_dir(glm)
 add_include_dir(zlib)
@@ -71,6 +72,7 @@ add_include_dir(lpng_build)
 option(CONFIG_DISABLE_VMT_SUPPORT "Disable support for VMT/VTF files." OFF)
 option(CONFIG_DISABLE_VTF_SUPPORT "Disable support for VMT/VTF files." OFF)
 option(CONFIG_DISABLE_VTEX_SUPPORT "Disable support for VTex files." OFF)
+option(CONFIG_DISABLE_VMAT_SUPPORT "Disable support for VMat files." OFF)
 
 set(DEFINITIONS
 	MATSYS_DLL

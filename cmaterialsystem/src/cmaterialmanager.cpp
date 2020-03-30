@@ -6,6 +6,9 @@
 #include "cmaterial.h"
 #include "shaders/c_shader_decompose_cornea.hpp"
 #include "shaders/c_shader_ssbumpmap_to_normalmap.hpp"
+#include "shaders/c_shader_extract_image_channel.hpp"
+#include "shaders/source2/c_shader_generate_tangent_space_normal_map.hpp"
+#include "shaders/source2/c_shader_decompose_metalness_reflectance.hpp"
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
 #include <prosper_context.hpp>
@@ -26,6 +29,9 @@ CMaterialManager::CMaterialManager(prosper::Context &context)
 {
 	context.GetShaderManager().RegisterShader("decompose_cornea",[](prosper::Context &context,const std::string &identifier) {return new msys::ShaderDecomposeCornea(context,identifier);});
 	context.GetShaderManager().RegisterShader("ssbumpmap_to_normalmap",[](prosper::Context &context,const std::string &identifier) {return new msys::ShaderSSBumpMapToNormalMap(context,identifier);});
+	context.GetShaderManager().RegisterShader("source2_generate_tangent_space_normal_map",[](prosper::Context &context,const std::string &identifier) {return new msys::source2::ShaderGenerateTangentSpaceNormalMap(context,identifier);});
+	context.GetShaderManager().RegisterShader("source2_decompose_metalness_reflectance",[](prosper::Context &context,const std::string &identifier) {return new msys::source2::ShaderDecomposeMetalnessReflectance(context,identifier);});
+	context.GetShaderManager().RegisterShader("extract_image_channel",[](prosper::Context &context,const std::string &identifier) {return new msys::ShaderExtractImageChannel(context,identifier);});
 }
 
 CMaterialManager::~CMaterialManager()
@@ -77,6 +83,8 @@ void CMaterialManager::ReloadMaterialShaders()
 	GetContext().WaitIdle();
 	for(auto &it : m_materials)
 	{
+		if(it.second.IsValid() && it.second->GetName().find("wall015") != std::string::npos)
+			std::cout<<"";
 		if(it.second.IsValid() && it.second->IsLoaded() == true)
 			m_shaderHandler(it.second.get());
 	}
@@ -84,6 +92,7 @@ void CMaterialManager::ReloadMaterialShaders()
 
 bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader)
 {
+	//TODO: These do not work if the textures haven't been imported yet!!
 	if(MaterialManager::InitializeVMTData(vmt,info,rootData,settings,shader) == false)
 		return false;
 	VTFLib::Nodes::CVMTNode *node = nullptr;
@@ -316,6 +325,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 			}
 		}
 	}
+	info.saveOnDisk = true;
 	return true;
 }
 
@@ -375,16 +385,15 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 	if(bInitializeTextures == true)
 	{
 		auto *mat = info.material;
-		auto shaderHandler = m_shaderHandler;
 		auto texLoadFlags = TextureLoadFlags::None;
 		umath::set_flag(texLoadFlags,TextureLoadFlags::LoadInstantly,bLoadInstantly);
 		umath::set_flag(texLoadFlags,TextureLoadFlags::Reload,bReload);
-		static_cast<CMaterial*>(info.material)->InitializeTextures(info.material->GetDataBlock(),[shaderHandler,onMaterialLoaded,mat]() {
+		static_cast<CMaterial*>(info.material)->InitializeTextures(info.material->GetDataBlock(),[this,onMaterialLoaded,mat]() {
 			mat->SetLoaded(true);
 			if(onMaterialLoaded != nullptr)
 				onMaterialLoaded(mat);
-			if(shaderHandler != nullptr)
-				shaderHandler(mat);
+			if(m_shaderHandler != nullptr)
+				m_shaderHandler(mat);
 		},[onTextureLoaded](std::shared_ptr<Texture> texture) {
 			if(onTextureLoaded != nullptr)
 				onTextureLoaded(texture);
@@ -397,7 +406,8 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 		if(m_shaderHandler != nullptr)
 			m_shaderHandler(info.material);
 	}
-
+	if(info.saveOnDisk)
+		info.material->Save(info.material->GetName(),"addons/converted/");
 	return info.material;
 }
 

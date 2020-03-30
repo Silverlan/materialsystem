@@ -26,6 +26,9 @@ private:
 #ifndef DISABLE_VMT_SUPPORT
 	virtual bool InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader) override;
 #endif
+#ifndef DISABLE_VMAT_SUPPORT
+	virtual bool InitializeVMatData(source2::resource::Resource &resource,source2::resource::Material &vmat,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader) override;
+#endif
 public:
 	CMaterialManager(prosper::Context &context);
 	virtual ~CMaterialManager() override;

@@ -13,6 +13,7 @@
 #include <source2/resource_data.hpp>
 #endif
 
+#pragma optimize("",off)
 VFilePtr TextureManager::OpenTextureFile(const std::string &fpath)
 {
 	if(m_texFileHandler != nullptr)
@@ -138,9 +139,10 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 								case source2::VTexFormat::BC6H:
 								case source2::VTexFormat::BC7:
 								case source2::VTexFormat::BGRA8888:
+								case source2::VTexFormat::ATI2N:
 									break; // Note: When adding new formats, make sure to also add them to texture_initialize.cpp:vtex_format_to_vulkan_format
 								default:
-									vtf->valid = false; // Unsupported format
+									vtex->valid = false; // Unsupported format
 								}
 							}
 						}
@@ -151,3 +153,4 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 		}
 	}
 }
+#pragma optimize("",on)

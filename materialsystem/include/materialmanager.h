@@ -19,6 +19,15 @@ namespace VTFLib
 };
 #endif
 
+#ifndef DISABLE_VMAT_SUPPORT
+namespace source2::resource
+{
+	class Resource;
+	class Material;
+};
+#endif
+
+class VFilePtrInternal;
 class DLLMATSYS MaterialManager
 {
 protected:
@@ -28,6 +37,7 @@ protected:
 	std::string PathToIdentifier(const std::string &path,std::string *ext) const;
 	std::string PathToIdentifier(const std::string &path) const;
 	MaterialHandle m_error;
+	std::function<std::shared_ptr<VFilePtrInternal>(const std::string&,const std::string&)> m_textureImporter = nullptr;
 
 	struct DLLMATSYS LoadInfo
 	{
@@ -36,6 +46,7 @@ protected:
 		std::string identifier;
 		std::string shader;
 		std::shared_ptr<ds::Block> root;
+		bool saveOnDisk = false;
 	};
 	bool Load(const std::string &path,LoadInfo &info,bool bReload=false); // Returns true if no error has occurred. 'mat' will only be set if a material with the given path already exists.
 	virtual Material *CreateMaterial(const std::string *identifier,const std::string &shader,std::shared_ptr<ds::Block> root=nullptr);
@@ -47,6 +58,10 @@ protected:
 #ifndef DISABLE_VMT_SUPPORT
 	bool LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info);
 	virtual bool InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader);
+#endif
+#ifndef DISABLE_VMAT_SUPPORT
+	bool LoadVMat(source2::resource::Resource &vmat,LoadInfo &info);
+	virtual bool InitializeVMatData(source2::resource::Resource &resource,source2::resource::Material &vmat,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader);
 #endif
 public:
 	struct DLLMATSYS ImageFormat
@@ -73,6 +88,8 @@ public:
 	const std::unordered_map<std::string,MaterialHandle> &GetMaterials() const;
 	void Clear(); // Clears all materials (+Textures?)
 	void ClearUnused();
+	void SetTextureImporter(const std::function<std::shared_ptr<VFilePtrInternal>(const std::string&,const std::string&)> &fileHandler);
+	const std::function<std::shared_ptr<VFilePtrInternal>(const std::string&,const std::string&)> &GetTextureImporter() const;
 
 	static const std::vector<ImageFormat> &get_supported_image_formats();
 	static void SetRootMaterialLocation(const std::string &location);

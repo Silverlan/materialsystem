@@ -473,9 +473,9 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 						std::vector<uint8_t> mipmapData {};
 						vtexLoader.get_image_data = [&mipmapData](void *userData,const TextureQueueItem &item,uint32_t layer,uint32_t mipmapIdx,uint32_t &outDataSize) -> const void* {
 							auto &vtexFile = *static_cast<source2::resource::Texture*>(userData);
-							outDataSize = vtexFile.CalculateBufferSizeForMipLevel(mipmapIdx);
 							mipmapData.clear();
 							vtexFile.ReadTextureData(mipmapIdx,mipmapData);
+							outDataSize = mipmapData.size();
 							return mipmapData.data();
 						};
 						initialize_image(item,*texture,vtexLoader,image);

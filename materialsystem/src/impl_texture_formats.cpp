@@ -6,6 +6,7 @@
 #include <fsys/filesystem.h>
 #include <sharedutils/util_file.h>
 
+#pragma optimize("",off)
 const std::vector<MaterialManager::ImageFormat> &MaterialManager::get_supported_image_formats()
 {
 	static std::vector<ImageFormat> s_supportedImageFormats = { // Order of preference
@@ -23,7 +24,7 @@ const std::vector<MaterialManager::ImageFormat> &MaterialManager::get_supported_
 	return s_supportedImageFormats;
 }
 
-std::string translate_image_path(const std::string &imgFile,TextureType &type,std::string path)
+std::string translate_image_path(const std::string &imgFile,TextureType &type,std::string path,const std::function<VFilePtr(const std::string&)> &fileHandler,bool *optOutFound)
 {
 	path += FileManager::GetNormalizedPath(imgFile);
 	ustring::to_lower(path);
@@ -33,35 +34,44 @@ std::string translate_image_path(const std::string &imgFile,TextureType &type,st
 	std::string ext {};
 	ufile::get_extension(path,&ext);
 	auto bFoundType = false;
-	for(auto &format : formats)
+	auto it = std::find_if(formats.begin(),formats.end(),[&ext](const MaterialManager::ImageFormat &format) {
+		return ext == format.extension;
+	});
+	if(it != formats.end())
 	{
-		if(ext == format.extension)
-		{
-			type = format.type;
-			bFoundType = true;
-			break;
-		}
+		type = it->type;
+		bFoundType = true;
 	}
 	if(bFoundType == false)
 	{
-		for(auto &format : formats)
-		{
-			auto formatPath = path;
-			formatPath += '.' +format.extension;
-			if(FileManager::Exists(formatPath))
+		auto fFindFormat = [&formats,&path,&type,&bFoundType]() -> bool {
+			for(auto &format : formats)
 			{
-				path = formatPath;
-				type = format.type;
-				bFoundType = true;
-				break;
+				auto formatPath = path;
+				formatPath += '.' +format.extension;
+				if(FileManager::Exists(formatPath))
+				{
+					path = formatPath;
+					type = format.type;
+					bFoundType = true;
+					return true;
+				}
 			}
+			return false;
+		};
+		if(fFindFormat() == false && fileHandler)
+		{
+			// HACK: File handler may import the texture, so we'll have to check again afterwards
+			fileHandler(path);
+			fFindFormat();
 		}
-		// if(bFoundType == false)
-		// 	path += '.' +formats.front().extension;
 	}
+	if(optOutFound)
+		*optOutFound = bFoundType;
 	return path;
 }
-std::string translate_image_path(const std::string &imgFile,TextureType &type)
+std::string translate_image_path(const std::string &imgFile,TextureType &type,const std::function<VFilePtr(const std::string&)> &fileHandler,bool *optOutFound)
 {
-	return translate_image_path(imgFile,type,MaterialManager::GetRootMaterialLocation() +'/');
+	return translate_image_path(imgFile,type,MaterialManager::GetRootMaterialLocation() +'/',fileHandler,optOutFound);
 }
+#pragma optimize("",on)
