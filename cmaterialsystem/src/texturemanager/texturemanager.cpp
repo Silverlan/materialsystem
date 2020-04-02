@@ -21,6 +21,7 @@
 #include "virtualfile.h"
 #endif
 
+#pragma optimize("",off)
 decltype(TextureManager::MAX_TEXTURE_COUNT) TextureManager::MAX_TEXTURE_COUNT = 4096;
 
 #ifndef DISABLE_VTF_SUPPORT
@@ -321,3 +322,4 @@ std::shared_ptr<Texture> TextureManager::FindTexture(const std::string &imgFile,
 	}
 	return nullptr;
 }
+#pragma optimize("",on)

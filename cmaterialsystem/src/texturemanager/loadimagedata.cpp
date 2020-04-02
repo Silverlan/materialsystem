@@ -139,6 +139,7 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 								case source2::VTexFormat::BC6H:
 								case source2::VTexFormat::BC7:
 								case source2::VTexFormat::BGRA8888:
+								case source2::VTexFormat::ATI1N:
 								case source2::VTexFormat::ATI2N:
 									break; // Note: When adding new formats, make sure to also add them to texture_initialize.cpp:vtex_format_to_vulkan_format
 								default:

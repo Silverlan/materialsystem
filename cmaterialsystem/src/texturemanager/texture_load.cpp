@@ -111,7 +111,7 @@ bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,c
 	item->sampler = loadInfo.sampler;
 
 	auto bReload = umath::is_flag_set(loadFlags,TextureLoadFlags::Reload);
-	if(bReload == false)
+	if(text == nullptr) // bReload == false)
 		text = std::make_shared<Texture>(GetContext());
 	auto *ptrTexture = static_cast<Texture*>(text.get());
 	ptrTexture->SetFlags(ptrTexture->GetFlags() &~Texture::Flags::Loaded);

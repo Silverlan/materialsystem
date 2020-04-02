@@ -9,6 +9,7 @@
 #include "shaders/c_shader_extract_image_channel.hpp"
 #include "shaders/source2/c_shader_generate_tangent_space_normal_map.hpp"
 #include "shaders/source2/c_shader_decompose_metalness_reflectance.hpp"
+#include "shaders/source2/c_shader_decompose_pbr.hpp"
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
 #include <prosper_context.hpp>
@@ -31,6 +32,7 @@ CMaterialManager::CMaterialManager(prosper::Context &context)
 	context.GetShaderManager().RegisterShader("ssbumpmap_to_normalmap",[](prosper::Context &context,const std::string &identifier) {return new msys::ShaderSSBumpMapToNormalMap(context,identifier);});
 	context.GetShaderManager().RegisterShader("source2_generate_tangent_space_normal_map",[](prosper::Context &context,const std::string &identifier) {return new msys::source2::ShaderGenerateTangentSpaceNormalMap(context,identifier);});
 	context.GetShaderManager().RegisterShader("source2_decompose_metalness_reflectance",[](prosper::Context &context,const std::string &identifier) {return new msys::source2::ShaderDecomposeMetalnessReflectance(context,identifier);});
+	context.GetShaderManager().RegisterShader("source2_decompose_pbr",[](prosper::Context &context,const std::string &identifier) {return new msys::source2::ShaderDecomposePBR(context,identifier);});
 	context.GetShaderManager().RegisterShader("extract_image_channel",[](prosper::Context &context,const std::string &identifier) {return new msys::ShaderExtractImageChannel(context,identifier);});
 }
 
@@ -326,6 +328,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 		}
 	}
 	info.saveOnDisk = true;
+	GetTextureManager().ClearUnused();
 	return true;
 }
 

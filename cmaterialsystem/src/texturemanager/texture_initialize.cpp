@@ -18,6 +18,7 @@
 #include <mathutil/glmutil.h>
 #include <gli/gli.hpp>
 #include <util_image.hpp>
+#include <sharedutils/datastream.h>
 #ifndef DISABLE_VTEX_SUPPORT
 #include <util_source2.hpp>
 #include <source2/resource_data.hpp>
@@ -87,6 +88,7 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 	createInfo.postCreateLayout = Anvil::ImageLayout::TRANSFER_DST_OPTIMAL;
 	if(bCubemap == true)
 		createInfo.flags |= prosper::util::ImageCreateInfo::Flags::Cubemap;
+
 	outImage = prosper::util::create_image(dev,createInfo);
 	if(outImage == nullptr)
 		return;
@@ -282,11 +284,17 @@ static VulkanImageData vtex_format_to_vulkan_format(source2::VTexFormat format)
 		vkImgData.format = Anvil::Format::BC6H_SFLOAT_BLOCK;
 		break;
 	case source2::VTexFormat::BC7:
-		vkImgData.format = Anvil::Format::BC7_SRGB_BLOCK;
+		vkImgData.format = Anvil::Format::BC7_UNORM_BLOCK;
 		break;
 	case source2::VTexFormat::BGRA8888:
 		vkImgData.swizzle = {Anvil::ComponentSwizzle::B,Anvil::ComponentSwizzle::G,Anvil::ComponentSwizzle::R,Anvil::ComponentSwizzle::A};
 		vkImgData.format = Anvil::Format::B8G8R8A8_UNORM;
+		break;
+	case source2::VTexFormat::ATI1N:
+		vkImgData.format = Anvil::Format::BC4_UNORM_BLOCK;
+		break;
+	case source2::VTexFormat::ATI2N:
+		vkImgData.format = Anvil::Format::BC5_UNORM_BLOCK;
 		break;
 	default:
 		vkImgData.format = Anvil::Format::BC1_RGBA_UNORM_BLOCK;
@@ -319,7 +327,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 			// In theory the input image should have a srgb flag if it's srgb, but in practice that's almost never the case,
 			// so we just assume the image is srgb by default.
 			// if(gli::is_srgb(img->format()))
-			texture->SetFlags(Texture::Flags::SRGB);
+			texture->AddFlags(Texture::Flags::SRGB);
 			ImageFormatLoader gliLoader {};
 			gliLoader.userData = static_cast<gli::texture2d*>(img.get());
 			gliLoader.get_image_info = [](
@@ -350,7 +358,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 			auto *png = dynamic_cast<TextureQueueItemPNG*>(&item);
 			if(png != nullptr && png->pnginfo->GetChannelCount() == 4)
 			{
-				texture->SetFlags(Texture::Flags::SRGB);
+				texture->AddFlags(Texture::Flags::SRGB);
 
 				ImageFormatLoader pngLoader {};
 				pngLoader.userData = static_cast<uimg::ImageBuffer*>(png->pnginfo.get());
@@ -379,7 +387,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 				if(tga != nullptr && (tga->tgainfo->GetChannelCount() == 3 || tga->tgainfo->GetChannelCount() == 4))
 				{
 					static constexpr auto TGA_VK_FORMAT = Anvil::Format::R8G8B8A8_UNORM;
-					texture->SetFlags(Texture::Flags::SRGB);
+					texture->AddFlags(Texture::Flags::SRGB);
 
 					auto &tgaInfo = *tga->tgainfo;
 					auto imgBuffer = uimg::ImageBuffer::Create(tgaInfo.GetData(),tgaInfo.GetWidth(),tgaInfo.GetHeight(),(tga->tgainfo->GetChannelCount() == 3) ? uimg::ImageBuffer::Format::RGB8 : uimg::ImageBuffer::Format::RGBA8);
@@ -417,7 +425,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 						//if(vtfFile->GetFlag(VTFImageFlag::TEXTUREFLAGS_SRGB))
 						// In theory the input image should have a srgb flag if it's srgb, but in practice that's almost never the case,
 						// so we just assume the image is srgb by default.
-						texture->SetFlags(Texture::Flags::SRGB);
+						texture->AddFlags(Texture::Flags::SRGB);
 						// swizzle = vkImgData.swizzle;
 
 						auto &vtfFile = vtf->texture;
@@ -451,7 +459,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 					auto *vtex = dynamic_cast<TextureQueueItemVTex*>(&item);
 					if(vtex != nullptr)
 					{
-						texture->SetFlags(Texture::Flags::SRGB);
+						texture->AddFlags(Texture::Flags::SRGB);
 
 						auto &vtexFile = vtex->texture;
 						ImageFormatLoader vtexLoader {};
@@ -510,6 +518,8 @@ void TextureManager::FinalizeTexture(TextureQueueItem &item)
 	auto texture = GetQueuedTexture(item,true);
 	if(texture->IsIndexed() == false)
 	{
+		if(m_textures.size() == m_textures.capacity())
+			m_textures.reserve(m_textures.size() *1.5f +100);
 		m_textures.push_back(texture);
 		texture->SetFlags(texture->GetFlags() | Texture::Flags::Indexed);
 	}
