@@ -246,7 +246,7 @@ void TextureManager::SetErrorTexture(const std::shared_ptr<Texture> &tex)
 		tex->AddFlags(Texture::Flags::Error);
 }
 
-void TextureManager::Clear()
+uint32_t TextureManager::Clear()
 {
 	if(m_threadLoad != nullptr)
 	{
@@ -264,18 +264,25 @@ void TextureManager::Clear()
 	}
 	while(!m_loadQueue.empty())
 		m_loadQueue.pop();
+	auto n = m_textures.size();
 	m_textures.clear();
 	m_textureSampler = nullptr;
 	m_textureSamplerNoMipmap = nullptr;
 	m_error = nullptr;
+	return n;
 }
-void TextureManager::ClearUnused()
+uint32_t TextureManager::ClearUnused()
 {
+	uint32_t n = 0;
 	for(auto &tex : m_textures)
 	{
 		if(tex.use_count() == 1)
+		{
 			tex->Reset();
+			++n;
+		}
 	}
+	return n;
 }
 
 std::shared_ptr<prosper::Sampler> &TextureManager::GetTextureSampler() {return m_textureSampler;}

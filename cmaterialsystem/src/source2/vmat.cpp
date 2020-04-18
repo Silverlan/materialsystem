@@ -20,15 +20,19 @@
 #include <source2/resource.hpp>
 #include <source2/resource_data.hpp>
 #include <sharedutils/util_file.h>
+#include <sharedutils/util_path.hpp>
 #include <util_texture_info.hpp>
+#include <util_vmat.hpp>
 
 #pragma optimize("",off)
 #include "impl_texture_formats.h"
 
-static std::shared_ptr<prosper::Texture> load_texture(CMaterialManager &matManager,const std::string &texPath)
+static std::shared_ptr<prosper::Texture> load_texture(CMaterialManager &matManager,const std::string &texPath,bool reload=false)
 {
 	TextureManager::LoadInfo loadInfo {};
 	loadInfo.flags = TextureLoadFlags::LoadInstantly;
+	if(reload)
+		loadInfo.flags |= TextureLoadFlags::Reload;
 
 	std::shared_ptr<void> map = nullptr;
 	auto &textureManager = matManager.GetTextureManager();
@@ -65,8 +69,8 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 	auto *shaderExtractImageChannel = static_cast<msys::ShaderExtractImageChannel*>(context.GetShader("extract_image_channel").get());
 	if constexpr(isSteamVrModel)
 	{
-		auto dsMetalnessMap = std::dynamic_pointer_cast<ds::Texture>(rootData.GetValue("metalness_map"));
-		if(dsMetalnessMap)
+		auto *metalnessMap = vmat.FindTextureParam("g_tMetalnessReflectance");
+		if(metalnessMap)
 		{
 			auto &context = GetContext();
 			auto *shaderDecomposeMetalnessReflectance = static_cast<msys::source2::ShaderDecomposeMetalnessReflectance*>(context.GetShader("source2_decompose_metalness_reflectance").get());
@@ -77,7 +81,7 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 				loadInfo.flags = TextureLoadFlags::LoadInstantly;
 
 				std::shared_ptr<void> normalMap = nullptr;
-				auto metalnessReflectancePath = dsMetalnessMap->GetString();
+				auto metalnessReflectancePath = vmat::get_vmat_texture_path(*metalnessMap).GetString();
 				if(textureManager.Load(context,metalnessReflectancePath,loadInfo,&normalMap))
 				{
 					auto *pMetalnessReflectanceMap = static_cast<Texture*>(normalMap.get());
@@ -85,7 +89,7 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 					{
 						prosper::util::ImageCreateInfo imgCreateInfo {};
 						//imgCreateInfo.flags |= prosper::util::ImageCreateInfo::Flags::FullMipmapChain;
-						imgCreateInfo.format = Anvil::Format::R16G16B16A16_SFLOAT;
+						imgCreateInfo.format = Anvil::Format::R8G8B8A8_UNORM;
 						imgCreateInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::GPUBulk;
 						imgCreateInfo.postCreateLayout = Anvil::ImageLayout::COLOR_ATTACHMENT_OPTIMAL;
 						imgCreateInfo.tiling = Anvil::ImageTiling::OPTIMAL;
@@ -94,13 +98,11 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 						imgCreateInfo.width = pMetalnessReflectanceMap->GetWidth();
 						imgCreateInfo.height = pMetalnessReflectanceMap->GetHeight();
 						auto &dev = context.GetDevice();
-						auto imgMetalness = prosper::util::create_image(context.GetDevice(),imgCreateInfo);
-						auto imgReflectance = prosper::util::create_image(context.GetDevice(),imgCreateInfo);
+						auto imgRMA = prosper::util::create_image(context.GetDevice(),imgCreateInfo);
 
 						prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
-						auto texMetalness = prosper::util::create_texture(dev,{},imgMetalness,&imgViewCreateInfo);
-						auto texReflectance = prosper::util::create_texture(dev,{},imgReflectance,&imgViewCreateInfo);
-						auto rt = prosper::util::create_render_target(dev,{texMetalness,texReflectance},shaderDecomposeMetalnessReflectance->GetRenderPass());
+						auto texRMA = prosper::util::create_texture(dev,{},imgRMA,&imgViewCreateInfo);
+						auto rt = prosper::util::create_render_target(dev,{texRMA},shaderDecomposeMetalnessReflectance->GetRenderPass());
 
 						auto dsg = shaderDecomposeMetalnessReflectance->CreateDescriptorSetGroup(msys::source2::ShaderGenerateTangentSpaceNormalMap::DESCRIPTOR_SET_TEXTURE.setIndex);
 						auto &ds = *dsg->GetDescriptorSet();
@@ -130,17 +132,15 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 						uimg::TextureInfo texInfo {};
 						texInfo.containerFormat = uimg::TextureInfo::ContainerFormat::DDS;
 						texInfo.alphaMode = uimg::TextureInfo::AlphaMode::Auto;
-						texInfo.inputFormat = uimg::TextureInfo::InputFormat::R32G32B32A32_Float;
-						texInfo.outputFormat = uimg::TextureInfo::OutputFormat::GradientMap;
-						auto metalnessPath = pathNoExt +"_metalness";
-						auto glossinessPath = pathNoExt +"_glossiness";
-						prosper::util::save_texture(rootPath +'/' +metalnessPath,*texMetalness->GetImage(),texInfo,errHandler);
-						prosper::util::save_texture(rootPath +'/' +glossinessPath,*texReflectance->GetImage(),texInfo,errHandler);
+						texInfo.inputFormat = uimg::TextureInfo::InputFormat::R8G8B8A8_UInt;
+						texInfo.outputFormat = uimg::TextureInfo::OutputFormat::ColorMap;
+						auto rmaPath = pathNoExt +"_rma";
+						prosper::util::save_texture(rootPath +'/' +rmaPath,*texRMA->GetImage(),texInfo,errHandler);
 
-						// TODO: These should be Material::NORMAL_MAP_IDENTIFIER, but
-						// for some reason the linker complains about unresolved symbols?
-						rootData.AddData("metalness_map",std::make_shared<ds::Texture>(settings,metalnessPath));
-						rootData.AddData("specular_map",std::make_shared<ds::Texture>(settings,glossinessPath));
+						rootData.AddData("rma_map",std::make_shared<ds::Texture>(settings,rmaPath));
+
+						auto rmaInfo = rootData.AddBlock("rma_info");
+						rmaInfo->AddValue("bool","requires_ao_update","1");
 					}
 				}
 			}
@@ -163,31 +163,147 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 			auto pathNoExt = texPath;
 			ufile::remove_extension_from_filename(pathNoExt);
 
+			prosper::Texture *anisoGlossMap = nullptr;
+
 			// Decompose Source 2 textures into albedo and metalness-roughness
-			auto pbrSet = shaderDecomposePbr->DecomposePBR(context,*albedoTex,*normalTex);
+			auto *alphaTest = vmat.FindIntParam("F_ALPHA_TEST");
+			auto *translucent = vmat.FindIntParam("F_TRANSLUCENT");
+			auto *specular = vmat.FindIntParam("F_SPECULAR");
+			auto flags = msys::source2::ShaderDecomposePBR::Flags::None;
+			if((alphaTest && *alphaTest) || (translucent && *translucent))
+				flags |= msys::source2::ShaderDecomposePBR::Flags::TreatAlphaAsTransparency;
+			if(specular && *specular)
+			{
+				flags |= msys::source2::ShaderDecomposePBR::Flags::SpecularWorkflow;
+
+				auto *s2AnisoGlossMap = vmat.FindTextureParam("g_tSelfIllumMask");
+				if(s2AnisoGlossMap)
+				{
+					::util::Path path{*s2AnisoGlossMap};
+					path.RemoveFileExtension();
+					path += ".vtex_c";
+					path.PopFront();
+
+					anisoGlossMap = load_texture(*this,path.GetString()).get();
+					if(anisoGlossMap == nullptr)
+						umath::set_flag(flags,msys::source2::ShaderDecomposePBR::Flags::SpecularWorkflow,false);
+				}
+				else
+					anisoGlossMap = normalTex.get();
+			}
+			
+			// Note: While the original roughness and metalness maps have the
+			// same resolution as the albedo or normal maps (which is usually quite high),
+			// we'll have to lower resolution, since we store them as a separate map
+			// and it would require too much GPU memory otherwise.
+			vk::Extent2D metallicRoughnessResolution {};
+			auto *s2AoMap = vmat.FindTextureParam("g_tAmbientOcclusion");
+			prosper::Texture *aoTex = nullptr;
+			if(s2AoMap)
+			{
+				::util::Path path{*s2AoMap};
+				path.RemoveFileExtension();
+				path += ".vtex_c";
+
+				aoTex = load_texture(*this,path.GetString()).get();
+			}
+
+			auto hasAoMap = true;
+			if(aoTex == nullptr)
+			{
+				aoTex = load_texture(*this,"white").get();
+				hasAoMap = false;
+
+				auto &albedoImg = albedoTex->GetImage();
+				auto extents = albedoImg->GetExtents();
+				metallicRoughnessResolution = {static_cast<uint32_t>(extents.width) /4,static_cast<uint32_t>(extents.height) /4};
+				if(metallicRoughnessResolution.width == 0)
+					metallicRoughnessResolution.width = 0;
+				if(metallicRoughnessResolution.height == 0)
+					metallicRoughnessResolution.height = 0;
+			}
+			else
+			{
+				auto &aoImg = aoTex->GetImage();
+				auto extents = aoImg->GetExtents();
+				metallicRoughnessResolution = {static_cast<uint32_t>(extents.width),static_cast<uint32_t>(extents.height)};
+			}
+
+			auto pbrSet = shaderDecomposePbr->DecomposePBR(context,*albedoTex,*normalTex,*aoTex,flags,anisoGlossMap);
 
 			auto albedoPath = pathNoExt +"_albedo";
 			auto rootPath = "addons/converted/" +MaterialManager::GetRootMaterialLocation();
 			uimg::TextureInfo texInfo {};
 			texInfo.containerFormat = uimg::TextureInfo::ContainerFormat::DDS;
 			texInfo.alphaMode = uimg::TextureInfo::AlphaMode::None;
+			texInfo.outputFormat = uimg::TextureInfo::OutputFormat::ColorMap;
+			auto useAlpha = umath::is_flag_set(flags,msys::source2::ShaderDecomposePBR::Flags::TreatAlphaAsTransparency);
+			if(useAlpha)
+			{
+				texInfo.alphaMode = uimg::TextureInfo::AlphaMode::Transparency;
+				texInfo.outputFormat = uimg::TextureInfo::OutputFormat::ColorMapSmoothAlpha;
+			}
 			texInfo.flags = uimg::TextureInfo::Flags::GenerateMipmaps;
 			texInfo.inputFormat = uimg::TextureInfo::InputFormat::R8G8B8A8_UInt;
-			texInfo.outputFormat = uimg::TextureInfo::OutputFormat::ColorMap;
 			prosper::util::save_texture(rootPath +'/' +albedoPath,*pbrSet.albedoMap,texInfo,[](const std::string &err) {
 				std::cout<<"WARNING: Unable to save albedo image as DDS: "<<err<<std::endl;
 			});
 
-			auto metalnessRoughnessPath = pathNoExt +"_metallic_roughness";
-			texInfo.outputFormat = uimg::TextureInfo::OutputFormat::GradientMap;
-			prosper::util::save_texture(rootPath +'/' +metalnessRoughnessPath,*pbrSet.metallicRoughnessMap,texInfo,[](const std::string &err) {
-				std::cout<<"WARNING: Unable to save metallic-roughness image as DDS: "<<err<<std::endl;
+			// TODO
+			if(metallicRoughnessResolution.width > 1'024)
+				metallicRoughnessResolution.width = 1'024;
+			if(metallicRoughnessResolution.height > 1'024)
+				metallicRoughnessResolution.height = 1'024;
+
+			auto mrExtents = pbrSet.rmaMap->GetExtents();
+			if(mrExtents.width > metallicRoughnessResolution.width && mrExtents.height > metallicRoughnessResolution.height)
+			{
+				// Downscale the image (TODO: Make it optional to keep the original resolution!)
+				std::cout<<"Downscaling RMA map for '"<<info.identifier<<"' from "<<mrExtents.width<<"x"<<mrExtents.height<<" to "<<metallicRoughnessResolution.width<<"x"<<metallicRoughnessResolution.height<<std::endl;
+				prosper::util::ImageCreateInfo imgCreateInfo {};
+				imgCreateInfo.format = Anvil::Format::R8G8B8A8_UNORM;
+				imgCreateInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::GPUBulk;
+				imgCreateInfo.postCreateLayout = Anvil::ImageLayout::TRANSFER_DST_OPTIMAL;
+				imgCreateInfo.tiling = Anvil::ImageTiling::OPTIMAL;
+				imgCreateInfo.usage = Anvil::ImageUsageFlagBits::TRANSFER_DST_BIT;
+
+				imgCreateInfo.width = metallicRoughnessResolution.width;
+				imgCreateInfo.height = metallicRoughnessResolution.height;
+				auto &dev = context.GetDevice();
+				auto imgRescaled = prosper::util::create_image(context.GetDevice(),imgCreateInfo);
+				auto &setupCmd = context.GetSetupCommandBuffer();
+				prosper::util::BlitInfo blitInfo {};
+				blitInfo.extentsSrc = mrExtents;
+				blitInfo.extentsDst = metallicRoughnessResolution;
+				prosper::util::record_image_barrier(**setupCmd,**pbrSet.rmaMap,Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL,Anvil::ImageLayout::TRANSFER_SRC_OPTIMAL);
+				prosper::util::record_blit_image(**setupCmd,blitInfo,**pbrSet.rmaMap,**imgRescaled);
+				context.FlushSetupCommandBuffer();
+
+				pbrSet.rmaMap = imgRescaled;
+			}
+
+			auto metalnessRoughnessPath = pathNoExt +"_rma";
+			texInfo.outputFormat = uimg::TextureInfo::OutputFormat::ColorMap;
+			prosper::util::save_texture(rootPath +'/' +metalnessRoughnessPath,*pbrSet.rmaMap,texInfo,[](const std::string &err) {
+				std::cout<<"WARNING: Unable to save RMA image as DDS: "<<err<<std::endl;
 			});
 
 			rootData.AddData("albedo_map",std::make_shared<ds::Texture>(settings,albedoPath));
-			rootData.AddData("metalness_roughness_map",std::make_shared<ds::Texture>(settings,metalnessRoughnessPath));
-			rootData.AddValue("float","metalness_factor","1.0");
-			rootData.AddValue("float","roughness_factor","1.0");
+			rootData.AddData("rma_map",std::make_shared<ds::Texture>(settings,metalnessRoughnessPath));
+
+			if(hasAoMap == false)
+			{
+				auto rmaInfo = rootData.AddBlock("rma_info");
+				rmaInfo->AddValue("bool","requires_ao_update","1");
+			}
+
+			// Ao map is now in rma map, so we won't need it anymore
+			auto aoValue = rootData.GetValue("ao_map");
+			if(aoValue)
+				rootData.DetachData(*aoValue);
+
+			if(useAlpha)
+				rootData.AddValue("bool","translucent","1");
 		}
 	}
 
@@ -261,10 +377,13 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 							uimg::TextureInfo texInfo {};
 							texInfo.containerFormat = uimg::TextureInfo::ContainerFormat::DDS;
 							texInfo.alphaMode = uimg::TextureInfo::AlphaMode::Auto;
-							texInfo.flags = uimg::TextureInfo::Flags::NormalMap;
-							texInfo.inputFormat = uimg::TextureInfo::InputFormat::R32G32B32A32_Float;
+							texInfo.inputFormat = uimg::TextureInfo::InputFormat::R16G16B16A16_Float;
 							texInfo.outputFormat = uimg::TextureInfo::OutputFormat::NormalMap;
+							texInfo.SetNormalMap();
 							prosper::util::save_texture(rootPath +'/' +normalMapPathNoExt,*texNormal->GetImage(),texInfo,errHandler);
+
+							load_texture(*this,normalMapPathNoExt,true);
+							rootData.AddData("normal_map",std::make_shared<ds::Texture>(settings,normalMapPathNoExt));
 						}
 					}
 				}
@@ -330,22 +449,35 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 						uimg::TextureInfo texInfo {};
 						texInfo.containerFormat = uimg::TextureInfo::ContainerFormat::DDS;
 						texInfo.alphaMode = uimg::TextureInfo::AlphaMode::None;
-						texInfo.flags = uimg::TextureInfo::Flags::GenerateMipmaps | uimg::TextureInfo::Flags::NormalMap;
-						texInfo.inputFormat = uimg::TextureInfo::InputFormat::R32G32B32A32_Float;
+						texInfo.flags = uimg::TextureInfo::Flags::GenerateMipmaps;
+						texInfo.inputFormat = uimg::TextureInfo::InputFormat::R16G16B16A16_Float;
 						texInfo.outputFormat = uimg::TextureInfo::OutputFormat::NormalMap;
-						prosper::util::save_texture(rootPath +'/' +bumpMapTextureNoExt,*texNormal->GetImage(),texInfo,errHandler);
+						auto nmapTexInfo = texInfo;
+						nmapTexInfo.SetNormalMap();
+						prosper::util::save_texture(rootPath +'/' +bumpMapTextureNoExt,*texNormal->GetImage(),nmapTexInfo,errHandler);
+
+						// Reload the normal map
+						load_texture(*this,bumpMapTextureNoExt,true);
+						rootData.AddData("normal_map",std::make_shared<ds::Texture>(settings,bumpMapTextureNoExt));
 
 						// Extract roughness (blue channel of normal map)
-						auto roughnessPath = bumpMapTextureNoExt +"_roughness";
-						auto imgRoughness = shaderExtractImageChannel->ExtractImageChannel(
+						auto rmaPath = bumpMapTextureNoExt +"_rma";
+						auto imgRma = shaderExtractImageChannel->ExtractImageChannel(
 							context,*texNormal,
-							msys::ShaderExtractImageChannel::Channel::Blue,msys::ShaderExtractImageChannel::Pipeline::RGBA32
+							std::array<msys::ShaderExtractImageChannel::Channel,4>{
+								msys::ShaderExtractImageChannel::Channel::One, /* Ao */
+								msys::ShaderExtractImageChannel::Channel::Blue, /* Roughness */
+								msys::ShaderExtractImageChannel::Channel::One, /* Metalness */
+								msys::ShaderExtractImageChannel::Channel::One /* Alpha */
+							},msys::ShaderExtractImageChannel::Pipeline::RGBA8
 						);
-						umath::set_flag(texInfo.flags,uimg::TextureInfo::Flags::NormalMap,false);
-						texInfo.outputFormat = uimg::TextureInfo::OutputFormat::GradientMap;
-						prosper::util::save_texture(rootPath +'/' +roughnessPath,*imgRoughness,texInfo,errHandler);
+						texInfo.outputFormat = uimg::TextureInfo::OutputFormat::ColorMap;
+						prosper::util::save_texture(rootPath +'/' +rmaPath,*imgRma,texInfo,errHandler);
 
-						rootData.AddData("roughness_map",std::make_shared<ds::Texture>(settings,roughnessPath));
+						rootData.AddData("rma_map",std::make_shared<ds::Texture>(settings,rmaPath));
+
+						auto rmaInfo = rootData.AddBlock("rma_info");
+						rmaInfo->AddValue("bool","requires_ao_update","1");
 					}
 				}
 			}

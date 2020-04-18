@@ -59,7 +59,7 @@ void msys::ShaderExtractImageChannel::InitializeRenderPass(std::shared_ptr<prosp
 	}
 }
 
-std::shared_ptr<prosper::Image> msys::ShaderExtractImageChannel::ExtractImageChannel(prosper::Context &context,prosper::Texture &texSrc,Channel channel,Pipeline pipeline)
+std::shared_ptr<prosper::Image> msys::ShaderExtractImageChannel::ExtractImageChannel(prosper::Context &context,prosper::Texture &texSrc,const std::array<Channel,4> &channelValues,Pipeline pipeline)
 {
 	Anvil::Format outputFormat;
 	switch(pipeline)
@@ -98,7 +98,12 @@ std::shared_ptr<prosper::Image> msys::ShaderExtractImageChannel::ExtractImageCha
 	{
 		if(BeginDraw(setupCmd))
 		{
-			if(RecordPushConstants(PushConstants{channel}))
+			if(RecordPushConstants(PushConstants{
+				channelValues.at(0),
+				channelValues.at(1),
+				channelValues.at(2),
+				channelValues.at(3)
+			}))
 				Draw(*ds);
 			EndDraw();
 		}

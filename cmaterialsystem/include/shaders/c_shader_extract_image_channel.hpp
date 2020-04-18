@@ -39,18 +39,24 @@ namespace msys
 			Red = 0,
 			Green,
 			Blue,
-			Alpha
+			Alpha,
+
+			Zero,
+			One
 		};
 
 #pragma pack(push,1)
 		struct PushConstants
 		{
-			Channel channel;
+			Channel channelDstRed;
+			Channel channelDstGreen;
+			Channel channelDstBlue;
+			Channel channelDstAlpha;
 		};
 #pragma pack(pop)
 
 		ShaderExtractImageChannel(prosper::Context &context,const std::string &identifier);
-		std::shared_ptr<prosper::Image> ExtractImageChannel(prosper::Context &context,prosper::Texture &texSrc,Channel channel,Pipeline pipeline);
+		std::shared_ptr<prosper::Image> ExtractImageChannel(prosper::Context &context,prosper::Texture &texSrc,const std::array<Channel,4> &channelValues,Pipeline pipeline);
 	protected:
 		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 		virtual void InitializeRenderPass(std::shared_ptr<prosper::RenderPass> &outRenderPass,uint32_t pipelineIdx) override;

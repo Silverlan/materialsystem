@@ -31,7 +31,9 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 	auto *surface = dynamic_cast<TextureQueueItemSurface*>(&item);
 	if(surface != nullptr)
 	{
-		auto f = OpenTextureFile(item.path);
+		auto f = item.file;
+		if(f == nullptr)
+			f = OpenTextureFile(item.path);
 		if(f == nullptr)
 			item.valid = false;
 		else
@@ -48,7 +50,7 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 		auto *png = dynamic_cast<TextureQueueItemPNG*>(&item);
 		if(png != nullptr)
 		{
-			png->pnginfo = uimg::load_image(png->path.c_str());
+			png->pnginfo = item.file ? uimg::load_image(item.file) : uimg::load_image(png->path.c_str());
 			if(png->cubemap || png->pnginfo == nullptr)
 				png->valid = false;
 			else
@@ -59,7 +61,7 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 			auto *tga = dynamic_cast<TextureQueueItemTGA*>(&item);
 			if(tga != nullptr)
 			{
-				tga->tgainfo = uimg::load_image(tga->path.c_str());
+				tga->tgainfo = item.file ? uimg::load_image(item.file) : uimg::load_image(tga->path.c_str());
 				if(tga->cubemap || tga->tgainfo == nullptr)
 					tga->valid = false;
 				else
@@ -71,7 +73,9 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 				auto *vtf = dynamic_cast<TextureQueueItemVTF*>(&item);
 				if(vtf != nullptr)
 				{
-					auto fp = OpenTextureFile(vtf->path);
+					auto fp = vtf->file;
+					if(fp == nullptr)
+						fp = OpenTextureFile(vtf->path);
 					if(fp == nullptr)
 						vtf->valid = false;
 					else
@@ -112,7 +116,9 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 				auto *vtex = dynamic_cast<TextureQueueItemVTex*>(&item);
 				if(vtex != nullptr)
 				{
-					auto fp = OpenTextureFile(vtex->path);
+					auto fp = vtex->file;
+					if(fp == nullptr)
+						fp = OpenTextureFile(vtex->path);
 					if(fp == nullptr)
 						vtex->valid = false;
 					else

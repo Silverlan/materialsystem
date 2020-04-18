@@ -85,8 +85,6 @@ void CMaterialManager::ReloadMaterialShaders()
 	GetContext().WaitIdle();
 	for(auto &it : m_materials)
 	{
-		if(it.second.IsValid() && it.second->GetName().find("wall015") != std::string::npos)
-			std::cout<<"";
 		if(it.second.IsValid() && it.second->IsLoaded() == true)
 			m_shaderHandler(it.second.get());
 	}
@@ -215,7 +213,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				prosper::util::save_texture(rootPath +'/' +noiseTexName,*texNoise->GetImage(),texInfo,errHandler);
 
 				texInfo.outputFormat = uimg::TextureInfo::OutputFormat::NormalMap;
-				texInfo.flags |= uimg::TextureInfo::Flags::NormalMap;
+				texInfo.SetNormalMap();
 				prosper::util::save_texture(rootPath +'/' +normalTexName,*texNormal->GetImage(),texInfo,errHandler);
 
 				// TODO: These should be Material::ALBEDO_MAP_IDENTIFIER/Material::NORMAL_MAP_IDENTIFIER/Material::PARALLAX_MAP_IDENTIFIER, but
@@ -316,9 +314,10 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				uimg::TextureInfo texInfo {};
 				texInfo.containerFormat = uimg::TextureInfo::ContainerFormat::DDS;
 				texInfo.alphaMode = uimg::TextureInfo::AlphaMode::None;
-				texInfo.flags = uimg::TextureInfo::Flags::GenerateMipmaps | uimg::TextureInfo::Flags::NormalMap;
+				texInfo.flags |= uimg::TextureInfo::Flags::GenerateMipmaps;
 				texInfo.inputFormat = uimg::TextureInfo::InputFormat::R32G32B32A32_Float;
 				texInfo.outputFormat = uimg::TextureInfo::OutputFormat::NormalMap;
+				texInfo.SetNormalMap();
 				prosper::util::save_texture(rootPath +'/' +normalTexName,*texNormal->GetImage(),texInfo,errHandler);
 
 				// TODO: This should be Material::NORMAL_MAP_IDENTIFIER, but

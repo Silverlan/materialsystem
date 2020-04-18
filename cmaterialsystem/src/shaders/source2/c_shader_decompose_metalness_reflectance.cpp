@@ -9,9 +9,9 @@
 decltype(msys::source2::ShaderDecomposeMetalnessReflectance::DESCRIPTOR_SET_TEXTURE) msys::source2::ShaderDecomposeMetalnessReflectance::DESCRIPTOR_SET_TEXTURE = {
 	{
 		prosper::Shader::DescriptorSetInfo::Binding { // Metalness-reflectance Map
-	Anvil::DescriptorType::COMBINED_IMAGE_SAMPLER,
-	Anvil::ShaderStageFlagBits::FRAGMENT_BIT
-}
+			Anvil::DescriptorType::COMBINED_IMAGE_SAMPLER,
+			Anvil::ShaderStageFlagBits::FRAGMENT_BIT
+		}
 	}
 };
 msys::source2::ShaderDecomposeMetalnessReflectance::ShaderDecomposeMetalnessReflectance(prosper::Context &context,const std::string &identifier)
@@ -30,8 +30,7 @@ void msys::source2::ShaderDecomposeMetalnessReflectance::InitializeRenderPass(st
 {
 	CreateCachedRenderPass<msys::source2::ShaderDecomposeMetalnessReflectance>(
 		std::vector<prosper::util::RenderPassCreateInfo::AttachmentInfo>{
-			{Anvil::Format::R32G32B32A32_SFLOAT}, // Metalness
-			{Anvil::Format::R32G32B32A32_SFLOAT} // Reflectance
+			{Anvil::Format::R8G8B8A8_UNORM} // RMA
 	},outRenderPass,pipelineIdx);
 }
 #pragma optimize("",on)

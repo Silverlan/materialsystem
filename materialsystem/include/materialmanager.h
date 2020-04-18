@@ -7,6 +7,7 @@
 
 #include "matsysdefinitions.h"
 #include "material.h"
+#include <optional>
 
 #pragma warning(push)
 #pragma warning(disable : 4251)
@@ -30,6 +31,38 @@ namespace source2::resource
 class VFilePtrInternal;
 class DLLMATSYS MaterialManager
 {
+public:
+	std::optional<std::string> FindMaterialPath(const std::string &material);
+	struct DLLMATSYS ImageFormat
+	{
+		ImageFormat(TextureType _type,std::string _extension)
+			: type(_type),extension(_extension)
+		{}
+		TextureType type;
+		std::string extension;
+	};
+
+	MaterialManager();
+	MaterialManager &operator=(const MaterialManager&)=delete;
+	MaterialManager(const MaterialManager&)=delete;
+	virtual ~MaterialManager();
+
+	Material *CreateMaterial(const std::string &identifier,const std::string &shader,const std::shared_ptr<ds::Block> &root=nullptr);
+	Material *CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &root=nullptr);
+	Material *FindMaterial(const std::string &identifier,std::string &internalMatId) const;
+	Material *FindMaterial(const std::string &identifier) const;
+	virtual Material *Load(const std::string &path,bool bReload=false,bool *bFirstTimeError=nullptr);
+	virtual void SetErrorMaterial(Material *mat);
+	Material *GetErrorMaterial() const;
+	const std::unordered_map<std::string,MaterialHandle> &GetMaterials() const;
+	uint32_t Clear(); // Clears all materials (+Textures?)
+	uint32_t ClearUnused();
+	void SetTextureImporter(const std::function<std::shared_ptr<VFilePtrInternal>(const std::string&,const std::string&)> &fileHandler);
+	const std::function<std::shared_ptr<VFilePtrInternal>(const std::string&,const std::string&)> &GetTextureImporter() const;
+
+	static const std::vector<ImageFormat> &get_supported_image_formats();
+	static void SetRootMaterialLocation(const std::string &location);
+	static const std::string &GetRootMaterialLocation();
 protected:
 	std::unordered_map<std::string,MaterialHandle> m_materials;
 	uint32_t m_unnamedIdx = 0;
@@ -63,37 +96,6 @@ protected:
 	bool LoadVMat(source2::resource::Resource &vmat,LoadInfo &info);
 	virtual bool InitializeVMatData(source2::resource::Resource &resource,source2::resource::Material &vmat,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader);
 #endif
-public:
-	struct DLLMATSYS ImageFormat
-	{
-		ImageFormat(TextureType _type,std::string _extension)
-			: type(_type),extension(_extension)
-		{}
-		TextureType type;
-		std::string extension;
-	};
-
-	MaterialManager();
-	MaterialManager &operator=(const MaterialManager&)=delete;
-	MaterialManager(const MaterialManager&)=delete;
-	virtual ~MaterialManager();
-
-	Material *CreateMaterial(const std::string &identifier,const std::string &shader,const std::shared_ptr<ds::Block> &root=nullptr);
-	Material *CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &root=nullptr);
-	Material *FindMaterial(const std::string &identifier,std::string &internalMatId) const;
-	Material *FindMaterial(const std::string &identifier) const;
-	virtual Material *Load(const std::string &path,bool bReload=false,bool *bFirstTimeError=nullptr);
-	virtual void SetErrorMaterial(Material *mat);
-	Material *GetErrorMaterial() const;
-	const std::unordered_map<std::string,MaterialHandle> &GetMaterials() const;
-	void Clear(); // Clears all materials (+Textures?)
-	void ClearUnused();
-	void SetTextureImporter(const std::function<std::shared_ptr<VFilePtrInternal>(const std::string&,const std::string&)> &fileHandler);
-	const std::function<std::shared_ptr<VFilePtrInternal>(const std::string&,const std::string&)> &GetTextureImporter() const;
-
-	static const std::vector<ImageFormat> &get_supported_image_formats();
-	static void SetRootMaterialLocation(const std::string &location);
-	static const std::string &GetRootMaterialLocation();
 };
 #pragma warning(pop)
 

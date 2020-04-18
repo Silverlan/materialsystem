@@ -27,23 +27,44 @@ namespace msys
 			{
 				AlbedoMap = 0u,
 				NormalMap,
+				AnisotropicGlossinessMap,
+				AmbientOcclusionMap,
 
 				Count
 			};
 
+			enum class Flags : uint32_t
+			{
+				None = 0,
+				TreatAlphaAsTransparency = 1,
+				SpecularWorkflow = TreatAlphaAsTransparency<<1u,
+				TreatAlphaAsSSS = SpecularWorkflow<<1u
+			};
+
+#pragma pack(push,1)
+			struct PushConstants
+			{
+				Flags flags = Flags::None;
+			};
+#pragma pack(pop)
+
 			struct DLLCMATSYS DecomposedImageSet
 			{
-				std::shared_ptr<prosper::Image> metallicRoughnessMap = nullptr;
+				std::shared_ptr<prosper::Image> rmaMap = nullptr;
 				std::shared_ptr<prosper::Image> albedoMap = nullptr;
 			};
 
 			ShaderDecomposePBR(prosper::Context &context,const std::string &identifier);
-			DecomposedImageSet DecomposePBR(prosper::Context &context,prosper::Texture &albedoMap,prosper::Texture &normalMap);
+			DecomposedImageSet DecomposePBR(
+				prosper::Context &context,prosper::Texture &albedoMap,prosper::Texture &normalMap,prosper::Texture &aoMap,
+				Flags flags=Flags::None,prosper::Texture *optAniGlossMap=nullptr
+			);
 		protected:
 			virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 			virtual void InitializeRenderPass(std::shared_ptr<prosper::RenderPass> &outRenderPass,uint32_t pipelineIdx) override;
 		};
 	};
 };
+REGISTER_BASIC_BITWISE_OPERATORS(msys::source2::ShaderDecomposePBR::Flags)
 
 #endif

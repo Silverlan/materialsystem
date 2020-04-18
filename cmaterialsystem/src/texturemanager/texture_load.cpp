@@ -25,14 +25,14 @@ void TextureManager::ReloadTexture(const std::string &tex,const LoadInfo &loadIn
 	ReloadTexture(*tCur,loadInfo);
 }
 
-bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture,bool bAbsolutePath)
+bool TextureManager::Load(prosper::Context &context,const std::string &cacheName,VFilePtr optFile,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture,bool bAbsolutePath)
 {
 	std::string pathCache;
 	std::shared_ptr<void> text = nullptr;
 
 	// Get cache name and path
 	std::string ext;
-	std::string imgFileNoExt = imgFile;
+	std::string imgFileNoExt = cacheName;
 	if(ufile::get_extension(imgFileNoExt,&ext) == true)
 		imgFileNoExt = imgFileNoExt.substr(0,imgFileNoExt.length() -ext.length() -1);
 	auto bLoading = false;
@@ -75,7 +75,10 @@ bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,c
 	}
 	TextureType type;
 	auto bLoadInstantly = (loadInfo.flags &TextureLoadFlags::LoadInstantly) != TextureLoadFlags::None;
-	auto path = translate_image_path(imgFile,type,(bAbsolutePath == false) ? (MaterialManager::GetRootMaterialLocation() +"/") : "",m_texFileHandler);
+	auto dontCache = umath::is_flag_set(loadInfo.flags,TextureLoadFlags::DontCache);
+	if(bLoadInstantly == false)
+		dontCache = false; // This flag only makes sense if we're loading instantly
+	auto path = translate_image_path(cacheName,type,(bAbsolutePath == false) ? (MaterialManager::GetRootMaterialLocation() +"/") : "",m_texFileHandler);
 	//if(bReload == true)
 	//	bLoadInstantly = true;
 	if(bLoadInstantly == false && m_threadLoad == nullptr)
@@ -104,11 +107,13 @@ bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,c
 	else if(type == TextureType::VTex)
 		item = std::make_unique<TextureQueueItemVTex>();
 #endif
-	item->name = imgFile; // Actual path to file
+	item->name = cacheName; // Actual path to file
 	item->path = path;
 	item->cache = pathCache; // Normalized name without extension
 	item->mipmapMode = loadInfo.mipmapLoadMode;
 	item->sampler = loadInfo.sampler;
+	item->addToCache = !dontCache;
+	item->file = optFile;
 
 	auto bReload = umath::is_flag_set(loadFlags,TextureLoadFlags::Reload);
 	if(text == nullptr) // bReload == false)
@@ -148,8 +153,8 @@ bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,c
 				glBindTexture(GL_TEXTURE_2D,text->ID);
 				while(item->mipmapid != -1)
 				{
-					GenerateNextMipmap(item);
-					InitializeGLMipmap(item);
+				GenerateNextMipmap(item);
+				InitializeGLMipmap(item);
 				}*/ // Generate on the CPU
 			}
 		}
@@ -158,4 +163,13 @@ bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,c
 	}
 	PushOnLoadQueue(std::move(item));
 	return false;
+}
+
+bool TextureManager::Load(prosper::Context &context,const std::string &cacheName,VFilePtr f,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture)
+{
+	return Load(context,cacheName,f,loadInfo,outTexture,false);
+}
+bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture,bool bAbsolutePath)
+{
+	return Load(context,imgFile,nullptr,loadInfo,outTexture,bAbsolutePath);
 }

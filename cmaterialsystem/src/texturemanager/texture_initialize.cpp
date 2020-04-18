@@ -11,6 +11,7 @@
 #include <image/prosper_texture.hpp>
 #include <prosper_util.hpp>
 #include <prosper_util_image_buffer.hpp>
+#include <buffers/prosper_buffer.hpp>
 #include <prosper_command_buffer.hpp>
 #include <config.h>
 #include <wrappers/image.h>
@@ -19,6 +20,7 @@
 #include <gli/gli.hpp>
 #include <util_image.hpp>
 #include <sharedutils/datastream.h>
+#include <sharedutils/util.h>
 #ifndef DISABLE_VTEX_SUPPORT
 #include <util_source2.hpp>
 #include <source2/resource_data.hpp>
@@ -92,6 +94,14 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 	outImage = prosper::util::create_image(dev,createInfo);
 	if(outImage == nullptr)
 		return;
+
+#if 0
+	static uint64_t totalAllocatedSize = 0;
+	auto allocatedSize = outImage->GetMemoryBuffer()->GetSize();
+	totalAllocatedSize += allocatedSize;
+	std::cout<<"Allocated "<<::util::get_pretty_bytes(allocatedSize)<<" for image '"<<item.name<<"'. Total allocated: "<<::util::get_pretty_bytes(totalAllocatedSize)<<std::endl;
+#endif
+
 	outImage->SetDebugName("texture_asset_img");
 
 	// Initialize image data as buffers, then copy to output image
@@ -129,7 +139,7 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 			}
 
 			// Initialize buffer with source image data
-			auto buf = context.AllocateTemporaryBuffer(dataSize,data);
+			auto buf = context.AllocateTemporaryBuffer(dataSize,0u /* alignment */,data);
 			buffers.push_back({buf,iLayer,iMipmap}); // We need to keep the buffers alive until the copy has completed
 		}
 	}
@@ -516,7 +526,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 void TextureManager::FinalizeTexture(TextureQueueItem &item)
 {
 	auto texture = GetQueuedTexture(item,true);
-	if(texture->IsIndexed() == false)
+	if(texture->IsIndexed() == false && item.addToCache)
 	{
 		if(m_textures.size() == m_textures.capacity())
 			m_textures.reserve(m_textures.size() *1.5f +100);

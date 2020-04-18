@@ -92,44 +92,12 @@ std::optional<prosper::Buffer::SubBufferIndex> MaterialDescriptorArrayManager::R
 			matRenderInfo.normalTextureArrayIndex = *index;
 	}
 	
-	auto *pAoMap = loaded ? mat.GetTextureInfo("ambient_occlusion_map") : errTex;
-	if(pAoMap && pAoMap->texture)
+	auto *pRmaMap = loaded ? mat.GetTextureInfo("rma_map") : errTex;
+	if(pRmaMap && pRmaMap->texture)
 	{
-		auto index = AddItem(*std::static_pointer_cast<Texture>(pAoMap->texture));
+		auto index = AddItem(*std::static_pointer_cast<Texture>(pRmaMap->texture));
 		if(index.has_value())
-			matRenderInfo.ambientOcclusionTextureArrayIndex = *index;
-	}
-	
-	pAoMap = loaded ? mat.GetTextureInfo("ao_map") : errTex;
-	if(pAoMap && pAoMap->texture)
-	{
-		auto index = AddItem(*std::static_pointer_cast<Texture>(pAoMap->texture));
-		if(index.has_value())
-			matRenderInfo.ambientOcclusionTextureArrayIndex = *index;
-	}
-	
-	auto *metallicMap = loaded ? mat.GetTextureInfo("metalness_map") : errTex;
-	if(metallicMap && metallicMap->texture)
-	{
-		auto index = AddItem(*std::static_pointer_cast<Texture>(metallicMap->texture));
-		if(index.has_value())
-			matRenderInfo.metallicTextureArrayIndex = *index;
-	}
-	
-	auto *roughnessMap = loaded ? mat.GetTextureInfo("roughness_map") : errTex;
-	if(roughnessMap && roughnessMap->texture)
-	{
-		auto index = AddItem(*std::static_pointer_cast<Texture>(roughnessMap->texture));
-		if(index.has_value())
-			matRenderInfo.roughnessTextureArrayIndex = *index;
-	}
-	
-	auto *specularMap = loaded ? mat.GetSpecularMap() : errTex;
-	if(specularMap && specularMap->texture)
-	{
-		auto index = AddItem(*std::static_pointer_cast<Texture>(specularMap->texture));
-		if(index.has_value())
-			matRenderInfo.specularTextureArrayIndex = *index;
+			matRenderInfo.rmaTextureArrayIndex = *index;
 	}
 
 	auto &matBuffer = it->second;

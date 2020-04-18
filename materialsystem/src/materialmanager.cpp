@@ -43,6 +43,17 @@ MaterialManager::LoadInfo::LoadInfo()
 	: material(nullptr)
 {}
 
+static std::string g_materialLocation = "materials";
+std::optional<std::string> MaterialManager::FindMaterialPath(const std::string &material)
+{
+	std::string ext;
+	auto path = PathToIdentifier(material,&ext);
+	//path += '.' +ext;
+	if(FileManager::Exists(g_materialLocation +'/' +path) == false)
+		return {};
+	return path;
+}
+
 MaterialManager::MaterialManager()
 	: m_error{}
 {}
@@ -51,7 +62,6 @@ MaterialManager::~MaterialManager()
 	Clear();
 }
 
-static std::string g_materialLocation = "materials";
 void MaterialManager::SetRootMaterialLocation(const std::string &location)
 {
 	g_materialLocation = location;
@@ -277,7 +287,7 @@ void MaterialManager::SetErrorMaterial(Material *mat)
 }
 Material *MaterialManager::GetErrorMaterial() const {return m_error.get();}
 const std::unordered_map<std::string,MaterialHandle> &MaterialManager::GetMaterials() const {return m_materials;}
-void MaterialManager::Clear()
+uint32_t MaterialManager::Clear()
 {
 	for(auto &it : m_materials)
 	{
@@ -285,12 +295,15 @@ void MaterialManager::Clear()
 		if(hMaterial.IsValid())
 			hMaterial->Remove();
 	}
+	auto n = m_materials.size();
 	m_materials.clear();
+	return n;
 }
 void MaterialManager::SetTextureImporter(const std::function<VFilePtr(const std::string&,const std::string&)> &fileHandler) {m_textureImporter = fileHandler;}
 const std::function<std::shared_ptr<VFilePtrInternal>(const std::string&,const std::string&)> &MaterialManager::GetTextureImporter() const {return m_textureImporter;}
-void MaterialManager::ClearUnused()
+uint32_t MaterialManager::ClearUnused()
 {
+	uint32_t n = 0;
 	for(auto it=m_materials.begin();it!=m_materials.end();)
 	{
 		auto &hMaterial = it->second;
@@ -298,9 +311,11 @@ void MaterialManager::ClearUnused()
 		{
 			hMaterial->Remove();
 			it = m_materials.erase(it);
+			++n;
 		}
 		else
 			++it;
 	}
+	return n;
 }
 #pragma optimize("",on)

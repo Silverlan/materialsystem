@@ -11,19 +11,17 @@
 
 DEFINE_BASE_HANDLE(DLLMATSYS,Material,Material);
 
+#pragma optimize("",off)
 decltype(Material::DIFFUSE_MAP_IDENTIFIER) Material::DIFFUSE_MAP_IDENTIFIER = "diffuse_map";
 decltype(Material::ALBEDO_MAP_IDENTIFIER) Material::ALBEDO_MAP_IDENTIFIER = "albedo_map";
 decltype(Material::ALBEDO_MAP2_IDENTIFIER) Material::ALBEDO_MAP2_IDENTIFIER = "albedo_map2";
 decltype(Material::ALBEDO_MAP3_IDENTIFIER) Material::ALBEDO_MAP3_IDENTIFIER = "albedo_map3";
 decltype(Material::NORMAL_MAP_IDENTIFIER) Material::NORMAL_MAP_IDENTIFIER = "normal_map";
-decltype(Material::SPECULAR_MAP_IDENTIFIER) Material::SPECULAR_MAP_IDENTIFIER = "specular_map";
 decltype(Material::GLOW_MAP_IDENTIFIER) Material::GLOW_MAP_IDENTIFIER = "emission_map";
 decltype(Material::EMISSION_MAP_IDENTIFIER) Material::EMISSION_MAP_IDENTIFIER = GLOW_MAP_IDENTIFIER;
 decltype(Material::PARALLAX_MAP_IDENTIFIER) Material::PARALLAX_MAP_IDENTIFIER = "parallax_map";
-decltype(Material::AO_MAP_IDENTIFIER) Material::AO_MAP_IDENTIFIER = "ao_map";
 decltype(Material::ALPHA_MAP_IDENTIFIER) Material::ALPHA_MAP_IDENTIFIER = "alpha_map";
-decltype(Material::METALNESS_MAP_IDENTIFIER) Material::METALNESS_MAP_IDENTIFIER = "metalness_map";
-decltype(Material::ROUGHNESS_MAP_IDENTIFIER) Material::ROUGHNESS_MAP_IDENTIFIER = "roughness_map";
+decltype(Material::RMA_MAP_IDENTIFIER) Material::RMA_MAP_IDENTIFIER = "rma_map";
 decltype(Material::DUDV_MAP_IDENTIFIER) Material::DUDV_MAP_IDENTIFIER = "dudv_map";
 decltype(Material::WRINKLE_STRETCH_MAP_IDENTIFIER) Material::WRINKLE_STRETCH_MAP_IDENTIFIER = "wrinkle_stretch_map";
 decltype(Material::WRINKLE_COMPRESS_MAP_IDENTIFIER) Material::WRINKLE_COMPRESS_MAP_IDENTIFIER = "wrinkle_compress_map";
@@ -60,10 +58,9 @@ void Material::Reset()
 	m_texDiffuse = nullptr;
 	m_texNormal = nullptr;
 	m_userData = nullptr;
-	m_texSpecular = nullptr;
 	m_texGlow = nullptr;
 	m_texParallax = nullptr;
-	m_texAo = nullptr;
+	m_texRma = nullptr;
 	m_texAlpha = nullptr;
 }
 
@@ -95,13 +92,10 @@ void Material::UpdateTextures()
 		m_texDiffuse = GetTextureInfo(ALBEDO_MAP_IDENTIFIER);
 
 	m_texNormal = GetTextureInfo(NORMAL_MAP_IDENTIFIER);
-	m_texSpecular = GetTextureInfo(SPECULAR_MAP_IDENTIFIER);
 	m_texGlow = GetTextureInfo(EMISSION_MAP_IDENTIFIER);
 	m_texParallax = GetTextureInfo(PARALLAX_MAP_IDENTIFIER);
-	m_texAo = GetTextureInfo(AO_MAP_IDENTIFIER);
 	m_texAlpha = GetTextureInfo(ALPHA_MAP_IDENTIFIER);
-	m_texMetalness = GetTextureInfo(METALNESS_MAP_IDENTIFIER);
-	m_texRoughness = GetTextureInfo(ROUGHNESS_MAP_IDENTIFIER);
+	m_texRma = GetTextureInfo(RMA_MAP_IDENTIFIER);
 
 	umath::set_flag(m_stateFlags,StateFlags::Translucent,m_data->GetBool("translucent"));
 }
@@ -143,21 +137,8 @@ void Material::SetLoaded(bool b)
 		umath::set_flag(m_stateFlags,StateFlags::ExecutingOnLoadCallbacks,false);
 	}
 }
-bool Material::Save(const std::string &fileName,const std::string &inRootPath) const
+bool Material::Save(std::shared_ptr<VFilePtrInternalReal> f) const
 {
-	auto rootPath = inRootPath;
-	if(rootPath.empty() == false && rootPath.back() != '/' && rootPath.back() != '\\')
-		rootPath += '/';
-	auto fullPath = rootPath +MaterialManager::GetRootMaterialLocation() +"/" +fileName;
-	ufile::remove_extension_from_filename(fullPath);
-	fullPath += ".wmi";
-
-	auto pathWithoutFileName = ufile::get_path_from_filename(fullPath);
-	FileManager::CreatePath(pathWithoutFileName.c_str());
-
-	auto f = FileManager::OpenFile<VFilePtrReal>(fullPath.c_str(),"w");
-	if(f == nullptr)
-		return false;
 	auto &rootData = GetDataBlock();
 	std::stringstream ss;
 	ss<<"\""<<GetShaderIdentifier()<<"\"\n{\n";
@@ -204,6 +185,40 @@ bool Material::Save(const std::string &fileName,const std::string &inRootPath) c
 	f->WriteString(ss.str());
 	return true;
 }
+bool Material::Save() const
+{
+	auto name = const_cast<Material*>(this)->GetName();
+	if(name.empty())
+		return false;
+	std::string absPath = GetManager().GetRootMaterialLocation() +"\\";
+	absPath += name;
+	ufile::remove_extension_from_filename(absPath);
+	absPath += ".wmi";
+	if(FileManager::FindLocalPath(absPath,absPath) == false)
+		absPath = "addons/converted/" +absPath;
+
+	auto f = FileManager::OpenFile<VFilePtrReal>(absPath.c_str(),"w");
+	if(f == nullptr)
+		return false;
+	return Save(f);
+}
+bool Material::Save(const std::string &fileName,const std::string &inRootPath) const
+{
+	auto rootPath = inRootPath;
+	if(rootPath.empty() == false && rootPath.back() != '/' && rootPath.back() != '\\')
+		rootPath += '/';
+	auto fullPath = rootPath +MaterialManager::GetRootMaterialLocation() +"/" +fileName;
+	ufile::remove_extension_from_filename(fullPath);
+	fullPath += ".wmi";
+
+	auto pathWithoutFileName = ufile::get_path_from_filename(fullPath);
+	FileManager::CreatePath(pathWithoutFileName.c_str());
+
+	auto f = FileManager::OpenFile<VFilePtrReal>(fullPath.c_str(),"w");
+	if(f == nullptr)
+		return false;
+	return Save(f);
+}
 CallbackHandle Material::CallOnLoaded(const std::function<void(void)> &f) const
 {
 	if(IsLoaded())
@@ -225,9 +240,6 @@ TextureInfo *Material::GetAlbedoMap() {return GetDiffuseMap();}
 const TextureInfo *Material::GetNormalMap() const {return const_cast<Material*>(this)->GetNormalMap();}
 TextureInfo *Material::GetNormalMap() {return m_texNormal;}
 
-const TextureInfo *Material::GetSpecularMap() const {return const_cast<Material*>(this)->GetSpecularMap();}
-TextureInfo *Material::GetSpecularMap() {return m_texSpecular;}
-
 const TextureInfo *Material::GetGlowMap() const {return const_cast<Material*>(this)->GetGlowMap();}
 TextureInfo *Material::GetGlowMap() {return m_texGlow;}
 
@@ -237,14 +249,8 @@ TextureInfo *Material::GetAlphaMap() {return m_texAlpha;}
 const TextureInfo *Material::GetParallaxMap() const {return const_cast<Material*>(this)->GetParallaxMap();}
 TextureInfo *Material::GetParallaxMap() {return m_texParallax;}
 
-const TextureInfo *Material::GetAmbientOcclusionMap() const {return const_cast<Material*>(this)->GetAmbientOcclusionMap();}
-TextureInfo *Material::GetAmbientOcclusionMap() {return m_texAo;}
-
-const TextureInfo *Material::GetMetalnessMap() const {return const_cast<Material*>(this)->GetMetalnessMap();}
-TextureInfo *Material::GetMetalnessMap() {return m_texMetalness;}
-
-const TextureInfo *Material::GetRoughnessMap() const {return const_cast<Material*>(this)->GetRoughnessMap();}
-TextureInfo *Material::GetRoughnessMap() {return m_texRoughness;}
+const TextureInfo *Material::GetRMAMap() const {return const_cast<Material*>(this)->GetRMAMap();}
+TextureInfo *Material::GetRMAMap() {return m_texRma;}
 
 void Material::SetName(const std::string &name) {m_name = name;}
 const std::string &Material::GetName() {return m_name;}
@@ -280,3 +286,4 @@ const std::shared_ptr<ds::Block> &Material::GetDataBlock() const
 	static std::shared_ptr<ds::Block> nptr = nullptr;
 	return (m_data != nullptr) ? m_data : nptr;
 }
+#pragma optimize("",on)

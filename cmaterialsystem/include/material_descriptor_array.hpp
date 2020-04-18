@@ -22,11 +22,7 @@ public:
 		// Indices into global texture array
 		ArrayIndex albedoTextureArrayIndex = INVALID_ARRAY_INDEX;
 		ArrayIndex normalTextureArrayIndex = INVALID_ARRAY_INDEX;
-		ArrayIndex ambientOcclusionTextureArrayIndex = INVALID_ARRAY_INDEX;
-		ArrayIndex metallicTextureArrayIndex = INVALID_ARRAY_INDEX;
-		ArrayIndex roughnessTextureArrayIndex = INVALID_ARRAY_INDEX;
-		
-		ArrayIndex specularTextureArrayIndex = INVALID_ARRAY_INDEX;
+		ArrayIndex rmaTextureArrayIndex = INVALID_ARRAY_INDEX;
 
 		std::array<ArrayIndex,2> padding;
 	};

@@ -18,6 +18,7 @@ DECLARE_BASE_HANDLE(DLLMATSYS,Material,Material);
 namespace util {class ShaderInfo;};
 class MaterialManager;
 class MaterialHandle;
+class VFilePtrInternalReal;
 namespace ds {class Block;};
 #pragma warning(push)
 #pragma warning(disable : 4251)
@@ -31,14 +32,11 @@ public:
 	static const std::string ALBEDO_MAP2_IDENTIFIER;
 	static const std::string ALBEDO_MAP3_IDENTIFIER;
 	static const std::string NORMAL_MAP_IDENTIFIER;
-	static const std::string SPECULAR_MAP_IDENTIFIER;
 	static const std::string GLOW_MAP_IDENTIFIER;
 	static const std::string EMISSION_MAP_IDENTIFIER;
 	static const std::string PARALLAX_MAP_IDENTIFIER;
-	static const std::string AO_MAP_IDENTIFIER;
 	static const std::string ALPHA_MAP_IDENTIFIER;
-	static const std::string METALNESS_MAP_IDENTIFIER;
-	static const std::string ROUGHNESS_MAP_IDENTIFIER;
+	static const std::string RMA_MAP_IDENTIFIER;
 	static const std::string DUDV_MAP_IDENTIFIER;
 	static const std::string WRINKLE_STRETCH_MAP_IDENTIFIER;
 	static const std::string WRINKLE_COMPRESS_MAP_IDENTIFIER;
@@ -81,9 +79,6 @@ public:
 	const TextureInfo *GetNormalMap() const;
 	TextureInfo *GetNormalMap();
 
-	const TextureInfo *GetSpecularMap() const;
-	TextureInfo *GetSpecularMap();
-
 	const TextureInfo *GetGlowMap() const;
 	TextureInfo *GetGlowMap();
 
@@ -93,21 +88,17 @@ public:
 	const TextureInfo *GetParallaxMap() const;
 	TextureInfo *GetParallaxMap();
 
-	const TextureInfo *GetAmbientOcclusionMap() const;
-	TextureInfo *GetAmbientOcclusionMap();
-
-	const TextureInfo *GetMetalnessMap() const;
-	TextureInfo *GetMetalnessMap();
-
-	const TextureInfo *GetRoughnessMap() const;
-	TextureInfo *GetRoughnessMap();
+	const TextureInfo *GetRMAMap() const;
+	TextureInfo *GetRMAMap();
 
 	const std::shared_ptr<ds::Block> &GetDataBlock() const;
 	virtual void SetLoaded(bool b);
 	CallbackHandle CallOnLoaded(const std::function<void(void)> &f) const;
 	bool IsValid() const;
 	MaterialManager &GetManager() const;
+	bool Save(std::shared_ptr<VFilePtrInternalReal> f) const;
 	bool Save(const std::string &fileName,const std::string &rootPath="") const;
+	bool Save() const;
 
 	// Returns true if all textures associated with this material have been fully loaded
 	bool IsLoaded() const;
@@ -128,13 +119,10 @@ protected:
 	MaterialManager &m_manager;
 	TextureInfo *m_texDiffuse = nullptr;
 	TextureInfo *m_texNormal = nullptr;
-	TextureInfo *m_texSpecular = nullptr;
 	TextureInfo *m_texGlow = nullptr;
 	TextureInfo *m_texAlpha = nullptr;
 	TextureInfo *m_texParallax = nullptr;
-	TextureInfo *m_texAo = nullptr;
-	TextureInfo *m_texMetalness = nullptr;
-	TextureInfo *m_texRoughness = nullptr;
+	TextureInfo *m_texRma = nullptr;
 	void *m_userData;
 	template<class TMaterial>
 	TMaterial *Copy() const;

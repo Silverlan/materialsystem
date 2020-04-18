@@ -23,6 +23,8 @@ namespace prosper
 	class Sampler;
 };
 
+class VFilePtrInternal;
+
 namespace uimg {class ImageBuffer;};
 class TCallback;
 class DLLCMATSYS TextureQueueItem
@@ -37,6 +39,7 @@ public:
 	std::string name;
 	std::string path;
 	std::string cache;
+	std::shared_ptr<VFilePtrInternal> file = nullptr; // Optional
 	unsigned char **mipmap;
 	unsigned int *dxtformat;
 	unsigned int *format;
@@ -46,6 +49,7 @@ public:
 	bool valid;
 	bool initialized;
 	bool cubemap;
+	bool addToCache = true;
 	TextureType texturetype;
 };
 

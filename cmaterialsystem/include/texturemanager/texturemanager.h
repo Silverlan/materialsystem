@@ -63,14 +63,17 @@ public:
 	void SetTextureFileHandler(const std::function<VFilePtr(const std::string&)> &fileHandler);
 
 	void WaitForTextures();
+	bool Load(prosper::Context &context,const std::string &cacheName,VFilePtr f,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture=nullptr);
 	bool Load(prosper::Context &context,const std::string &imgFile,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture=nullptr,bool bAbsolutePath=false);
 	void ReloadTextures(const LoadInfo &loadInfo);
 	void ReloadTexture(Texture &texture,const LoadInfo &loadInfo);
 	void ReloadTexture(const std::string &tex,const LoadInfo &loadInfo);
-	void Clear();
-	void ClearUnused();
+	uint32_t Clear();
+	uint32_t ClearUnused();
 	std::shared_ptr<prosper::Sampler> &GetTextureSampler();
 private:
+	bool Load(prosper::Context &context,const std::string &cacheName,VFilePtr optFile,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture,bool bAbsolutePath);
+
 	bool HasWork();
 	std::weak_ptr<prosper::Context> m_wpContext;
 	std::vector<std::shared_ptr<Texture>> m_textures;
