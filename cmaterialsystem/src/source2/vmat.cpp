@@ -55,19 +55,30 @@ static std::shared_ptr<prosper::Texture> get_texture(CMaterialManager &matManage
 	return load_texture(matManager,dsMap->GetString());
 }
 
-bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,source2::resource::Material &vmat,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader)
+static bool g_downScaleRMATextures = true;
+void CMaterialManager::SetDownscaleImportedRMATextures(bool downscale)
+{
+	g_downScaleRMATextures = downscale;
+}
+
+bool CMaterialManager::InitializeVMatData(
+	source2::resource::Resource &resource,source2::resource::Material &vmat,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader,
+	VMatOrigin origin
+)
 {
 	//TODO: These do not work if the textures haven't been imported yet!!
-	if(MaterialManager::InitializeVMatData(resource,vmat,info,rootData,settings,shader) == false)
+	if(MaterialManager::InitializeVMatData(resource,vmat,info,rootData,settings,shader,origin) == false)
 		return false;
 	// TODO: Steam VR assets seem to behave differently than Source 2 assets.
 	// How do we determine what type it is?
-	constexpr auto isSteamVrModel = false;
+	auto isSteamVrMat = (origin == VMatOrigin::SteamVR);
+	auto isDota2Mat = (origin == VMatOrigin::Dota2);
+	auto isSource2Mat = (origin == VMatOrigin::Source2);
 
 	auto &context = GetContext();
 
 	auto *shaderExtractImageChannel = static_cast<msys::ShaderExtractImageChannel*>(context.GetShader("extract_image_channel").get());
-	if constexpr(isSteamVrModel)
+	if(isSteamVrMat)
 	{
 		auto *metalnessMap = vmat.FindTextureParam("g_tMetalnessReflectance");
 		if(metalnessMap)
@@ -145,6 +156,10 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 				}
 			}
 		}
+	}
+	else if(isDota2Mat)
+	{
+		std::cout<<"TODO"<<std::endl;
 	}
 	else
 	{
@@ -256,9 +271,8 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 				metallicRoughnessResolution.height = 1'024;
 
 			auto mrExtents = pbrSet.rmaMap->GetExtents();
-			if(mrExtents.width > metallicRoughnessResolution.width && mrExtents.height > metallicRoughnessResolution.height)
+			if(g_downScaleRMATextures && mrExtents.width > metallicRoughnessResolution.width && mrExtents.height > metallicRoughnessResolution.height)
 			{
-				// Downscale the image (TODO: Make it optional to keep the original resolution!)
 				std::cout<<"Downscaling RMA map for '"<<info.identifier<<"' from "<<mrExtents.width<<"x"<<mrExtents.height<<" to "<<metallicRoughnessResolution.width<<"x"<<metallicRoughnessResolution.height<<std::endl;
 				prosper::util::ImageCreateInfo imgCreateInfo {};
 				imgCreateInfo.format = Anvil::Format::R8G8B8A8_UNORM;
@@ -316,10 +330,33 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 		auto path = translate_image_path(normalMapPath,nmType,MaterialManager::GetRootMaterialLocation() +'/',nullptr,&found);
 		if(found && nmType == TextureType::VTex)
 		{
-			// TODO
-			if(true)// constexpr(isSteamVrModel)
+			//if(isSteamVrMat || isDota2Mat)
 			{
-				auto *shaderGenerateTangentSpaceNormalMap = static_cast<msys::source2::ShaderGenerateTangentSpaceNormalMap*>(context.GetShader("source2_generate_tangent_space_normal_map").get());
+				std::string texPath;
+				auto albedoTex = get_texture(*this,rootData,"albedo_map",&texPath);
+				if(albedoTex)
+				{
+					auto pathNoExt = texPath;
+					ufile::remove_extension_from_filename(pathNoExt);
+
+					auto albedoPath = pathNoExt;
+					auto rootPath = "addons/converted/" +MaterialManager::GetRootMaterialLocation();
+					uimg::TextureInfo texInfo {};
+					texInfo.containerFormat = uimg::TextureInfo::ContainerFormat::DDS;
+					texInfo.alphaMode = uimg::TextureInfo::AlphaMode::None;
+					texInfo.outputFormat = uimg::TextureInfo::OutputFormat::ColorMap;
+					texInfo.flags = uimg::TextureInfo::Flags::GenerateMipmaps;
+					texInfo.inputFormat = uimg::TextureInfo::InputFormat::R8G8B8A8_UInt;
+					prosper::util::save_texture(rootPath +'/' +albedoPath,*albedoTex->GetImage(),texInfo,[](const std::string &err) {
+						std::cout<<"WARNING: Unable to save albedo image as DDS: "<<err<<std::endl;
+						});
+				}
+
+				msys::source2::ShaderGenerateTangentSpaceNormalMap *shaderGenerateTangentSpaceNormalMap = nullptr;
+				if(isSteamVrMat || isDota2Mat)
+					shaderGenerateTangentSpaceNormalMap = static_cast<msys::source2::ShaderGenerateTangentSpaceNormalMapProto*>(context.GetShader("source2_generate_tangent_space_normal_map_proto").get());
+				else
+					shaderGenerateTangentSpaceNormalMap = static_cast<msys::source2::ShaderGenerateTangentSpaceNormalMap*>(context.GetShader("source2_generate_tangent_space_normal_map").get());
 				if(shaderGenerateTangentSpaceNormalMap)
 				{
 					auto &textureManager = GetTextureManager();
@@ -388,6 +425,8 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 					}
 				}
 			}
+#if 0
+			// Obsolete?
 			else
 			{
 				// Note: Source 2 normal maps always seem to be self-shadowed bumpmaps?
@@ -481,6 +520,7 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 					}
 				}
 			}
+#endif
 		}
 	}
 

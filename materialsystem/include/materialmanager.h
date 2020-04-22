@@ -93,8 +93,17 @@ protected:
 	virtual bool InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader);
 #endif
 #ifndef DISABLE_VMAT_SUPPORT
+	enum class VMatOrigin : uint8_t
+	{
+		Source2 = 0,
+		SteamVR,
+		Dota2
+	};
 	bool LoadVMat(source2::resource::Resource &vmat,LoadInfo &info);
-	virtual bool InitializeVMatData(source2::resource::Resource &resource,source2::resource::Material &vmat,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader);
+	virtual bool InitializeVMatData(
+		source2::resource::Resource &resource,source2::resource::Material &vmat,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader,
+		VMatOrigin origin
+	);
 #endif
 };
 #pragma warning(pop)

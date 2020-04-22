@@ -15,7 +15,11 @@ decltype(msys::source2::ShaderGenerateTangentSpaceNormalMap::DESCRIPTOR_SET_TEXT
 	}
 };
 msys::source2::ShaderGenerateTangentSpaceNormalMap::ShaderGenerateTangentSpaceNormalMap(prosper::Context &context,const std::string &identifier)
-	: ShaderBaseImageProcessing{context,identifier,"util/source2/fs_generate_tangent_space_normal_map.gls"}
+	: ShaderGenerateTangentSpaceNormalMap{context,identifier,"util/source2/fs_generate_tangent_space_normal_map.gls"}
+{}
+
+msys::source2::ShaderGenerateTangentSpaceNormalMap::ShaderGenerateTangentSpaceNormalMap(prosper::Context &context,const std::string &identifier,const std::string &fragmentShader)
+	: ShaderBaseImageProcessing{context,identifier,fragmentShader}
 {}
 
 void msys::source2::ShaderGenerateTangentSpaceNormalMap::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
@@ -33,4 +37,10 @@ void msys::source2::ShaderGenerateTangentSpaceNormalMap::InitializeRenderPass(st
 			{Anvil::Format::R32G32B32A32_SFLOAT} // Normal
 	},outRenderPass,pipelineIdx);
 }
+
+////////////////////
+
+msys::source2::ShaderGenerateTangentSpaceNormalMapProto::ShaderGenerateTangentSpaceNormalMapProto(prosper::Context &context,const std::string &identifier)
+	: ShaderGenerateTangentSpaceNormalMap{context,identifier,"util/source2/fs_generate_tangent_space_normal_map_proto.gls"}
+{}
 #pragma optimize("",on)

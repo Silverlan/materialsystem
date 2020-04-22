@@ -10,7 +10,7 @@
 #endif
 
 #ifndef DISABLE_VMT_SUPPORT
-bool MaterialManager::InitializeVMatData(source2::resource::Resource &resource,source2::resource::Material &vmat,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader) {return true;}
+bool MaterialManager::InitializeVMatData(source2::resource::Resource &resource,source2::resource::Material &vmat,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader,VMatOrigin origin) {return true;}
 
 bool MaterialManager::LoadVMat(source2::resource::Resource &resource,LoadInfo &info)
 {
@@ -46,6 +46,7 @@ bool MaterialManager::LoadVMat(source2::resource::Resource &resource,LoadInfo &i
 	if(aoMap)
 		fLoadTexture(*aoMap);
 
+	auto origin = VMatOrigin::Source2;
 	if(s2Mat->GetShaderName() == "vr_simple_2way_blend.vfx")
 	{
 		shaderName = "pbr_blend";
@@ -96,6 +97,23 @@ bool MaterialManager::LoadVMat(source2::resource::Resource &resource,LoadInfo &i
 		auto *textureColor = s2Mat->FindVectorParam("TextureColorA");
 		// TODO
 	}
+	else if(s2Mat->GetShaderName() == "hero.vfx")
+	{
+		origin = VMatOrigin::Dota2;
+		// Dota 2
+		auto *albedoMap = s2Mat->FindTextureParam("g_tColor");
+		if(albedoMap)
+			root->AddData(Material::ALBEDO_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,fLoadTexture(*albedoMap)));
+
+		auto *normalMap = s2Mat->FindTextureParam("g_tNormal");
+		if(normalMap)
+			root->AddData(Material::NORMAL_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,fLoadTexture(*normalMap)));
+#if 0
+		// TODO
+		+		["g_tMasks1"]	("g_tMasks1", "materials/models/courier/drodo/drodo_detailmask_tga_bcdebe17.vtex")	std::pair<std::basic_string<char,std::char_traits<char>,std::allocator<char> > const ,std::basic_string<char,std::char_traits<char>,std::allocator<char> > >
+		+		["g_tMasks2"]	("g_tMasks2", "materials/models/courier/drodo/drodo_specmask_tga_cff5ad3a.vtex")	std::pair<std::basic_string<char,std::char_traits<char>,std::allocator<char> > const ,std::basic_string<char,std::char_traits<char>,std::allocator<char> > >
+#endif
+	}
 	else
 	{
 		auto *albedoMap = s2Mat->FindTextureParam("g_tColor");
@@ -122,7 +140,7 @@ bool MaterialManager::LoadVMat(source2::resource::Resource &resource,LoadInfo &i
 
 	info.shader = shaderName;
 	info.root = root;
-	return InitializeVMatData(resource,*s2Mat,info,*root,*dataSettings,shaderName);
+	return InitializeVMatData(resource,*s2Mat,info,*root,*dataSettings,shaderName,origin);
 }
 #endif
 #pragma optimize("",on)

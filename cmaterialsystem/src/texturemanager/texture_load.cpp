@@ -78,7 +78,32 @@ bool TextureManager::Load(prosper::Context &context,const std::string &cacheName
 	auto dontCache = umath::is_flag_set(loadInfo.flags,TextureLoadFlags::DontCache);
 	if(bLoadInstantly == false)
 		dontCache = false; // This flag only makes sense if we're loading instantly
-	auto path = translate_image_path(cacheName,type,(bAbsolutePath == false) ? (MaterialManager::GetRootMaterialLocation() +"/") : "",m_texFileHandler);
+	auto found = false;
+	auto path = translate_image_path(cacheName,type,(bAbsolutePath == false) ? (MaterialManager::GetRootMaterialLocation() +"/") : "",m_texFileHandler,&found);
+	if(found == false)
+	{
+		// Attempt to determine by file extension
+		auto f = std::dynamic_pointer_cast<VFilePtrInternalReal>(optFile);
+		if(f)
+		{
+			std::string ext;
+			if(ufile::get_extension(f->GetPath(),&ext))
+			{
+				if(ustring::compare(ext,"dds",false))
+					type = TextureType::DDS;
+				else if(ustring::compare(ext,"ktx",false))
+					type = TextureType::KTX;
+				else if(ustring::compare(ext,"png",false))
+					type = TextureType::PNG;
+				else if(ustring::compare(ext,"tga",false))
+					type = TextureType::TGA;
+				else if(ustring::compare(ext,"vtf",false))
+					type = TextureType::VTF;
+				else if(ustring::compare(ext,"vtex_c",false))
+					type = TextureType::VTex;
+			}
+		}
+	}
 	//if(bReload == true)
 	//	bLoadInstantly = true;
 	if(bLoadInstantly == false && m_threadLoad == nullptr)

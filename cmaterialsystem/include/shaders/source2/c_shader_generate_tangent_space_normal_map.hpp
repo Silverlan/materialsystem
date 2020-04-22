@@ -27,8 +27,17 @@ namespace msys
 
 			ShaderGenerateTangentSpaceNormalMap(prosper::Context &context,const std::string &identifier);
 		protected:
+			ShaderGenerateTangentSpaceNormalMap(prosper::Context &context,const std::string &identifier,const std::string &fragmentShader);
 			virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 			virtual void InitializeRenderPass(std::shared_ptr<prosper::RenderPass> &outRenderPass,uint32_t pipelineIdx) override;
+		};
+
+		// SteamVR and Dota2
+		class DLLCMATSYS ShaderGenerateTangentSpaceNormalMapProto
+			: public ShaderGenerateTangentSpaceNormalMap
+		{
+		public:
+			ShaderGenerateTangentSpaceNormalMapProto(prosper::Context &context,const std::string &identifier);
 		};
 	};
 };
