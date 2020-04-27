@@ -20,7 +20,7 @@
 namespace prosper
 {
 	class Context;
-	class Sampler;
+	class ISampler;
 };
 
 class VFilePtrInternal;
@@ -45,7 +45,7 @@ public:
 	unsigned int *format;
 	int mipmapid;
 	TextureMipmapMode mipmapMode;
-	std::shared_ptr<prosper::Sampler> sampler = nullptr;
+	std::shared_ptr<prosper::ISampler> sampler = nullptr;
 	bool valid;
 	bool initialized;
 	bool cubemap;

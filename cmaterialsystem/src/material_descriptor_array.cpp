@@ -2,12 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <prosper_context.hpp>
 #include "material_descriptor_array.hpp"
 #include "textureinfo.h"
 #include "texturemanager/texture.h"
 #include "cmaterial.h"
 #include <cmaterialmanager.h>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
+#include <prosper_descriptor_set_group.hpp>
 #include <prosper_util.hpp>
 #include <datasystem.h>
 
@@ -26,14 +28,14 @@ void MaterialDescriptorArrayManager::Initialize(prosper::Context &context)
 	auto instanceCount = 4'096;
 	auto maxInstanceCount = instanceCount *10u;
 	prosper::util::BufferCreateInfo createInfo {};
-	createInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::GPUBulk;
+	createInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
 	createInfo.size = instanceSize *instanceCount;
-	createInfo.usageFlags = Anvil::BufferUsageFlagBits::STORAGE_BUFFER_BIT | Anvil::BufferUsageFlagBits::UNIFORM_BUFFER_BIT | Anvil::BufferUsageFlagBits::TRANSFER_SRC_BIT | Anvil::BufferUsageFlagBits::TRANSFER_DST_BIT;
-	m_materialInfoBuffer = prosper::util::create_uniform_resizable_buffer(context,createInfo,instanceSize,instanceSize *maxInstanceCount,0.1f);
+	createInfo.usageFlags = prosper::BufferUsageFlags::StorageBufferBit | prosper::BufferUsageFlags::UniformBufferBit | prosper::BufferUsageFlags::TransferSrcBit | prosper::BufferUsageFlags::TransferDstBit;
+	m_materialInfoBuffer = context.CreateUniformResizableBuffer(createInfo,instanceSize,instanceSize *maxInstanceCount,0.1f);
 	m_materialInfoBuffer->SetDebugName("material_info_buf");
 }
-const std::shared_ptr<prosper::UniformResizableBuffer> &MaterialDescriptorArrayManager::GetMaterialInfoBuffer() const {return m_materialInfoBuffer;}
-std::optional<prosper::Buffer::SubBufferIndex> MaterialDescriptorArrayManager::RegisterMaterial(const Material &mat,bool reInitialize)
+const std::shared_ptr<prosper::IUniformResizableBuffer> &MaterialDescriptorArrayManager::GetMaterialInfoBuffer() const {return m_materialInfoBuffer;}
+std::optional<prosper::IBuffer::SubBufferIndex> MaterialDescriptorArrayManager::RegisterMaterial(const Material &mat,bool reInitialize)
 {
 	auto it = m_materialRenderBuffers.find(&mat);
 	if(it != m_materialRenderBuffers.end())
@@ -42,7 +44,7 @@ std::optional<prosper::Buffer::SubBufferIndex> MaterialDescriptorArrayManager::R
 			return it->second->GetBaseIndex();
 	}
 	else
-		it = m_materialRenderBuffers.insert(std::make_pair(&mat,std::shared_ptr<prosper::Buffer>{})).first;
+		it = m_materialRenderBuffers.insert(std::make_pair(&mat,std::shared_ptr<prosper::IBuffer>{})).first;
 
 	auto *errMat = mat.GetManager().GetErrorMaterial();
 	if(errMat == nullptr)
@@ -155,8 +157,8 @@ std::optional<prosper::DescriptorArrayManager::ArrayIndex> MaterialDescriptorArr
 	auto it = m_texData.find(&tex);
 	if(it != m_texData.end())
 		return it->second.arrayIndex; // Texture is already in array?
-	auto index = DescriptorArrayManager::AddItem([&tex](prosper::DescriptorSet &ds,ArrayIndex index,uint32_t bindingIndex) -> bool {
-		return prosper::util::set_descriptor_set_binding_array_texture(ds,*tex.GetVkTexture(),bindingIndex,index);
+	auto index = DescriptorArrayManager::AddItem([&tex](prosper::IDescriptorSet &ds,ArrayIndex index,uint32_t bindingIndex) -> bool {
+		return ds.SetBindingArrayTexture(*tex.GetVkTexture(),bindingIndex,index);
 	});
 	if(index.has_value() == false)
 		return {};

@@ -29,8 +29,8 @@ bool Texture::IsError() const {return (m_flags &Flags::Error) != Flags::None;}
 
 void Texture::SetName(const std::string &name) {m_name = name;}
 const std::string &Texture::GetName() const {return m_name;}
-uint32_t Texture::GetWidth() const {return m_texture ? m_texture->GetImage()->GetExtents().width : 0u;}
-uint32_t Texture::GetHeight() const {return m_texture ? m_texture->GetImage()->GetExtents().height : 0u;}
+uint32_t Texture::GetWidth() const {return m_texture ? m_texture->GetImage().GetWidth() : 0u;}
+uint32_t Texture::GetHeight() const {return m_texture ? m_texture->GetImage().GetHeight() : 0u;}
 const std::shared_ptr<prosper::Texture> &Texture::GetVkTexture() const {return m_texture;}
 void Texture::SetVkTexture(prosper::Texture &texture) {SetVkTexture(texture.shared_from_this());}
 void Texture::ClearVkTexture() {SetVkTexture(nullptr);}

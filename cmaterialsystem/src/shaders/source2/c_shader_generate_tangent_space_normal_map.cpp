@@ -8,9 +8,9 @@
 #pragma optimize("",off)
 decltype(msys::source2::ShaderGenerateTangentSpaceNormalMap::DESCRIPTOR_SET_TEXTURE) msys::source2::ShaderGenerateTangentSpaceNormalMap::DESCRIPTOR_SET_TEXTURE = {
 	{
-		prosper::Shader::DescriptorSetInfo::Binding { // Normal Map
-			Anvil::DescriptorType::COMBINED_IMAGE_SAMPLER,
-			Anvil::ShaderStageFlagBits::FRAGMENT_BIT
+		prosper::DescriptorSetInfo::Binding { // Normal Map
+			prosper::DescriptorType::CombinedImageSampler,
+			prosper::ShaderStageFlags::FragmentBit
 		}
 	}
 };
@@ -30,11 +30,11 @@ void msys::source2::ShaderGenerateTangentSpaceNormalMap::InitializeGfxPipeline(A
 	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_TEXTURE);
 }
 
-void msys::source2::ShaderGenerateTangentSpaceNormalMap::InitializeRenderPass(std::shared_ptr<prosper::RenderPass> &outRenderPass,uint32_t pipelineIdx)
+void msys::source2::ShaderGenerateTangentSpaceNormalMap::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx)
 {
 	CreateCachedRenderPass<msys::source2::ShaderGenerateTangentSpaceNormalMap>(
 		std::vector<prosper::util::RenderPassCreateInfo::AttachmentInfo>{
-			{Anvil::Format::R32G32B32A32_SFLOAT} // Normal
+			{prosper::Format::R32G32B32A32_SFloat} // Normal
 	},outRenderPass,pipelineIdx);
 }
 

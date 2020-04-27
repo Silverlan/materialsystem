@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <prosper_context.hpp>
 #include "texturemanager/texturemanager.h"
 #include "texturemanager/texturequeue.h"
 #include "texturemanager/loadimagedata.h"
@@ -9,7 +10,6 @@
 #include "squish.h"
 #include "textureinfo.h"
 #include "texturemanager/texture.h"
-#include <prosper_context.hpp>
 #include <prosper_util.hpp>
 #include <image/prosper_sampler.hpp>
 #include <mathutil/glmutil.h>
@@ -68,11 +68,11 @@ TextureManager::TextureManager(prosper::Context &context)
 {
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
 	TextureManager::SetupSamplerMipmapMode(samplerCreateInfo,TextureMipmapMode::Load);
-	m_textureSampler = prosper::util::create_sampler(context.GetDevice(),samplerCreateInfo);
+	m_textureSampler = context.CreateSampler(samplerCreateInfo);
 
 	samplerCreateInfo = {};
 	TextureManager::SetupSamplerMipmapMode(samplerCreateInfo,TextureMipmapMode::Ignore);
-	m_textureSamplerNoMipmap = prosper::util::create_sampler(context.GetDevice(),samplerCreateInfo);
+	m_textureSamplerNoMipmap = context.CreateSampler(samplerCreateInfo);
 #ifndef DISABLE_VTF_SUPPORT
 	vlSetProc(PROC_READ_CLOSE,reinterpret_cast<void*>(vtf_read_close));
 	vlSetProc(PROC_READ_OPEN,reinterpret_cast<void*>(vtf_read_open));
@@ -118,25 +118,25 @@ void TextureManager::SetupSamplerMipmapMode(prosper::util::SamplerCreateInfo &cr
 	{
 		case TextureMipmapMode::Ignore:
 		{
-			createInfo.minFilter = Anvil::Filter::NEAREST;
-			createInfo.magFilter = Anvil::Filter::NEAREST;
-			createInfo.mipmapMode = Anvil::SamplerMipmapMode::NEAREST;
+			createInfo.minFilter = prosper::Filter::Nearest;
+			createInfo.magFilter = prosper::Filter::Nearest;
+			createInfo.mipmapMode = prosper::SamplerMipmapMode::Nearest;
 			createInfo.minLod = 0.f;
 			createInfo.maxLod = 0.f;
 			break;
 		}
 		default:
 		{
-			createInfo.minFilter = Anvil::Filter::LINEAR;
-			createInfo.magFilter = Anvil::Filter::LINEAR;
-			createInfo.mipmapMode = Anvil::SamplerMipmapMode::LINEAR;
+			createInfo.minFilter = prosper::Filter::Linear;
+			createInfo.magFilter = prosper::Filter::Linear;
+			createInfo.mipmapMode = prosper::SamplerMipmapMode::Linear;
 			break;
 		}
 	}
 }
 
-void TextureManager::RegisterCustomSampler(const std::shared_ptr<prosper::Sampler> &sampler) {m_customSamplers.push_back(sampler);}
-const std::vector<std::weak_ptr<prosper::Sampler>> &TextureManager::GetCustomSamplers() const {return m_customSamplers;}
+void TextureManager::RegisterCustomSampler(const std::shared_ptr<prosper::ISampler> &sampler) {m_customSamplers.push_back(sampler);}
+const std::vector<std::weak_ptr<prosper::ISampler>> &TextureManager::GetCustomSamplers() const {return m_customSamplers;}
 
 prosper::Context &TextureManager::GetContext() const {return *m_wpContext.lock();}
 
@@ -285,7 +285,7 @@ uint32_t TextureManager::ClearUnused()
 	return n;
 }
 
-std::shared_ptr<prosper::Sampler> &TextureManager::GetTextureSampler() {return m_textureSampler;}
+std::shared_ptr<prosper::ISampler> &TextureManager::GetTextureSampler() {return m_textureSampler;}
 
 std::shared_ptr<Texture> TextureManager::FindTexture(const std::string &imgFile,bool *bLoading)
 {

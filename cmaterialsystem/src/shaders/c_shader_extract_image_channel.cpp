@@ -18,9 +18,9 @@
 #pragma optimize("",off)
 decltype(msys::ShaderExtractImageChannel::DESCRIPTOR_SET_TEXTURE) msys::ShaderExtractImageChannel::DESCRIPTOR_SET_TEXTURE = {
 	{
-		prosper::Shader::DescriptorSetInfo::Binding { // Image map
-			Anvil::DescriptorType::COMBINED_IMAGE_SAMPLER,
-			Anvil::ShaderStageFlagBits::FRAGMENT_BIT
+		prosper::DescriptorSetInfo::Binding { // Image map
+			prosper::DescriptorType::CombinedImageSampler,
+			prosper::ShaderStageFlags::FragmentBit
 		}
 	}
 };
@@ -36,10 +36,10 @@ void msys::ShaderExtractImageChannel::InitializeGfxPipeline(Anvil::GraphicsPipel
 
 	AddDefaultVertexAttributes(pipelineInfo);
 	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_TEXTURE);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),Anvil::ShaderStageFlagBits::FRAGMENT_BIT);
+	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),prosper::ShaderStageFlags::FragmentBit);
 }
 
-void msys::ShaderExtractImageChannel::InitializeRenderPass(std::shared_ptr<prosper::RenderPass> &outRenderPass,uint32_t pipelineIdx)
+void msys::ShaderExtractImageChannel::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx)
 {
 	auto pipeline = static_cast<Pipeline>(pipelineIdx);
 	switch(pipeline)
@@ -47,54 +47,54 @@ void msys::ShaderExtractImageChannel::InitializeRenderPass(std::shared_ptr<prosp
 	case Pipeline::RGBA8:
 		CreateCachedRenderPass<msys::ShaderExtractImageChannel>(
 			std::vector<prosper::util::RenderPassCreateInfo::AttachmentInfo>{
-				{Anvil::Format::R8G8B8A8_UNORM}
+				{prosper::Format::R8G8B8A8_UNorm}
 		},outRenderPass,pipelineIdx);
 		break;
 	case Pipeline::RGBA32:
 		CreateCachedRenderPass<msys::ShaderExtractImageChannel>(
 			std::vector<prosper::util::RenderPassCreateInfo::AttachmentInfo>{
-				{Anvil::Format::R32G32B32A32_SFLOAT}
+				{prosper::Format::R32G32B32A32_SFloat}
 		},outRenderPass,pipelineIdx);
 		break;
 	}
 }
 
-std::shared_ptr<prosper::Image> msys::ShaderExtractImageChannel::ExtractImageChannel(prosper::Context &context,prosper::Texture &texSrc,const std::array<Channel,4> &channelValues,Pipeline pipeline)
+std::shared_ptr<prosper::IImage> msys::ShaderExtractImageChannel::ExtractImageChannel(prosper::Context &context,prosper::Texture &texSrc,const std::array<Channel,4> &channelValues,Pipeline pipeline)
 {
-	Anvil::Format outputFormat;
+	prosper::Format outputFormat;
 	switch(pipeline)
 	{
 	case Pipeline::RGBA8:
-		outputFormat = Anvil::Format::R8G8B8A8_UNORM;
+		outputFormat = prosper::Format::R8G8B8A8_UNorm;
 		break;
 	case Pipeline::RGBA32:
-		outputFormat = Anvil::Format::R32G32B32A32_SFLOAT;
+		outputFormat = prosper::Format::R32G32B32A32_SFloat;
 		break;
 	}
 	prosper::util::ImageCreateInfo imgCreateInfo {};
 	//imgCreateInfo.flags |= prosper::util::ImageCreateInfo::Flags::FullMipmapChain;
 	imgCreateInfo.format = outputFormat;
-	imgCreateInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::GPUBulk;
-	imgCreateInfo.postCreateLayout = Anvil::ImageLayout::COLOR_ATTACHMENT_OPTIMAL;
-	imgCreateInfo.tiling = Anvil::ImageTiling::OPTIMAL;
-	imgCreateInfo.usage = Anvil::ImageUsageFlagBits::COLOR_ATTACHMENT_BIT | Anvil::ImageUsageFlagBits::TRANSFER_SRC_BIT;
+	imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
+	imgCreateInfo.postCreateLayout = prosper::ImageLayout::ColorAttachmentOptimal;
+	imgCreateInfo.tiling = prosper::ImageTiling::Optimal;
+	imgCreateInfo.usage = prosper::ImageUsageFlags::ColorAttachmentBit | prosper::ImageUsageFlags::TransferSrcBit;
 
 	auto &imgSrc = texSrc.GetImage();
-	auto extents = imgSrc->GetExtents();
+	auto extents = imgSrc.GetExtents();
 	imgCreateInfo.width = extents.width;
 	imgCreateInfo.height = extents.height;
 	auto &dev = context.GetDevice();
-	auto imgOutput = prosper::util::create_image(context.GetDevice(),imgCreateInfo);
+	auto imgOutput = context.CreateImage(imgCreateInfo);
 
 	prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
-	auto texOutput = prosper::util::create_texture(dev,{},imgOutput,&imgViewCreateInfo);
-	auto rt = prosper::util::create_render_target(dev,{texOutput},GetRenderPass(umath::to_integral(pipeline)));
+	auto texOutput = context.CreateTexture({},*imgOutput,imgViewCreateInfo);
+	auto rt = context.CreateRenderTarget({texOutput},GetRenderPass(umath::to_integral(pipeline)));
 
 	auto dsg = CreateDescriptorSetGroup(DESCRIPTOR_SET_TEXTURE.setIndex);
 	auto &ds = *dsg->GetDescriptorSet();
-	prosper::util::set_descriptor_set_binding_texture(ds,texSrc,umath::to_integral(TextureBinding::ImageMap));
+	ds.SetBindingTexture(texSrc,umath::to_integral(TextureBinding::ImageMap));
 	auto &setupCmd = context.GetSetupCommandBuffer();
-	if(prosper::util::record_begin_render_pass(**setupCmd,*rt))
+	if(setupCmd->RecordBeginRenderPass(*rt))
 	{
 		if(BeginDraw(setupCmd))
 		{
@@ -104,13 +104,13 @@ std::shared_ptr<prosper::Image> msys::ShaderExtractImageChannel::ExtractImageCha
 				channelValues.at(2),
 				channelValues.at(3)
 			}))
-				Draw(*ds);
+				Draw(ds);
 			EndDraw();
 		}
-		prosper::util::record_end_render_pass(**setupCmd);
+		setupCmd->RecordEndRenderPass();
 	}
 	context.FlushSetupCommandBuffer();
 
-	return rt->GetTexture()->GetImage();
+	return rt->GetTexture().GetImage().shared_from_this();
 }
 #pragma optimize("",on)

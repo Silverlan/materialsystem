@@ -8,9 +8,9 @@
 #pragma optimize("",off)
 decltype(msys::source2::ShaderDecomposeMetalnessReflectance::DESCRIPTOR_SET_TEXTURE) msys::source2::ShaderDecomposeMetalnessReflectance::DESCRIPTOR_SET_TEXTURE = {
 	{
-		prosper::Shader::DescriptorSetInfo::Binding { // Metalness-reflectance Map
-			Anvil::DescriptorType::COMBINED_IMAGE_SAMPLER,
-			Anvil::ShaderStageFlagBits::FRAGMENT_BIT
+		prosper::DescriptorSetInfo::Binding { // Metalness-reflectance Map
+			prosper::DescriptorType::CombinedImageSampler,
+			prosper::ShaderStageFlags::FragmentBit
 		}
 	}
 };
@@ -26,11 +26,11 @@ void msys::source2::ShaderDecomposeMetalnessReflectance::InitializeGfxPipeline(A
 	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_TEXTURE);
 }
 
-void msys::source2::ShaderDecomposeMetalnessReflectance::InitializeRenderPass(std::shared_ptr<prosper::RenderPass> &outRenderPass,uint32_t pipelineIdx)
+void msys::source2::ShaderDecomposeMetalnessReflectance::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx)
 {
 	CreateCachedRenderPass<msys::source2::ShaderDecomposeMetalnessReflectance>(
 		std::vector<prosper::util::RenderPassCreateInfo::AttachmentInfo>{
-			{Anvil::Format::R8G8B8A8_UNORM} // RMA
+			{prosper::Format::R8G8B8A8_UNorm} // RMA
 	},outRenderPass,pipelineIdx);
 }
 #pragma optimize("",on)

@@ -100,34 +100,34 @@ bool CMaterialManager::InitializeVMatData(
 					{
 						prosper::util::ImageCreateInfo imgCreateInfo {};
 						//imgCreateInfo.flags |= prosper::util::ImageCreateInfo::Flags::FullMipmapChain;
-						imgCreateInfo.format = Anvil::Format::R8G8B8A8_UNORM;
-						imgCreateInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::GPUBulk;
-						imgCreateInfo.postCreateLayout = Anvil::ImageLayout::COLOR_ATTACHMENT_OPTIMAL;
-						imgCreateInfo.tiling = Anvil::ImageTiling::OPTIMAL;
-						imgCreateInfo.usage = Anvil::ImageUsageFlagBits::COLOR_ATTACHMENT_BIT | Anvil::ImageUsageFlagBits::TRANSFER_SRC_BIT;
+						imgCreateInfo.format = prosper::Format::R8G8B8A8_UNorm;
+						imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
+						imgCreateInfo.postCreateLayout = prosper::ImageLayout::ColorAttachmentOptimal;
+						imgCreateInfo.tiling = prosper::ImageTiling::Optimal;
+						imgCreateInfo.usage = prosper::ImageUsageFlags::ColorAttachmentBit | prosper::ImageUsageFlags::TransferSrcBit;
 
 						imgCreateInfo.width = pMetalnessReflectanceMap->GetWidth();
 						imgCreateInfo.height = pMetalnessReflectanceMap->GetHeight();
 						auto &dev = context.GetDevice();
-						auto imgRMA = prosper::util::create_image(context.GetDevice(),imgCreateInfo);
+						auto imgRMA = context.CreateImage(imgCreateInfo);
 
 						prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
-						auto texRMA = prosper::util::create_texture(dev,{},imgRMA,&imgViewCreateInfo);
-						auto rt = prosper::util::create_render_target(dev,{texRMA},shaderDecomposeMetalnessReflectance->GetRenderPass());
+						auto texRMA = context.CreateTexture({},*imgRMA,imgViewCreateInfo);
+						auto rt = context.CreateRenderTarget({texRMA},shaderDecomposeMetalnessReflectance->GetRenderPass());
 
 						auto dsg = shaderDecomposeMetalnessReflectance->CreateDescriptorSetGroup(msys::source2::ShaderGenerateTangentSpaceNormalMap::DESCRIPTOR_SET_TEXTURE.setIndex);
 						auto &ds = *dsg->GetDescriptorSet();
 						auto &vkMetalnessReflectanceTex = pMetalnessReflectanceMap->GetVkTexture();
-						prosper::util::set_descriptor_set_binding_texture(ds,*vkMetalnessReflectanceTex,umath::to_integral(msys::source2::ShaderGenerateTangentSpaceNormalMap::TextureBinding::NormalMap));
+						ds.SetBindingTexture(*vkMetalnessReflectanceTex,umath::to_integral(msys::source2::ShaderGenerateTangentSpaceNormalMap::TextureBinding::NormalMap));
 						auto &setupCmd = context.GetSetupCommandBuffer();
-						if(prosper::util::record_begin_render_pass(**setupCmd,*rt))
+						if(setupCmd->RecordBeginRenderPass(*rt))
 						{
 							if(shaderDecomposeMetalnessReflectance->BeginDraw(setupCmd))
 							{
-								shaderDecomposeMetalnessReflectance->Draw(*ds);
+								shaderDecomposeMetalnessReflectance->Draw(ds);
 								shaderDecomposeMetalnessReflectance->EndDraw();
 							}
-							prosper::util::record_end_render_pass(**setupCmd);
+							setupCmd->RecordEndRenderPass();
 						}
 						context.FlushSetupCommandBuffer();
 
@@ -146,7 +146,7 @@ bool CMaterialManager::InitializeVMatData(
 						texInfo.inputFormat = uimg::TextureInfo::InputFormat::R8G8B8A8_UInt;
 						texInfo.outputFormat = uimg::TextureInfo::OutputFormat::ColorMap;
 						auto rmaPath = pathNoExt +"_rma";
-						prosper::util::save_texture(rootPath +'/' +rmaPath,*texRMA->GetImage(),texInfo,errHandler);
+						prosper::util::save_texture(rootPath +'/' +rmaPath,texRMA->GetImage(),texInfo,errHandler);
 
 						rootData.AddData("rma_map",std::make_shared<ds::Texture>(settings,rmaPath));
 
@@ -211,7 +211,7 @@ bool CMaterialManager::InitializeVMatData(
 			// same resolution as the albedo or normal maps (which is usually quite high),
 			// we'll have to lower resolution, since we store them as a separate map
 			// and it would require too much GPU memory otherwise.
-			vk::Extent2D metallicRoughnessResolution {};
+			prosper::Extent2D metallicRoughnessResolution {};
 			auto *s2AoMap = vmat.FindTextureParam("g_tAmbientOcclusion");
 			prosper::Texture *aoTex = nullptr;
 			if(s2AoMap)
@@ -230,7 +230,7 @@ bool CMaterialManager::InitializeVMatData(
 				hasAoMap = false;
 
 				auto &albedoImg = albedoTex->GetImage();
-				auto extents = albedoImg->GetExtents();
+				auto extents = albedoImg.GetExtents();
 				metallicRoughnessResolution = {static_cast<uint32_t>(extents.width) /4,static_cast<uint32_t>(extents.height) /4};
 				if(metallicRoughnessResolution.width == 0)
 					metallicRoughnessResolution.width = 0;
@@ -240,7 +240,7 @@ bool CMaterialManager::InitializeVMatData(
 			else
 			{
 				auto &aoImg = aoTex->GetImage();
-				auto extents = aoImg->GetExtents();
+				auto extents = aoImg.GetExtents();
 				metallicRoughnessResolution = {static_cast<uint32_t>(extents.width),static_cast<uint32_t>(extents.height)};
 			}
 
@@ -275,22 +275,22 @@ bool CMaterialManager::InitializeVMatData(
 			{
 				std::cout<<"Downscaling RMA map for '"<<info.identifier<<"' from "<<mrExtents.width<<"x"<<mrExtents.height<<" to "<<metallicRoughnessResolution.width<<"x"<<metallicRoughnessResolution.height<<std::endl;
 				prosper::util::ImageCreateInfo imgCreateInfo {};
-				imgCreateInfo.format = Anvil::Format::R8G8B8A8_UNORM;
-				imgCreateInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::GPUBulk;
-				imgCreateInfo.postCreateLayout = Anvil::ImageLayout::TRANSFER_DST_OPTIMAL;
-				imgCreateInfo.tiling = Anvil::ImageTiling::OPTIMAL;
-				imgCreateInfo.usage = Anvil::ImageUsageFlagBits::TRANSFER_DST_BIT;
+				imgCreateInfo.format = prosper::Format::R8G8B8A8_UNorm;
+				imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
+				imgCreateInfo.postCreateLayout = prosper::ImageLayout::TransferDstOptimal;
+				imgCreateInfo.tiling = prosper::ImageTiling::Optimal;
+				imgCreateInfo.usage = prosper::ImageUsageFlags::TransferDstBit;
 
 				imgCreateInfo.width = metallicRoughnessResolution.width;
 				imgCreateInfo.height = metallicRoughnessResolution.height;
 				auto &dev = context.GetDevice();
-				auto imgRescaled = prosper::util::create_image(context.GetDevice(),imgCreateInfo);
+				auto imgRescaled = context.CreateImage(imgCreateInfo);
 				auto &setupCmd = context.GetSetupCommandBuffer();
 				prosper::util::BlitInfo blitInfo {};
 				blitInfo.extentsSrc = mrExtents;
 				blitInfo.extentsDst = metallicRoughnessResolution;
-				prosper::util::record_image_barrier(**setupCmd,**pbrSet.rmaMap,Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL,Anvil::ImageLayout::TRANSFER_SRC_OPTIMAL);
-				prosper::util::record_blit_image(**setupCmd,blitInfo,**pbrSet.rmaMap,**imgRescaled);
+				setupCmd->RecordImageBarrier(*pbrSet.rmaMap,prosper::ImageLayout::ShaderReadOnlyOptimal,prosper::ImageLayout::TransferSrcOptimal);
+				setupCmd->RecordBlitImage(blitInfo,*pbrSet.rmaMap,*imgRescaled);
 				context.FlushSetupCommandBuffer();
 
 				pbrSet.rmaMap = imgRescaled;
@@ -347,7 +347,7 @@ bool CMaterialManager::InitializeVMatData(
 					texInfo.outputFormat = uimg::TextureInfo::OutputFormat::ColorMap;
 					texInfo.flags = uimg::TextureInfo::Flags::GenerateMipmaps;
 					texInfo.inputFormat = uimg::TextureInfo::InputFormat::R8G8B8A8_UInt;
-					prosper::util::save_texture(rootPath +'/' +albedoPath,*albedoTex->GetImage(),texInfo,[](const std::string &err) {
+					prosper::util::save_texture(rootPath +'/' +albedoPath,albedoTex->GetImage(),texInfo,[](const std::string &err) {
 						std::cout<<"WARNING: Unable to save albedo image as DDS: "<<err<<std::endl;
 						});
 				}
@@ -371,34 +371,34 @@ bool CMaterialManager::InitializeVMatData(
 						{
 							prosper::util::ImageCreateInfo imgCreateInfo {};
 							//imgCreateInfo.flags |= prosper::util::ImageCreateInfo::Flags::FullMipmapChain;
-							imgCreateInfo.format = Anvil::Format::R16G16B16A16_SFLOAT;
-							imgCreateInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::GPUBulk;
-							imgCreateInfo.postCreateLayout = Anvil::ImageLayout::COLOR_ATTACHMENT_OPTIMAL;
-							imgCreateInfo.tiling = Anvil::ImageTiling::OPTIMAL;
-							imgCreateInfo.usage = Anvil::ImageUsageFlagBits::COLOR_ATTACHMENT_BIT | Anvil::ImageUsageFlagBits::TRANSFER_SRC_BIT;
+							imgCreateInfo.format = prosper::Format::R16G16B16A16_SFloat;
+							imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
+							imgCreateInfo.postCreateLayout = prosper::ImageLayout::ColorAttachmentOptimal;
+							imgCreateInfo.tiling = prosper::ImageTiling::Optimal;
+							imgCreateInfo.usage = prosper::ImageUsageFlags::ColorAttachmentBit | prosper::ImageUsageFlags::TransferSrcBit;
 
 							imgCreateInfo.width = pNormalMap->GetWidth();
 							imgCreateInfo.height = pNormalMap->GetHeight();
 							auto &dev = context.GetDevice();
-							auto imgNormal = prosper::util::create_image(context.GetDevice(),imgCreateInfo);
+							auto imgNormal = context.CreateImage(imgCreateInfo);
 
 							prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
-							auto texNormal = prosper::util::create_texture(dev,{},imgNormal,&imgViewCreateInfo);
-							auto rt = prosper::util::create_render_target(dev,{texNormal},shaderGenerateTangentSpaceNormalMap->GetRenderPass());
+							auto texNormal = context.CreateTexture({},*imgNormal,imgViewCreateInfo);
+							auto rt = context.CreateRenderTarget({texNormal},shaderGenerateTangentSpaceNormalMap->GetRenderPass());
 
 							auto dsg = shaderGenerateTangentSpaceNormalMap->CreateDescriptorSetGroup(msys::source2::ShaderGenerateTangentSpaceNormalMap::DESCRIPTOR_SET_TEXTURE.setIndex);
 							auto &ds = *dsg->GetDescriptorSet();
 							auto &vkNormalTex = pNormalMap->GetVkTexture();
-							prosper::util::set_descriptor_set_binding_texture(ds,*vkNormalTex,umath::to_integral(msys::source2::ShaderGenerateTangentSpaceNormalMap::TextureBinding::NormalMap));
+							ds.SetBindingTexture(*vkNormalTex,umath::to_integral(msys::source2::ShaderGenerateTangentSpaceNormalMap::TextureBinding::NormalMap));
 							auto &setupCmd = context.GetSetupCommandBuffer();
-							if(prosper::util::record_begin_render_pass(**setupCmd,*rt))
+							if(setupCmd->RecordBeginRenderPass(*rt))
 							{
 								if(shaderGenerateTangentSpaceNormalMap->BeginDraw(setupCmd))
 								{
-									shaderGenerateTangentSpaceNormalMap->Draw(*ds);
+									shaderGenerateTangentSpaceNormalMap->Draw(ds);
 									shaderGenerateTangentSpaceNormalMap->EndDraw();
 								}
-								prosper::util::record_end_render_pass(**setupCmd);
+								setupCmd->RecordEndRenderPass();
 							}
 							context.FlushSetupCommandBuffer();
 
@@ -417,7 +417,7 @@ bool CMaterialManager::InitializeVMatData(
 							texInfo.inputFormat = uimg::TextureInfo::InputFormat::R16G16B16A16_Float;
 							texInfo.outputFormat = uimg::TextureInfo::OutputFormat::NormalMap;
 							texInfo.SetNormalMap();
-							prosper::util::save_texture(rootPath +'/' +normalMapPathNoExt,*texNormal->GetImage(),texInfo,errHandler);
+							prosper::util::save_texture(rootPath +'/' +normalMapPathNoExt,texNormal->GetImage(),texInfo,errHandler);
 
 							load_texture(*this,normalMapPathNoExt,true);
 							rootData.AddData("normal_map",std::make_shared<ds::Texture>(settings,normalMapPathNoExt));

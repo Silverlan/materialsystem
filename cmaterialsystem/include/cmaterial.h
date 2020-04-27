@@ -13,7 +13,7 @@
 #include <material.h>
 #include <functional>
 
-namespace prosper {class Sampler; class Buffer;};
+namespace prosper {class ISampler; class IBuffer;};
 
 class CMaterialManager;
 class TextureManager;
@@ -42,13 +42,13 @@ public:
 	void SetTexture(const std::string &identifier,const std::string &texture);
 	void SetTexture(const std::string &identifier,prosper::Texture &texture);
 	virtual Material *Copy() const override;
-	const std::shared_ptr<prosper::DescriptorSetGroup> &GetDescriptorSetGroup(prosper::Shader &shader) const;
+	const std::shared_ptr<prosper::IDescriptorSetGroup> &GetDescriptorSetGroup(prosper::Shader &shader) const;
 	bool IsInitialized() const;
-	void SetDescriptorSetGroup(prosper::Shader &shader,const std::shared_ptr<prosper::DescriptorSetGroup> &descSetGroup);
+	void SetDescriptorSetGroup(prosper::Shader &shader,const std::shared_ptr<prosper::IDescriptorSetGroup> &descSetGroup);
 	util::WeakHandle<prosper::Shader> GetPrimaryShader();
-	std::shared_ptr<prosper::Sampler> GetSampler();
-	void SetSettingsBuffer(prosper::Buffer &buffer);
-	prosper::Buffer *GetSettingsBuffer();
+	std::shared_ptr<prosper::ISampler> GetSampler();
+	void SetSettingsBuffer(prosper::IBuffer &buffer);
+	prosper::IBuffer *GetSettingsBuffer();
 	virtual void SetLoaded(bool b) override;
 protected:
 	void LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &texInfo,TextureLoadFlags flags=TextureLoadFlags::None,const std::shared_ptr<CallbackInfo> &callbackInfo=nullptr);
@@ -68,12 +68,12 @@ private:
 
 	virtual ~CMaterial() override;
 	std::function<void(void)> m_fOnLoaded;
-	std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::DescriptorSetGroup>,ShaderHash,ShaderEqualFn> m_descriptorSetGroups;
-	std::shared_ptr<prosper::Sampler> m_sampler = nullptr;
-	std::shared_ptr<prosper::Buffer> m_settingsBuffer = nullptr;
+	std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>,ShaderHash,ShaderEqualFn> m_descriptorSetGroups;
+	std::shared_ptr<prosper::ISampler> m_sampler = nullptr;
+	std::shared_ptr<prosper::IBuffer> m_settingsBuffer = nullptr;
 	std::shared_ptr<CallbackInfo> m_callbackInfo;
-	std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::DescriptorSetGroup>,ShaderHash,ShaderEqualFn>::iterator FindShaderDescriptorSetGroup(prosper::Shader &shader);
-	std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::DescriptorSetGroup>,ShaderHash,ShaderEqualFn>::const_iterator FindShaderDescriptorSetGroup(prosper::Shader &shader) const;
+	std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>,ShaderHash,ShaderEqualFn>::iterator FindShaderDescriptorSetGroup(prosper::Shader &shader);
+	std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>,ShaderHash,ShaderEqualFn>::const_iterator FindShaderDescriptorSetGroup(prosper::Shader &shader) const;
 	std::shared_ptr<CallbackInfo> InitializeCallbackInfo(const std::function<void(void)> &onAllTexturesLoaded,const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded);
 
 	uint32_t GetMipmapMode(const std::shared_ptr<ds::Block> &data) const;

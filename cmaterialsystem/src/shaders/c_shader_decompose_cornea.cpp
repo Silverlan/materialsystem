@@ -8,13 +8,13 @@
 #pragma optimize("",off)
 decltype(msys::ShaderDecomposeCornea::DESCRIPTOR_SET_TEXTURE) msys::ShaderDecomposeCornea::DESCRIPTOR_SET_TEXTURE = {
 	{
-		prosper::Shader::DescriptorSetInfo::Binding { // Iris Map
-			Anvil::DescriptorType::COMBINED_IMAGE_SAMPLER,
-			Anvil::ShaderStageFlagBits::FRAGMENT_BIT
+		prosper::DescriptorSetInfo::Binding { // Iris Map
+			prosper::DescriptorType::CombinedImageSampler,
+			prosper::ShaderStageFlags::FragmentBit
 		},
-		prosper::Shader::DescriptorSetInfo::Binding { // Cornea Map
-			Anvil::DescriptorType::COMBINED_IMAGE_SAMPLER,
-			Anvil::ShaderStageFlagBits::FRAGMENT_BIT
+		prosper::DescriptorSetInfo::Binding { // Cornea Map
+			prosper::DescriptorType::CombinedImageSampler,
+			prosper::ShaderStageFlags::FragmentBit
 		}
 	}
 };
@@ -30,14 +30,14 @@ void msys::ShaderDecomposeCornea::InitializeGfxPipeline(Anvil::GraphicsPipelineC
 	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_TEXTURE);
 }
 
-void msys::ShaderDecomposeCornea::InitializeRenderPass(std::shared_ptr<prosper::RenderPass> &outRenderPass,uint32_t pipelineIdx)
+void msys::ShaderDecomposeCornea::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx)
 {
 	CreateCachedRenderPass<msys::ShaderDecomposeCornea>(
 		std::vector<prosper::util::RenderPassCreateInfo::AttachmentInfo>{
-			{Anvil::Format::R8G8B8A8_UNORM}, // Albedo
-			{Anvil::Format::R8G8B8A8_UNORM}, // Normal
-			{Anvil::Format::R8G8B8A8_UNORM}, // Parallax
-			{Anvil::Format::R8G8B8A8_UNORM} // Noise
+			{prosper::Format::R8G8B8A8_UNorm}, // Albedo
+			{prosper::Format::R8G8B8A8_UNorm}, // Normal
+			{prosper::Format::R8G8B8A8_UNorm}, // Parallax
+			{prosper::Format::R8G8B8A8_UNorm} // Noise
 	},outRenderPass,pipelineIdx);
 }
 #pragma optimize("",on)

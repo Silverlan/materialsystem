@@ -29,41 +29,41 @@
 #define FLUSH_INIT_CMD 1
 
 #pragma optimize("",off)
-static void change_image_transfer_dst_layout_to_shader_read(Anvil::CommandBufferBase &cmdBuffer,Anvil::Image &img)
+static void change_image_transfer_dst_layout_to_shader_read(prosper::ICommandBuffer &cmdBuffer,prosper::IImage &img)
 {
-	prosper::util::record_image_barrier(cmdBuffer,img,Anvil::ImageLayout::TRANSFER_DST_OPTIMAL,Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL);
+	cmdBuffer.RecordImageBarrier(img,prosper::ImageLayout::TransferDstOptimal,prosper::ImageLayout::ShaderReadOnlyOptimal);
 }
 
 struct ImageFormatLoader
 {
 	void *userData = nullptr;
-	std::function<void(void*,const TextureQueueItem&,uint32_t&,uint32_t&,Anvil::Format&,bool&,uint32_t&,uint32_t&,std::optional<Anvil::Format>&)> get_image_info = nullptr;
+	std::function<void(void*,const TextureQueueItem&,uint32_t&,uint32_t&,prosper::Format&,bool&,uint32_t&,uint32_t&,std::optional<prosper::Format>&)> get_image_info = nullptr;
 	std::function<const void*(void*,const TextureQueueItem&,uint32_t,uint32_t,uint32_t&)> get_image_data = nullptr;
 };
 
-static void initialize_image(TextureQueueItem &item,const Texture &texture,const ImageFormatLoader &imgLoader,std::shared_ptr<prosper::Image> &outImage)
+static void initialize_image(TextureQueueItem &item,const Texture &texture,const ImageFormatLoader &imgLoader,std::shared_ptr<prosper::IImage> &outImage)
 {
 	auto &context = *item.context.lock();
 	auto &dev = context.GetDevice();
 
 	uint32_t width = 0;
 	uint32_t height = 0;
-	Anvil::Format format = Anvil::Format::R8G8B8A8_UNORM;
-	std::optional<Anvil::Format> conversionFormat = {};
+	prosper::Format format = prosper::Format::R8G8B8A8_UNorm;
+	std::optional<prosper::Format> conversionFormat = {};
 	uint32_t numLayers = 1u;
 	uint32_t numMipMaps = 1u;
 	imgLoader.get_image_info(imgLoader.userData,item,width,height,format,item.cubemap,numLayers,numMipMaps,conversionFormat);
 
 	// In some cases the format may not be supported by the GPU altogether. We may still be able to convert it to a compatible format by hand.
 	std::function<void(const void*,std::shared_ptr<uimg::ImageBuffer>&,uint32_t,uint32_t)> manualConverter = nullptr;
-	const auto usage = Anvil::ImageUsageFlagBits::TRANSFER_SRC_BIT | Anvil::ImageUsageFlagBits::TRANSFER_DST_BIT | Anvil::ImageUsageFlagBits::SAMPLED_BIT;
-	if(format == Anvil::Format::B8G8R8_UNORM && context.IsImageFormatSupported(format,usage,Anvil::ImageType::_2D,Anvil::ImageTiling::OPTIMAL) == false)
+	const auto usage = prosper::ImageUsageFlags::TransferSrcBit | prosper::ImageUsageFlags::TransferDstBit | prosper::ImageUsageFlags::SampledBit;
+	if(format == prosper::Format::B8G8R8_UNorm_PoorCoverage && context.IsImageFormatSupported(format,usage,prosper::ImageType::e2D,prosper::ImageTiling::Optimal) == false)
 	{
 		manualConverter = [](const void *imgData,std::shared_ptr<uimg::ImageBuffer> &outImg,uint32_t width,uint32_t height) {
 			outImg = uimg::ImageBuffer::Create(imgData,width,height,uimg::ImageBuffer::Format::RGB8);
 			outImg->Convert(uimg::ImageBuffer::Format::RGBA8);
 		};
-		format = Anvil::Format::B8G8R8A8_UNORM;
+		format = prosper::Format::B8G8R8A8_UNorm;
 		conversionFormat = {};
 	}
 	if(context.IsImageFormatSupported(format,usage) == false || (conversionFormat.has_value() && context.IsImageFormatSupported(*conversionFormat,usage) == false))
@@ -83,15 +83,15 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 	createInfo.format = format;
 	if(numMipMaps > 1u)
 		createInfo.flags |= prosper::util::ImageCreateInfo::Flags::FullMipmapChain;
-	createInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::DeviceLocal;
-	createInfo.tiling = Anvil::ImageTiling::OPTIMAL;
+	createInfo.memoryFeatures = prosper::MemoryFeatureFlags::DeviceLocal;
+	createInfo.tiling = prosper::ImageTiling::Optimal;
 	createInfo.usage = usage;
 	createInfo.layers = (bCubemap == true) ? 6 : 1;
-	createInfo.postCreateLayout = Anvil::ImageLayout::TRANSFER_DST_OPTIMAL;
+	createInfo.postCreateLayout = prosper::ImageLayout::TransferDstOptimal;
 	if(bCubemap == true)
 		createInfo.flags |= prosper::util::ImageCreateInfo::Flags::Cubemap;
 
-	outImage = prosper::util::create_image(dev,createInfo);
+	outImage = context.CreateImage(createInfo);
 	if(outImage == nullptr)
 		return;
 
@@ -107,7 +107,7 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 	// Initialize image data as buffers, then copy to output image
 	struct BufferInfo
 	{
-		std::shared_ptr<prosper::Buffer> buffer = nullptr;
+		std::shared_ptr<prosper::IBuffer> buffer = nullptr;
 		uint32_t layerIndex = 0u;
 		uint32_t mipmapIndex = 0u;
 	};
@@ -149,17 +149,17 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 	for(auto &bufInfo : buffers)
 	{
 		// Copy buffer contents to output image
-		auto extent = (*outImage)->get_image_extent_2D(bufInfo.mipmapIndex);
+		auto extent = outImage->GetExtents(bufInfo.mipmapIndex);
 		prosper::util::BufferImageCopyInfo copyInfo {};
 		copyInfo.mipLevel = bufInfo.mipmapIndex;
 		copyInfo.baseArrayLayer = bufInfo.layerIndex;
 		copyInfo.width = extent.width;
 		copyInfo.height = extent.height;
-		prosper::util::record_copy_buffer_to_image(setupCmd->GetAnvilCommandBuffer(),copyInfo,*bufInfo.buffer,outImage->GetAnvilImage());
+		setupCmd->RecordCopyBufferToImage(copyInfo,*bufInfo.buffer,*outImage);
 	}
 
 	if(bGenerateMipmaps == false)
-		change_image_transfer_dst_layout_to_shader_read(setupCmd->GetAnvilCommandBuffer(),outImage->GetAnvilImage());
+		change_image_transfer_dst_layout_to_shader_read(*setupCmd,*outImage);
 	context.FlushSetupCommandBuffer(); // Make sure image copy is complete before generating mipmaps
 
 	// Don't need these anymore
@@ -171,16 +171,15 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 		auto &setupCmd = context.GetSetupCommandBuffer();
 
 		// Image needs to be converted
-		prosper::util::ImageCreateInfo createInfo;
-		outImage->GetCreateInfo(createInfo);
+		auto createInfo = outImage->GetCreateInfo();
 		createInfo.format = *conversionFormat;
-		createInfo.tiling = Anvil::ImageTiling::OPTIMAL;
-		createInfo.postCreateLayout = Anvil::ImageLayout::TRANSFER_DST_OPTIMAL;
+		createInfo.tiling = prosper::ImageTiling::Optimal;
+		createInfo.postCreateLayout = prosper::ImageLayout::TransferDstOptimal;
 
 		auto convertedImage = outImage->Copy(*setupCmd,createInfo);
-		prosper::util::record_image_barrier(**setupCmd,**outImage,Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL,Anvil::ImageLayout::TRANSFER_SRC_OPTIMAL);
-		prosper::util::record_blit_image(**setupCmd,{},**outImage,**convertedImage);
-		prosper::util::record_image_barrier(**setupCmd,**convertedImage,Anvil::ImageLayout::TRANSFER_DST_OPTIMAL,Anvil::ImageLayout::SHADER_READ_ONLY_OPTIMAL);
+		setupCmd->RecordImageBarrier(*outImage,prosper::ImageLayout::ShaderReadOnlyOptimal,prosper::ImageLayout::TransferSrcOptimal);
+		setupCmd->RecordBlitImage({},*outImage,*convertedImage);
+		setupCmd->RecordImageBarrier(*convertedImage,prosper::ImageLayout::TransferDstOptimal,prosper::ImageLayout::ShaderReadOnlyOptimal);
 
 		context.FlushSetupCommandBuffer();
 		outImage = convertedImage;
@@ -189,7 +188,7 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 	if(bGenerateMipmaps == true)
 	{
 		auto &setupCmd = context.GetSetupCommandBuffer();
-		prosper::util::record_generate_mipmaps(setupCmd->GetAnvilCommandBuffer(),outImage->GetAnvilImage(),Anvil::ImageLayout::TRANSFER_DST_OPTIMAL,Anvil::AccessFlagBits::TRANSFER_WRITE_BIT,Anvil::PipelineStageFlagBits::TRANSFER_BIT);
+		setupCmd->RecordGenerateMipmaps(*outImage,prosper::ImageLayout::TransferDstOptimal,prosper::AccessFlags::TransferWriteBit,prosper::PipelineStageFlags::TransferBit);
 		context.FlushSetupCommandBuffer();
 	}
 }
@@ -197,12 +196,12 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 struct VulkanImageData
 {
 	// Original image format
-	Anvil::Format format = Anvil::Format::R8G8B8A8_UNORM;
+	prosper::Format format = prosper::Format::R8G8B8A8_UNorm;
 
 	// Some formats may not be supported in optimal layout by common GPUs, in which case we need to convert it
-	std::optional<Anvil::Format> conversionFormat = {};
+	std::optional<prosper::Format> conversionFormat = {};
 
-	std::array<Anvil::ComponentSwizzle,4> swizzle = {Anvil::ComponentSwizzle::R,Anvil::ComponentSwizzle::G,Anvil::ComponentSwizzle::B,Anvil::ComponentSwizzle::A};
+	std::array<prosper::ComponentSwizzle,4> swizzle = {prosper::ComponentSwizzle::R,prosper::ComponentSwizzle::G,prosper::ComponentSwizzle::B,prosper::ComponentSwizzle::A};
 };
 #ifndef DISABLE_VTF_SUPPORT
 static VulkanImageData vtf_format_to_vulkan_format(VTFImageFormat format)
@@ -211,49 +210,49 @@ static VulkanImageData vtf_format_to_vulkan_format(VTFImageFormat format)
 	switch(format)
 	{
 		case VTFImageFormat::IMAGE_FORMAT_DXT1:
-			vkImgData.format = Anvil::Format::BC1_RGBA_UNORM_BLOCK;
+			vkImgData.format = prosper::Format::BC1_RGBA_UNorm_Block;
 			break;
 		case VTFImageFormat::IMAGE_FORMAT_DXT3:
-			vkImgData.format = Anvil::Format::BC2_UNORM_BLOCK;
+			vkImgData.format = prosper::Format::BC2_UNorm_Block;
 			break;
 		case VTFImageFormat::IMAGE_FORMAT_DXT5:
-			vkImgData.format = Anvil::Format::BC3_UNORM_BLOCK;
+			vkImgData.format = prosper::Format::BC3_UNorm_Block;
 			break;
 		case VTFImageFormat::IMAGE_FORMAT_RGBA8888:
-			vkImgData.format = Anvil::Format::R8G8B8A8_UNORM;
+			vkImgData.format = prosper::Format::R8G8B8A8_UNorm;
 			break;
 		case VTFImageFormat::IMAGE_FORMAT_RGB888: // Needs to be converted
-			vkImgData.conversionFormat = Anvil::Format::R8G8B8A8_UNORM;
-			vkImgData.format = Anvil::Format::R8G8B8_UNORM;
+			vkImgData.conversionFormat = prosper::Format::R8G8B8A8_UNorm;
+			vkImgData.format = prosper::Format::R8G8B8_UNorm_PoorCoverage;
 			break;
 		case VTFImageFormat::IMAGE_FORMAT_BGRA8888:
-			vkImgData.swizzle = {Anvil::ComponentSwizzle::B,Anvil::ComponentSwizzle::G,Anvil::ComponentSwizzle::R,Anvil::ComponentSwizzle::A};
-			vkImgData.format = Anvil::Format::B8G8R8A8_UNORM;
+			vkImgData.swizzle = {prosper::ComponentSwizzle::B,prosper::ComponentSwizzle::G,prosper::ComponentSwizzle::R,prosper::ComponentSwizzle::A};
+			vkImgData.format = prosper::Format::B8G8R8A8_UNorm;
 			break;
 		case VTFImageFormat::IMAGE_FORMAT_BGR888: // Needs to be converted
-			vkImgData.swizzle = {Anvil::ComponentSwizzle::B,Anvil::ComponentSwizzle::G,Anvil::ComponentSwizzle::R,Anvil::ComponentSwizzle::A};
-			vkImgData.conversionFormat = Anvil::Format::B8G8R8A8_UNORM;
-			vkImgData.format = Anvil::Format::B8G8R8_UNORM;
+			vkImgData.swizzle = {prosper::ComponentSwizzle::B,prosper::ComponentSwizzle::G,prosper::ComponentSwizzle::R,prosper::ComponentSwizzle::A};
+			vkImgData.conversionFormat = prosper::Format::B8G8R8A8_UNorm;
+			vkImgData.format = prosper::Format::B8G8R8_UNorm_PoorCoverage;
 			break;
 		case VTFImageFormat::IMAGE_FORMAT_UV88:
-			vkImgData.format = Anvil::Format::R8G8_UNORM;
+			vkImgData.format = prosper::Format::R8G8_UNorm;
 			break;
 		case VTFImageFormat::IMAGE_FORMAT_RGBA16161616F:
-			vkImgData.format = Anvil::Format::R16G16B16A16_SFLOAT;
+			vkImgData.format = prosper::Format::R16G16B16A16_SFloat;
 			break;
 		case VTFImageFormat::IMAGE_FORMAT_RGBA32323232F:
-			vkImgData.format = Anvil::Format::R32G32B32A32_SFLOAT;
+			vkImgData.format = prosper::Format::R32G32B32A32_SFloat;
 			break;
 		case VTFImageFormat::IMAGE_FORMAT_ABGR8888:
-			vkImgData.swizzle = {Anvil::ComponentSwizzle::A,Anvil::ComponentSwizzle::B,Anvil::ComponentSwizzle::G,Anvil::ComponentSwizzle::R};
-			vkImgData.format = Anvil::Format::A8B8G8R8_UNORM_PACK32;
+			vkImgData.swizzle = {prosper::ComponentSwizzle::A,prosper::ComponentSwizzle::B,prosper::ComponentSwizzle::G,prosper::ComponentSwizzle::R};
+			vkImgData.format = prosper::Format::A8B8G8R8_UNorm_Pack32;
 			break;
 		case VTFImageFormat::IMAGE_FORMAT_BGRX8888:
-			vkImgData.swizzle = {Anvil::ComponentSwizzle::B,Anvil::ComponentSwizzle::G,Anvil::ComponentSwizzle::R,Anvil::ComponentSwizzle::ONE};
-			vkImgData.format = Anvil::Format::B8G8R8A8_UNORM;
+			vkImgData.swizzle = {prosper::ComponentSwizzle::B,prosper::ComponentSwizzle::G,prosper::ComponentSwizzle::R,prosper::ComponentSwizzle::One};
+			vkImgData.format = prosper::Format::B8G8R8A8_UNorm;
 			break;
 		default:
-			vkImgData.format = Anvil::Format::BC1_RGBA_UNORM_BLOCK;
+			vkImgData.format = prosper::Format::BC1_RGBA_UNorm_Block;
 			break;
 	}
 	// Note: When adding a new format, make sure to also add it to TextureManager::InitializeTextureData
@@ -269,45 +268,45 @@ static VulkanImageData vtex_format_to_vulkan_format(source2::VTexFormat format)
 	switch(format)
 	{
 	case source2::VTexFormat::DXT1:
-		vkImgData.format = Anvil::Format::BC1_RGBA_UNORM_BLOCK;
+		vkImgData.format = prosper::Format::BC1_RGBA_UNorm_Block;
 		break;
 	case source2::VTexFormat::DXT5:
-		vkImgData.format = Anvil::Format::BC3_UNORM_BLOCK;
+		vkImgData.format = prosper::Format::BC3_UNorm_Block;
 		break;
 	case source2::VTexFormat::RGBA8888:
-		vkImgData.format = Anvil::Format::R8G8B8A8_UNORM;
+		vkImgData.format = prosper::Format::R8G8B8A8_UNorm;
 		break;
 	case source2::VTexFormat::RGBA16161616:
-		vkImgData.format = Anvil::Format::R16G16B16A16_SNORM;
+		vkImgData.format = prosper::Format::R16G16B16A16_SNorm;
 		break;
 	case source2::VTexFormat::RGBA16161616F:
-		vkImgData.format = Anvil::Format::R16G16B16A16_SFLOAT;
+		vkImgData.format = prosper::Format::R16G16B16A16_SFloat;
 		break;
 	case source2::VTexFormat::RGB323232F: // Needs to be converted
-		vkImgData.conversionFormat = Anvil::Format::R32G32B32A32_SFLOAT;
-		vkImgData.format = Anvil::Format::R32G32B32_SFLOAT;
+		vkImgData.conversionFormat = prosper::Format::R32G32B32A32_SFloat;
+		vkImgData.format = prosper::Format::R32G32B32_SFloat;
 		break;
 	case source2::VTexFormat::RGBA32323232F:
-		vkImgData.format = Anvil::Format::R32G32B32A32_SFLOAT;
+		vkImgData.format = prosper::Format::R32G32B32A32_SFloat;
 		break;
 	case source2::VTexFormat::BC6H:
-		vkImgData.format = Anvil::Format::BC6H_SFLOAT_BLOCK;
+		vkImgData.format = prosper::Format::BC6H_SFloat_Block;
 		break;
 	case source2::VTexFormat::BC7:
-		vkImgData.format = Anvil::Format::BC7_UNORM_BLOCK;
+		vkImgData.format = prosper::Format::BC7_UNorm_Block;
 		break;
 	case source2::VTexFormat::BGRA8888:
-		vkImgData.swizzle = {Anvil::ComponentSwizzle::B,Anvil::ComponentSwizzle::G,Anvil::ComponentSwizzle::R,Anvil::ComponentSwizzle::A};
-		vkImgData.format = Anvil::Format::B8G8R8A8_UNORM;
+		vkImgData.swizzle = {prosper::ComponentSwizzle::B,prosper::ComponentSwizzle::G,prosper::ComponentSwizzle::R,prosper::ComponentSwizzle::A};
+		vkImgData.format = prosper::Format::B8G8R8A8_UNorm;
 		break;
 	case source2::VTexFormat::ATI1N:
-		vkImgData.format = Anvil::Format::BC4_UNORM_BLOCK;
+		vkImgData.format = prosper::Format::BC4_UNorm_Block;
 		break;
 	case source2::VTexFormat::ATI2N:
-		vkImgData.format = Anvil::Format::BC5_UNORM_BLOCK;
+		vkImgData.format = prosper::Format::BC5_UNorm_Block;
 		break;
 	default:
-		vkImgData.format = Anvil::Format::BC1_RGBA_UNORM_BLOCK;
+		vkImgData.format = prosper::Format::BC1_RGBA_UNorm_Block;
 		break;
 	}
 	// Note: When adding a new format, make sure to also add it to TextureManager::InitializeTextureData
@@ -328,8 +327,8 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 	}
 	else
 	{
-		std::shared_ptr<prosper::Image> image = nullptr;
-		std::array<Anvil::ComponentSwizzle,4> swizzle = {Anvil::ComponentSwizzle::R,Anvil::ComponentSwizzle::G,Anvil::ComponentSwizzle::B,Anvil::ComponentSwizzle::A};
+		std::shared_ptr<prosper::IImage> image = nullptr;
+		std::array<prosper::ComponentSwizzle,4> swizzle = {prosper::ComponentSwizzle::R,prosper::ComponentSwizzle::G,prosper::ComponentSwizzle::B,prosper::ComponentSwizzle::A};
 		auto *surface = dynamic_cast<TextureQueueItemSurface*>(&item);
 		if(surface != nullptr)
 		{
@@ -341,15 +340,15 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 			ImageFormatLoader gliLoader {};
 			gliLoader.userData = static_cast<gli::texture2d*>(img.get());
 			gliLoader.get_image_info = [](
-				void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,Anvil::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
-				std::optional<Anvil::Format> &outConversionFormat
+				void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,prosper::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
+				std::optional<prosper::Format> &outConversionFormat
 			) -> void {
 				auto &texture = *static_cast<gli::texture2d*>(userData);
 				auto img = texture[0];
 				auto extents = img.extent();
 				outWidth = extents.x;
 				outHeight = extents.y;
-				outFormat = static_cast<Anvil::Format>(texture.format());
+				outFormat = static_cast<prosper::Format>(texture.format());
 				outCubemap = (texture.faces() == 6);
 				outLayerCount = item.cubemap ? texture.faces() : texture.layers();
 				outMipmapCount = texture.levels();
@@ -373,8 +372,8 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 				ImageFormatLoader pngLoader {};
 				pngLoader.userData = static_cast<uimg::ImageBuffer*>(png->pnginfo.get());
 				pngLoader.get_image_info = [](
-					void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,Anvil::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
-					std::optional<Anvil::Format> &outConversionFormat
+					void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,prosper::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
+					std::optional<prosper::Format> &outConversionFormat
 				) -> void {
 					auto &png = *static_cast<uimg::ImageBuffer*>(userData);
 					outWidth = png.GetWidth();
@@ -396,7 +395,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 				auto *tga = dynamic_cast<TextureQueueItemTGA*>(&item);
 				if(tga != nullptr && (tga->tgainfo->GetChannelCount() == 3 || tga->tgainfo->GetChannelCount() == 4))
 				{
-					static constexpr auto TGA_VK_FORMAT = Anvil::Format::R8G8B8A8_UNORM;
+					static constexpr auto TGA_VK_FORMAT = prosper::Format::R8G8B8A8_UNorm;
 					texture->AddFlags(Texture::Flags::SRGB);
 
 					auto &tgaInfo = *tga->tgainfo;
@@ -407,8 +406,8 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 					ImageFormatLoader tgaLoader {};
 					tgaLoader.userData = static_cast<uimg::ImageBuffer*>(tga->tgainfo.get());
 					tgaLoader.get_image_info = [](
-						void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,Anvil::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
-						std::optional<Anvil::Format> &outConversionFormat
+						void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,prosper::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
+						std::optional<prosper::Format> &outConversionFormat
 					) -> void {
 						auto &tga = *static_cast<uimg::ImageBuffer*>(userData);
 						outWidth = tga.GetWidth();
@@ -442,8 +441,8 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 						ImageFormatLoader vtfLoader {};
 						vtfLoader.userData = static_cast<VTFLib::CVTFFile*>(vtfFile.get());
 						vtfLoader.get_image_info = [](
-							void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,Anvil::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
-							std::optional<Anvil::Format> &outConversionFormat
+							void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,prosper::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
+							std::optional<prosper::Format> &outConversionFormat
 						) -> void {
 							auto &vtfFile = *static_cast<VTFLib::CVTFFile*>(userData);
 							auto vkFormat = vtf_format_to_vulkan_format(vtfFile.GetFormat());
@@ -475,8 +474,8 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 						ImageFormatLoader vtexLoader {};
 						vtexLoader.userData = static_cast<source2::resource::Texture*>(vtexFile.get());
 						vtexLoader.get_image_info = [](
-							void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,Anvil::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
-							std::optional<Anvil::Format> &outConversionFormat
+							void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,prosper::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
+							std::optional<prosper::Format> &outConversionFormat
 							) -> void {
 								auto &vtexFile = *static_cast<source2::resource::Texture*>(userData);
 								auto vkFormat = vtex_format_to_vulkan_format(vtexFile.GetFormat());
@@ -514,7 +513,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 			imgViewCreateInfo.swizzleBlue = swizzle.at(2);
 			imgViewCreateInfo.swizzleAlpha = swizzle.at(3);
 			createInfo.flags |= prosper::util::TextureCreateInfo::Flags::CreateImageViewForEachLayer;
-			auto vkTex = prosper::util::create_texture(dev,createInfo,std::move(image),&imgViewCreateInfo);
+			auto vkTex = context.CreateTexture(createInfo,*image,imgViewCreateInfo);
 			vkTex->SetDebugName(item.name);
 			texture->SetVkTexture(vkTex);
 

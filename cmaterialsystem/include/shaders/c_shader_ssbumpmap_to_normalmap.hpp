@@ -14,7 +14,7 @@ namespace msys
 		: public prosper::ShaderBaseImageProcessing
 	{
 	public:
-		static prosper::Shader::DescriptorSetInfo DESCRIPTOR_SET_TEXTURE;
+		static prosper::DescriptorSetInfo DESCRIPTOR_SET_TEXTURE;
 
 		enum class TextureBinding : uint32_t
 		{
@@ -26,7 +26,7 @@ namespace msys
 		ShaderSSBumpMapToNormalMap(prosper::Context &context,const std::string &identifier);
 	protected:
 		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
-		virtual void InitializeRenderPass(std::shared_ptr<prosper::RenderPass> &outRenderPass,uint32_t pipelineIdx) override;
+		virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx) override;
 	};
 };
 

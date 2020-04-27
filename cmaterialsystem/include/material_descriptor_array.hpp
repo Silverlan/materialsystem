@@ -11,7 +11,7 @@
 
 class Material;
 class Texture;
-namespace prosper {class Context; class UniformResizableBuffer;};
+namespace prosper {class Context; class IUniformResizableBuffer;};
 class DLLCMATSYS MaterialDescriptorArrayManager
 	: public prosper::DescriptorArrayManager
 {
@@ -30,8 +30,8 @@ public:
 
 	using DescriptorArrayManager::DescriptorArrayManager;
 	virtual ~MaterialDescriptorArrayManager() override;
-	std::optional<prosper::Buffer::SubBufferIndex> RegisterMaterial(const Material &mat,bool reInitialize=false);
-	const std::shared_ptr<prosper::UniformResizableBuffer> &GetMaterialInfoBuffer() const;
+	std::optional<prosper::IBuffer::SubBufferIndex> RegisterMaterial(const Material &mat,bool reInitialize=false);
+	const std::shared_ptr<prosper::IUniformResizableBuffer> &GetMaterialInfoBuffer() const;
 	friend DescriptorArrayManager;
 private:
 	struct TextureData
@@ -44,8 +44,8 @@ private:
 	void RemoveItem(const Texture &tex);
 	std::unordered_map<const Texture*,TextureData> m_texData {};
 
-	std::unordered_map<const Material*,std::shared_ptr<prosper::Buffer>> m_materialRenderBuffers = {};
-	std::shared_ptr<prosper::UniformResizableBuffer> m_materialInfoBuffer = nullptr;
+	std::unordered_map<const Material*,std::shared_ptr<prosper::IBuffer>> m_materialRenderBuffers = {};
+	std::shared_ptr<prosper::IUniformResizableBuffer> m_materialInfoBuffer = nullptr;
 };
 
 #endif

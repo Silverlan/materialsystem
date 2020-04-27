@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <prosper_context.hpp>
 #include "cmaterialmanager.h"
 #include "cmaterial.h"
 #include "shaders/c_shader_decompose_cornea.hpp"
@@ -12,7 +13,6 @@
 #include "shaders/source2/c_shader_decompose_pbr.hpp"
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
-#include <prosper_context.hpp>
 #include <prosper_util.hpp>
 #include <prosper_command_buffer.hpp>
 #include <prosper_descriptor_set_group.hpp>
@@ -144,44 +144,43 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				// Prepare output textures (albedo, normal, parallax)
 				prosper::util::ImageCreateInfo imgCreateInfo {};
 				//imgCreateInfo.flags |= prosper::util::ImageCreateInfo::Flags::FullMipmapChain;
-				imgCreateInfo.format = Anvil::Format::R8G8B8A8_UNORM;
-				imgCreateInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::GPUBulk;
-				imgCreateInfo.postCreateLayout = Anvil::ImageLayout::COLOR_ATTACHMENT_OPTIMAL;
-				imgCreateInfo.tiling = Anvil::ImageTiling::OPTIMAL;
-				imgCreateInfo.usage = Anvil::ImageUsageFlagBits::COLOR_ATTACHMENT_BIT | Anvil::ImageUsageFlagBits::TRANSFER_SRC_BIT;
+				imgCreateInfo.format = prosper::Format::R8G8B8A8_UNorm;
+				imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
+				imgCreateInfo.postCreateLayout = prosper::ImageLayout::ColorAttachmentOptimal;
+				imgCreateInfo.tiling = prosper::ImageTiling::Optimal;
+				imgCreateInfo.usage = prosper::ImageUsageFlags::ColorAttachmentBit | prosper::ImageUsageFlags::TransferSrcBit;
 
 				imgCreateInfo.width = umath::max(pIrisMap->GetWidth(),pCorneaMap->GetWidth());
 				imgCreateInfo.height = umath::max(pIrisMap->GetHeight(),pCorneaMap->GetHeight());
-				auto &dev = context.GetDevice();
-				auto imgAlbedo = prosper::util::create_image(dev,imgCreateInfo);
+				auto imgAlbedo = context.CreateImage(imgCreateInfo);
 
-				imgCreateInfo.format = Anvil::Format::R32G32B32A32_SFLOAT;
-				auto imgNormal = prosper::util::create_image(context.GetDevice(),imgCreateInfo);
-				auto imgParallax = prosper::util::create_image(context.GetDevice(),imgCreateInfo);
-				auto imgNoise = prosper::util::create_image(context.GetDevice(),imgCreateInfo);
+				imgCreateInfo.format = prosper::Format::R32G32B32A32_SFloat;
+				auto imgNormal = context.CreateImage(imgCreateInfo);
+				auto imgParallax = context.CreateImage(imgCreateInfo);
+				auto imgNoise = context.CreateImage(imgCreateInfo);
 
 				prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
-				auto texAlbedo = prosper::util::create_texture(dev,{},imgAlbedo,&imgViewCreateInfo);
-				auto texNormal = prosper::util::create_texture(dev,{},imgNormal,&imgViewCreateInfo);
-				auto texParallax = prosper::util::create_texture(dev,{},imgParallax,&imgViewCreateInfo);
-				auto texNoise = prosper::util::create_texture(dev,{},imgNoise,&imgViewCreateInfo);
-				auto rt = prosper::util::create_render_target(dev,{texAlbedo,texNormal,texParallax,texNoise},shaderDecomposeCornea->GetRenderPass());
+				auto texAlbedo = context.CreateTexture({},*imgAlbedo,imgViewCreateInfo);
+				auto texNormal = context.CreateTexture({},*imgNormal,imgViewCreateInfo);
+				auto texParallax = context.CreateTexture({},*imgParallax,imgViewCreateInfo);
+				auto texNoise = context.CreateTexture({},*imgNoise,imgViewCreateInfo);
+				auto rt = context.CreateRenderTarget({texAlbedo,texNormal,texParallax,texNoise},shaderDecomposeCornea->GetRenderPass());
 
 				auto dsg = shaderDecomposeCornea->CreateDescriptorSetGroup(msys::ShaderDecomposeCornea::DESCRIPTOR_SET_TEXTURE.setIndex);
 				auto &ds = *dsg->GetDescriptorSet();
 				auto &vkIrisTex = pIrisMap->GetVkTexture();
 				auto &vkCorneaTex = pCorneaMap->GetVkTexture();
-				prosper::util::set_descriptor_set_binding_texture(ds,*vkIrisTex,umath::to_integral(msys::ShaderDecomposeCornea::TextureBinding::IrisMap));
-				prosper::util::set_descriptor_set_binding_texture(ds,*vkCorneaTex,umath::to_integral(msys::ShaderDecomposeCornea::TextureBinding::CorneaMap));
+				ds.SetBindingTexture(*vkIrisTex,umath::to_integral(msys::ShaderDecomposeCornea::TextureBinding::IrisMap));
+				ds.SetBindingTexture(*vkCorneaTex,umath::to_integral(msys::ShaderDecomposeCornea::TextureBinding::CorneaMap));
 				auto &setupCmd = context.GetSetupCommandBuffer();
-				if(prosper::util::record_begin_render_pass(**setupCmd,*rt))
+				if(setupCmd->RecordBeginRenderPass(*rt))
 				{
 					if(shaderDecomposeCornea->BeginDraw(setupCmd))
 					{
-						shaderDecomposeCornea->Draw(*ds);
+						shaderDecomposeCornea->Draw(ds);
 						shaderDecomposeCornea->EndDraw();
 					}
-					prosper::util::record_end_render_pass(**setupCmd);
+					setupCmd->RecordEndRenderPass();
 				}
 				context.FlushSetupCommandBuffer();
 
@@ -206,16 +205,16 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				texInfo.alphaMode = uimg::TextureInfo::AlphaMode::Auto;
 				texInfo.flags = uimg::TextureInfo::Flags::GenerateMipmaps;
 				texInfo.inputFormat = uimg::TextureInfo::InputFormat::R8G8B8A8_UInt;
-				prosper::util::save_texture(rootPath +'/' +albedoTexName,*texAlbedo->GetImage(),texInfo,errHandler);
+				prosper::util::save_texture(rootPath +'/' +albedoTexName,texAlbedo->GetImage(),texInfo,errHandler);
 
 				texInfo.outputFormat = uimg::TextureInfo::OutputFormat::GradientMap;
 				texInfo.inputFormat = uimg::TextureInfo::InputFormat::R32G32B32A32_Float;
-				prosper::util::save_texture(rootPath +'/' +parallaxTexName,*texParallax->GetImage(),texInfo,errHandler);
-				prosper::util::save_texture(rootPath +'/' +noiseTexName,*texNoise->GetImage(),texInfo,errHandler);
+				prosper::util::save_texture(rootPath +'/' +parallaxTexName,texParallax->GetImage(),texInfo,errHandler);
+				prosper::util::save_texture(rootPath +'/' +noiseTexName,texNoise->GetImage(),texInfo,errHandler);
 
 				texInfo.outputFormat = uimg::TextureInfo::OutputFormat::NormalMap;
 				texInfo.SetNormalMap();
-				prosper::util::save_texture(rootPath +'/' +normalTexName,*texNormal->GetImage(),texInfo,errHandler);
+				prosper::util::save_texture(rootPath +'/' +normalTexName,texNormal->GetImage(),texInfo,errHandler);
 
 				// TODO: These should be Material::ALBEDO_MAP_IDENTIFIER/Material::NORMAL_MAP_IDENTIFIER/Material::PARALLAX_MAP_IDENTIFIER, but
 				// for some reason the linker complains about unresolved symbols?
@@ -271,34 +270,33 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				// Prepare output texture (normal map)
 				prosper::util::ImageCreateInfo imgCreateInfo {};
 				//imgCreateInfo.flags |= prosper::util::ImageCreateInfo::Flags::FullMipmapChain;
-				imgCreateInfo.format = Anvil::Format::R32G32B32A32_SFLOAT;
-				imgCreateInfo.memoryFeatures = prosper::util::MemoryFeatureFlags::GPUBulk;
-				imgCreateInfo.postCreateLayout = Anvil::ImageLayout::COLOR_ATTACHMENT_OPTIMAL;
-				imgCreateInfo.tiling = Anvil::ImageTiling::OPTIMAL;
-				imgCreateInfo.usage = Anvil::ImageUsageFlagBits::COLOR_ATTACHMENT_BIT | Anvil::ImageUsageFlagBits::TRANSFER_SRC_BIT;
+				imgCreateInfo.format = prosper::Format::R32G32B32A32_SFloat;
+				imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
+				imgCreateInfo.postCreateLayout = prosper::ImageLayout::ColorAttachmentOptimal;
+				imgCreateInfo.tiling = prosper::ImageTiling::Optimal;
+				imgCreateInfo.usage = prosper::ImageUsageFlags::ColorAttachmentBit | prosper::ImageUsageFlags::TransferSrcBit;
 
 				imgCreateInfo.width = pBumpMap->GetWidth();
 				imgCreateInfo.height = pBumpMap->GetHeight();
-				auto &dev = context.GetDevice();
-				auto imgNormal = prosper::util::create_image(dev,imgCreateInfo);
+				auto imgNormal = context.CreateImage(imgCreateInfo);
 
 				prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
-				auto texNormal = prosper::util::create_texture(dev,{},imgNormal,&imgViewCreateInfo);
-				auto rt = prosper::util::create_render_target(dev,{texNormal},shaderSSBumpMapToNormalMap->GetRenderPass());
+				auto texNormal = context.CreateTexture({},*imgNormal,imgViewCreateInfo);
+				auto rt = context.CreateRenderTarget({texNormal},shaderSSBumpMapToNormalMap->GetRenderPass());
 
 				auto dsg = shaderSSBumpMapToNormalMap->CreateDescriptorSetGroup(msys::ShaderSSBumpMapToNormalMap::DESCRIPTOR_SET_TEXTURE.setIndex);
 				auto &ds = *dsg->GetDescriptorSet();
 				auto &vkBumpMapTex = pBumpMap->GetVkTexture();
-				prosper::util::set_descriptor_set_binding_texture(ds,*vkBumpMapTex,umath::to_integral(msys::ShaderSSBumpMapToNormalMap::TextureBinding::SSBumpMap));
+				ds.SetBindingTexture(*vkBumpMapTex,umath::to_integral(msys::ShaderSSBumpMapToNormalMap::TextureBinding::SSBumpMap));
 				auto &setupCmd = context.GetSetupCommandBuffer();
-				if(prosper::util::record_begin_render_pass(**setupCmd,*rt))
+				if(setupCmd->RecordBeginRenderPass(*rt))
 				{
 					if(shaderSSBumpMapToNormalMap->BeginDraw(setupCmd))
 					{
-						shaderSSBumpMapToNormalMap->Draw(*ds);
+						shaderSSBumpMapToNormalMap->Draw(ds);
 						shaderSSBumpMapToNormalMap->EndDraw();
 					}
-					prosper::util::record_end_render_pass(**setupCmd);
+					setupCmd->RecordEndRenderPass();
 				}
 				context.FlushSetupCommandBuffer();
 
@@ -319,7 +317,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				texInfo.inputFormat = uimg::TextureInfo::InputFormat::R32G32B32A32_Float;
 				texInfo.outputFormat = uimg::TextureInfo::OutputFormat::NormalMap;
 				texInfo.SetNormalMap();
-				prosper::util::save_texture(rootPath +'/' +normalTexName,*texNormal->GetImage(),texInfo,errHandler);
+				prosper::util::save_texture(rootPath +'/' +normalTexName,texNormal->GetImage(),texInfo,errHandler);
 
 				// TODO: This should be Material::NORMAL_MAP_IDENTIFIER, but
 				// for some reason the linker complains about unresolved symbols?

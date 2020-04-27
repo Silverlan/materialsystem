@@ -21,7 +21,7 @@
 
 namespace prosper
 {
-	class Sampler;
+	class ISampler;
 };
 
 class TCallback;
@@ -42,7 +42,7 @@ public:
 		LoadInfo();
 		std::function<void(std::shared_ptr<Texture>)> onLoadCallback = nullptr;
 		TextureMipmapMode mipmapLoadMode;
-		std::shared_ptr<prosper::Sampler> sampler = nullptr;
+		std::shared_ptr<prosper::ISampler> sampler = nullptr;
 		TextureLoadFlags flags = TextureLoadFlags::None;
 	};
 public:
@@ -51,8 +51,8 @@ public:
 	~TextureManager();
 	prosper::Context &GetContext() const;
 	void Update();
-	void RegisterCustomSampler(const std::shared_ptr<prosper::Sampler> &sampler);
-	const std::vector<std::weak_ptr<prosper::Sampler>> &GetCustomSamplers() const;
+	void RegisterCustomSampler(const std::shared_ptr<prosper::ISampler> &sampler);
+	const std::vector<std::weak_ptr<prosper::ISampler>> &GetCustomSamplers() const;
 	std::shared_ptr<Texture> GetErrorTexture();
 	std::shared_ptr<Texture> FindTexture(const std::string &imgFile,bool *bLoading=nullptr);
 	std::shared_ptr<Texture> FindTexture(const std::string &imgFile,bool bLoadedOnly);
@@ -70,7 +70,7 @@ public:
 	void ReloadTexture(const std::string &tex,const LoadInfo &loadInfo);
 	uint32_t Clear();
 	uint32_t ClearUnused();
-	std::shared_ptr<prosper::Sampler> &GetTextureSampler();
+	std::shared_ptr<prosper::ISampler> &GetTextureSampler();
 private:
 	bool Load(prosper::Context &context,const std::string &cacheName,VFilePtr optFile,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture,bool bAbsolutePath);
 
@@ -87,9 +87,9 @@ private:
 	std::queue<std::shared_ptr<TextureQueueItem>> m_loadQueue;
 	std::queue<std::shared_ptr<TextureQueueItem>> m_initQueue;
 	std::vector<std::shared_ptr<Texture>> m_texturesTmp;
-	std::shared_ptr<prosper::Sampler> m_textureSampler;
-	std::shared_ptr<prosper::Sampler> m_textureSamplerNoMipmap;
-	std::vector<std::weak_ptr<prosper::Sampler>> m_customSamplers;
+	std::shared_ptr<prosper::ISampler> m_textureSampler;
+	std::shared_ptr<prosper::ISampler> m_textureSamplerNoMipmap;
+	std::vector<std::weak_ptr<prosper::ISampler>> m_customSamplers;
 	std::function<VFilePtr(const std::string&)> m_texFileHandler = nullptr;
 	std::shared_ptr<Texture> m_error;
 	bool m_bThreadActive;

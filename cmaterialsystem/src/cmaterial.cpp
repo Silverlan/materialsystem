@@ -2,12 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <prosper_context.hpp>
 #include <sharedutils/util_shaderinfo.hpp>
 #include "cmaterialmanager.h"
 #include "cmaterial.h"
 #include "texture_type.h"
 #include <prosper_util.hpp>
-#include <prosper_context.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <image/prosper_sampler.hpp>
 #include <sharedutils/util_string.h>
@@ -95,48 +95,48 @@ void CMaterial::InitializeSampler()
 	if(fGetAddressMode("address_mode_u",intVal) == true)
 	{
 		bUseCustomSampler = true;
-		samplerInfo.addressModeU = static_cast<Anvil::SamplerAddressMode>(intVal);
+		samplerInfo.addressModeU = static_cast<prosper::SamplerAddressMode>(intVal);
 	}
 	if(fGetAddressMode("address_mode_v",intVal) == true)
 	{
 		bUseCustomSampler = true;
-		samplerInfo.addressModeV = static_cast<Anvil::SamplerAddressMode>(intVal);
+		samplerInfo.addressModeV = static_cast<prosper::SamplerAddressMode>(intVal);
 	}
 	if(fGetAddressMode("address_mode_w",intVal) == true)
 	{
 		bUseCustomSampler = true;
-		samplerInfo.addressModeW = static_cast<Anvil::SamplerAddressMode>(intVal);
+		samplerInfo.addressModeW = static_cast<prosper::SamplerAddressMode>(intVal);
 	}
 	if(fGetBorderColor("border_color",intVal) == true)
 	{
 		bUseCustomSampler = true;
-		samplerInfo.borderColor = static_cast<Anvil::BorderColor>(intVal);
+		samplerInfo.borderColor = static_cast<prosper::BorderColor>(intVal);
 	}
 	if(bUseCustomSampler == true)
 	{
 		auto mipmapMode = static_cast<TextureMipmapMode>(GetMipmapMode(m_data));
 		TextureManager::SetupSamplerMipmapMode(samplerInfo,mipmapMode);
-		m_sampler = prosper::util::create_sampler(GetContext().GetDevice(),samplerInfo);
+		m_sampler = GetContext().CreateSampler(samplerInfo);
 	}
 }
 
-std::shared_ptr<prosper::Sampler> CMaterial::GetSampler() {return m_sampler;}
+std::shared_ptr<prosper::ISampler> CMaterial::GetSampler() {return m_sampler;}
 
-prosper::Buffer *CMaterial::GetSettingsBuffer() {return m_settingsBuffer.get();}
-void CMaterial::SetSettingsBuffer(prosper::Buffer &buffer) {m_settingsBuffer = buffer.shared_from_this();}
+prosper::IBuffer *CMaterial::GetSettingsBuffer() {return m_settingsBuffer.get();}
+void CMaterial::SetSettingsBuffer(prosper::IBuffer &buffer) {m_settingsBuffer = buffer.shared_from_this();}
 
 prosper::Context &CMaterial::GetContext() {return static_cast<CMaterialManager&>(m_manager).GetContext();}
 TextureManager &CMaterial::GetTextureManager() {return static_cast<CMaterialManager&>(m_manager).GetTextureManager();}
-std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::DescriptorSetGroup>,CMaterial::ShaderHash,CMaterial::ShaderEqualFn>::iterator CMaterial::FindShaderDescriptorSetGroup(prosper::Shader &shader)
+std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>,CMaterial::ShaderHash,CMaterial::ShaderEqualFn>::iterator CMaterial::FindShaderDescriptorSetGroup(prosper::Shader &shader)
 {
-	return std::find_if(m_descriptorSetGroups.begin(),m_descriptorSetGroups.end(),[&shader](const std::pair<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::DescriptorSetGroup>> &pair) {
+	return std::find_if(m_descriptorSetGroups.begin(),m_descriptorSetGroups.end(),[&shader](const std::pair<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>> &pair) {
 		return pair.first.get() == &shader;
 	});
 }
-std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::DescriptorSetGroup>,CMaterial::ShaderHash,CMaterial::ShaderEqualFn>::const_iterator CMaterial::FindShaderDescriptorSetGroup(prosper::Shader &shader) const {return const_cast<CMaterial*>(this)->FindShaderDescriptorSetGroup(shader);}
-const std::shared_ptr<prosper::DescriptorSetGroup> &CMaterial::GetDescriptorSetGroup(prosper::Shader &shader) const
+std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>,CMaterial::ShaderHash,CMaterial::ShaderEqualFn>::const_iterator CMaterial::FindShaderDescriptorSetGroup(prosper::Shader &shader) const {return const_cast<CMaterial*>(this)->FindShaderDescriptorSetGroup(shader);}
+const std::shared_ptr<prosper::IDescriptorSetGroup> &CMaterial::GetDescriptorSetGroup(prosper::Shader &shader) const
 {
-	static std::shared_ptr<prosper::DescriptorSetGroup> nptr = nullptr;
+	static std::shared_ptr<prosper::IDescriptorSetGroup> nptr = nullptr;
 	auto it = FindShaderDescriptorSetGroup(shader);
 	return (it != m_descriptorSetGroups.end()) ? it->second : nptr;
 }
@@ -147,7 +147,7 @@ util::WeakHandle<prosper::Shader> CMaterial::GetPrimaryShader()
 	auto &shaderManager = context.GetShaderManager();
 	return shaderManager.GetShader(GetShaderIdentifier());
 }
-void CMaterial::SetDescriptorSetGroup(prosper::Shader &shader,const std::shared_ptr<prosper::DescriptorSetGroup> &descSetGroup)
+void CMaterial::SetDescriptorSetGroup(prosper::Shader &shader,const std::shared_ptr<prosper::IDescriptorSetGroup> &descSetGroup)
 {
 	auto it = FindShaderDescriptorSetGroup(shader);
 	if(it != m_descriptorSetGroups.end())
