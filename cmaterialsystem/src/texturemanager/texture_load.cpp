@@ -25,7 +25,7 @@ void TextureManager::ReloadTexture(const std::string &tex,const LoadInfo &loadIn
 	ReloadTexture(*tCur,loadInfo);
 }
 
-bool TextureManager::Load(prosper::Context &context,const std::string &cacheName,VFilePtr optFile,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture,bool bAbsolutePath)
+bool TextureManager::Load(prosper::IPrContext &context,const std::string &cacheName,VFilePtr optFile,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture,bool bAbsolutePath)
 {
 	std::string pathCache;
 	std::shared_ptr<void> text = nullptr;
@@ -190,11 +190,11 @@ bool TextureManager::Load(prosper::Context &context,const std::string &cacheName
 	return false;
 }
 
-bool TextureManager::Load(prosper::Context &context,const std::string &cacheName,VFilePtr f,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture)
+bool TextureManager::Load(prosper::IPrContext &context,const std::string &cacheName,VFilePtr f,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture)
 {
 	return Load(context,cacheName,f,loadInfo,outTexture,false);
 }
-bool TextureManager::Load(prosper::Context &context,const std::string &imgFile,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture,bool bAbsolutePath)
+bool TextureManager::Load(prosper::IPrContext &context,const std::string &imgFile,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture,bool bAbsolutePath)
 {
 	return Load(context,imgFile,nullptr,loadInfo,outTexture,bAbsolutePath);
 }

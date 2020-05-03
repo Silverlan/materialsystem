@@ -54,9 +54,9 @@ namespace msys
 				std::shared_ptr<prosper::IImage> albedoMap = nullptr;
 			};
 
-			ShaderDecomposePBR(prosper::Context &context,const std::string &identifier);
+			ShaderDecomposePBR(prosper::IPrContext &context,const std::string &identifier);
 			DecomposedImageSet DecomposePBR(
-				prosper::Context &context,prosper::Texture &albedoMap,prosper::Texture &normalMap,prosper::Texture &aoMap,
+				prosper::IPrContext &context,prosper::Texture &albedoMap,prosper::Texture &normalMap,prosper::Texture &aoMap,
 				Flags flags=Flags::None,prosper::Texture *optAniGlossMap=nullptr
 			);
 		protected:

@@ -6,7 +6,7 @@
 #include <image/prosper_texture.hpp>
 #include <prosper_context.hpp>
 
-Texture::Texture(prosper::Context &context,std::shared_ptr<prosper::Texture> tex)
+Texture::Texture(prosper::IPrContext &context,std::shared_ptr<prosper::Texture> tex)
 	: m_context{context},m_texture(tex)
 {}
 

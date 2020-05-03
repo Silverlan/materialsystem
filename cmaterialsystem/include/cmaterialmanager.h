@@ -33,7 +33,7 @@ private:
 	) override;
 #endif
 public:
-	CMaterialManager(prosper::Context &context);
+	CMaterialManager(prosper::IPrContext &context);
 	virtual ~CMaterialManager() override;
 	Material *CreateMaterial(const std::string &identifier,const std::string &shader,const std::shared_ptr<ds::Block> &root=nullptr);
 	Material *CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &root=nullptr);

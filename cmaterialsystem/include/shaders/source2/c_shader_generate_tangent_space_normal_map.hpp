@@ -25,9 +25,9 @@ namespace msys
 				Count
 			};
 
-			ShaderGenerateTangentSpaceNormalMap(prosper::Context &context,const std::string &identifier);
+			ShaderGenerateTangentSpaceNormalMap(prosper::IPrContext &context,const std::string &identifier);
 		protected:
-			ShaderGenerateTangentSpaceNormalMap(prosper::Context &context,const std::string &identifier,const std::string &fragmentShader);
+			ShaderGenerateTangentSpaceNormalMap(prosper::IPrContext &context,const std::string &identifier,const std::string &fragmentShader);
 			virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 			virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx) override;
 		};
@@ -37,7 +37,7 @@ namespace msys
 			: public ShaderGenerateTangentSpaceNormalMap
 		{
 		public:
-			ShaderGenerateTangentSpaceNormalMapProto(prosper::Context &context,const std::string &identifier);
+			ShaderGenerateTangentSpaceNormalMapProto(prosper::IPrContext &context,const std::string &identifier);
 		};
 	};
 };

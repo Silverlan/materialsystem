@@ -14,11 +14,11 @@ decltype(msys::source2::ShaderGenerateTangentSpaceNormalMap::DESCRIPTOR_SET_TEXT
 		}
 	}
 };
-msys::source2::ShaderGenerateTangentSpaceNormalMap::ShaderGenerateTangentSpaceNormalMap(prosper::Context &context,const std::string &identifier)
+msys::source2::ShaderGenerateTangentSpaceNormalMap::ShaderGenerateTangentSpaceNormalMap(prosper::IPrContext &context,const std::string &identifier)
 	: ShaderGenerateTangentSpaceNormalMap{context,identifier,"util/source2/fs_generate_tangent_space_normal_map.gls"}
 {}
 
-msys::source2::ShaderGenerateTangentSpaceNormalMap::ShaderGenerateTangentSpaceNormalMap(prosper::Context &context,const std::string &identifier,const std::string &fragmentShader)
+msys::source2::ShaderGenerateTangentSpaceNormalMap::ShaderGenerateTangentSpaceNormalMap(prosper::IPrContext &context,const std::string &identifier,const std::string &fragmentShader)
 	: ShaderBaseImageProcessing{context,identifier,fragmentShader}
 {}
 
@@ -40,7 +40,7 @@ void msys::source2::ShaderGenerateTangentSpaceNormalMap::InitializeRenderPass(st
 
 ////////////////////
 
-msys::source2::ShaderGenerateTangentSpaceNormalMapProto::ShaderGenerateTangentSpaceNormalMapProto(prosper::Context &context,const std::string &identifier)
+msys::source2::ShaderGenerateTangentSpaceNormalMapProto::ShaderGenerateTangentSpaceNormalMapProto(prosper::IPrContext &context,const std::string &identifier)
 	: ShaderGenerateTangentSpaceNormalMap{context,identifier,"util/source2/fs_generate_tangent_space_normal_map_proto.gls"}
 {}
 #pragma optimize("",on)

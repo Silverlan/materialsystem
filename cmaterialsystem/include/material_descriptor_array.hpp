@@ -11,7 +11,7 @@
 
 class Material;
 class Texture;
-namespace prosper {class Context; class IUniformResizableBuffer;};
+namespace prosper {class IPrContext; class IUniformResizableBuffer;};
 class DLLCMATSYS MaterialDescriptorArrayManager
 	: public prosper::DescriptorArrayManager
 {
@@ -39,7 +39,7 @@ private:
 		DescriptorArrayManager::ArrayIndex arrayIndex;
 		CallbackHandle onRemoveCallback;
 	};
-	virtual void Initialize(prosper::Context &context) override;
+	virtual void Initialize(prosper::IPrContext &context) override;
 	std::optional<ArrayIndex> AddItem(Texture &tex);
 	void RemoveItem(const Texture &tex);
 	std::unordered_map<const Texture*,TextureData> m_texData {};

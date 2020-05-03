@@ -125,7 +125,7 @@ std::shared_ptr<prosper::ISampler> CMaterial::GetSampler() {return m_sampler;}
 prosper::IBuffer *CMaterial::GetSettingsBuffer() {return m_settingsBuffer.get();}
 void CMaterial::SetSettingsBuffer(prosper::IBuffer &buffer) {m_settingsBuffer = buffer.shared_from_this();}
 
-prosper::Context &CMaterial::GetContext() {return static_cast<CMaterialManager&>(m_manager).GetContext();}
+prosper::IPrContext &CMaterial::GetContext() {return static_cast<CMaterialManager&>(m_manager).GetContext();}
 TextureManager &CMaterial::GetTextureManager() {return static_cast<CMaterialManager&>(m_manager).GetTextureManager();}
 std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>,CMaterial::ShaderHash,CMaterial::ShaderEqualFn>::iterator CMaterial::FindShaderDescriptorSetGroup(prosper::Shader &shader)
 {

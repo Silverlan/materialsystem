@@ -19,7 +19,7 @@
 
 namespace prosper
 {
-	class Context;
+	class IPrContext;
 	class ISampler;
 };
 
@@ -35,7 +35,7 @@ public:
 	TextureQueueItem(const TextureQueueItem&)=delete;
 	TextureQueueItem &operator=(const TextureQueueItem&)=delete;
 	virtual ~TextureQueueItem();
-	std::weak_ptr<prosper::Context> context;
+	std::weak_ptr<prosper::IPrContext> context;
 	std::string name;
 	std::string path;
 	std::string cache;

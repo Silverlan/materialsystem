@@ -9,7 +9,7 @@
 #include <VTFWrapper.h>
 #endif
 #ifndef DISABLE_VTEX_SUPPORT
-#include <util_source2.hpp>>
+#include <util_source2.hpp>
 #endif
 
 TextureQueueItem::TextureQueueItem()

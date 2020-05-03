@@ -27,7 +27,7 @@ public:
 		SRGB = Error<<1u,
 		NormalMap = SRGB<<1u
 	};
-	Texture(prosper::Context &context,std::shared_ptr<prosper::Texture> texture=nullptr);
+	Texture(prosper::IPrContext &context,std::shared_ptr<prosper::Texture> texture=nullptr);
 	~Texture();
 	void Reset();
 	void CallOnLoaded(const std::function<void(std::shared_ptr<Texture>)> &callback);
@@ -56,7 +56,7 @@ private:
 	std::queue<std::function<void(std::shared_ptr<Texture>)>> m_onLoadCallbacks;
 	std::queue<CallbackHandle> m_onRemoveCallbacks;
 	Flags m_flags = Flags::Error;
-	prosper::Context &m_context;
+	prosper::IPrContext &m_context;
 	std::shared_ptr<prosper::Texture> m_texture = nullptr;
 	std::string m_name;
 };

@@ -12,6 +12,7 @@
 #include <thread>
 #include <mutex>
 #include <queue>
+#include <atomic>
 #include <condition_variable>
 #include <fsys/filesystem.h>
 #include "cmatsysdefinitions.h"
@@ -47,9 +48,9 @@ public:
 	};
 public:
 	static void SetupSamplerMipmapMode(prosper::util::SamplerCreateInfo &createInfo,TextureMipmapMode mode);
-	TextureManager(prosper::Context &context);
+	TextureManager(prosper::IPrContext &context);
 	~TextureManager();
-	prosper::Context &GetContext() const;
+	prosper::IPrContext &GetContext() const;
 	void Update();
 	void RegisterCustomSampler(const std::shared_ptr<prosper::ISampler> &sampler);
 	const std::vector<std::weak_ptr<prosper::ISampler>> &GetCustomSamplers() const;
@@ -63,8 +64,8 @@ public:
 	void SetTextureFileHandler(const std::function<VFilePtr(const std::string&)> &fileHandler);
 
 	void WaitForTextures();
-	bool Load(prosper::Context &context,const std::string &cacheName,VFilePtr f,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture=nullptr);
-	bool Load(prosper::Context &context,const std::string &imgFile,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture=nullptr,bool bAbsolutePath=false);
+	bool Load(prosper::IPrContext &context,const std::string &cacheName,VFilePtr f,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture=nullptr);
+	bool Load(prosper::IPrContext &context,const std::string &imgFile,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture=nullptr,bool bAbsolutePath=false);
 	void ReloadTextures(const LoadInfo &loadInfo);
 	void ReloadTexture(Texture &texture,const LoadInfo &loadInfo);
 	void ReloadTexture(const std::string &tex,const LoadInfo &loadInfo);
@@ -72,10 +73,10 @@ public:
 	uint32_t ClearUnused();
 	std::shared_ptr<prosper::ISampler> &GetTextureSampler();
 private:
-	bool Load(prosper::Context &context,const std::string &cacheName,VFilePtr optFile,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture,bool bAbsolutePath);
+	bool Load(prosper::IPrContext &context,const std::string &cacheName,VFilePtr optFile,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture,bool bAbsolutePath);
 
 	bool HasWork();
-	std::weak_ptr<prosper::Context> m_wpContext;
+	std::weak_ptr<prosper::IPrContext> m_wpContext;
 	std::vector<std::shared_ptr<Texture>> m_textures;
 	std::atomic<bool> m_bBusy = false;
 	std::unique_ptr<std::thread> m_threadLoad;

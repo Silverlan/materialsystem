@@ -18,7 +18,7 @@ decltype(msys::ShaderDecomposeCornea::DESCRIPTOR_SET_TEXTURE) msys::ShaderDecomp
 		}
 	}
 };
-msys::ShaderDecomposeCornea::ShaderDecomposeCornea(prosper::Context &context,const std::string &identifier)
+msys::ShaderDecomposeCornea::ShaderDecomposeCornea(prosper::IPrContext &context,const std::string &identifier)
 	: ShaderBaseImageProcessing{context,identifier,"util/fs_decompose_cornea.gls"}
 {}
 

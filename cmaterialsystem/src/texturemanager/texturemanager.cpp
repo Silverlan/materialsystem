@@ -62,7 +62,7 @@ TextureManager::LoadInfo::LoadInfo()
 	: mipmapLoadMode(TextureMipmapMode::Load)
 {}
 
-TextureManager::TextureManager(prosper::Context &context)
+TextureManager::TextureManager(prosper::IPrContext &context)
 	: m_wpContext(context.shared_from_this()),m_textureSampler(nullptr),
 	m_textureSamplerNoMipmap(nullptr),m_bThreadActive(false)
 {
@@ -138,7 +138,7 @@ void TextureManager::SetupSamplerMipmapMode(prosper::util::SamplerCreateInfo &cr
 void TextureManager::RegisterCustomSampler(const std::shared_ptr<prosper::ISampler> &sampler) {m_customSamplers.push_back(sampler);}
 const std::vector<std::weak_ptr<prosper::ISampler>> &TextureManager::GetCustomSamplers() const {return m_customSamplers;}
 
-prosper::Context &TextureManager::GetContext() const {return *m_wpContext.lock();}
+prosper::IPrContext &TextureManager::GetContext() const {return *m_wpContext.lock();}
 
 void TextureManager::SetTextureFileHandler(const std::function<VFilePtr(const std::string&)> &fileHandler) {m_texFileHandler = fileHandler;}
 

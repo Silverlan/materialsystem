@@ -44,7 +44,6 @@ struct ImageFormatLoader
 static void initialize_image(TextureQueueItem &item,const Texture &texture,const ImageFormatLoader &imgLoader,std::shared_ptr<prosper::IImage> &outImage)
 {
 	auto &context = *item.context.lock();
-	auto &dev = context.GetDevice();
 
 	uint32_t width = 0;
 	uint32_t height = 0;
@@ -504,7 +503,6 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 		if(image != nullptr)
 		{
 			auto &context = *item.context.lock();
-			auto &dev = context.GetDevice();
 			prosper::util::TextureCreateInfo createInfo {};
 			createInfo.sampler = (item.sampler != nullptr) ? item.sampler : ((image->GetMipmapCount() > 1) ? m_textureSampler : m_textureSamplerNoMipmap);
 			prosper::util::ImageViewCreateInfo imgViewCreateInfo {};

@@ -35,12 +35,12 @@ decltype(msys::source2::ShaderDecomposePBR::DESCRIPTOR_SET_TEXTURE) msys::source
 		}
 	}
 };
-msys::source2::ShaderDecomposePBR::ShaderDecomposePBR(prosper::Context &context,const std::string &identifier)
+msys::source2::ShaderDecomposePBR::ShaderDecomposePBR(prosper::IPrContext &context,const std::string &identifier)
 	: ShaderBaseImageProcessing{context,identifier,"util/source2/fs_decompose_pbr.gls"}
 {}
 
 msys::source2::ShaderDecomposePBR::DecomposedImageSet msys::source2::ShaderDecomposePBR::DecomposePBR(
-	prosper::Context &context,prosper::Texture &albedoMap,prosper::Texture &normalMap,prosper::Texture &aoMap,
+	prosper::IPrContext &context,prosper::Texture &albedoMap,prosper::Texture &normalMap,prosper::Texture &aoMap,
 	Flags flags,prosper::Texture *optAniGlossMap
 )
 {
@@ -58,7 +58,6 @@ msys::source2::ShaderDecomposePBR::DecomposedImageSet msys::source2::ShaderDecom
 	auto extents = imgAlbedo.GetExtents();
 	imgCreateInfo.width = extents.width;
 	imgCreateInfo.height = extents.height;
-	auto &dev = context.GetDevice();
 	auto imgAlbedoOut = context.CreateImage(imgCreateInfo);
 	auto imgMetallicRoughnessOut = context.CreateImage(imgCreateInfo);
 

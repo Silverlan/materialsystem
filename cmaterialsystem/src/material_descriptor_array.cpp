@@ -22,7 +22,7 @@ MaterialDescriptorArrayManager::~MaterialDescriptorArrayManager()
 			cb.Remove();
 	}
 }
-void MaterialDescriptorArrayManager::Initialize(prosper::Context &context)
+void MaterialDescriptorArrayManager::Initialize(prosper::IPrContext &context)
 {
 	auto instanceSize = sizeof(MaterialRenderInfoBufferData);
 	auto instanceCount = 4'096;

@@ -25,16 +25,16 @@
 #endif
 
 #pragma optimize("",off)
-CMaterialManager::CMaterialManager(prosper::Context &context)
+CMaterialManager::CMaterialManager(prosper::IPrContext &context)
 	: MaterialManager{},prosper::ContextObject(context),m_textureManager(context)
 {
-	context.GetShaderManager().RegisterShader("decompose_cornea",[](prosper::Context &context,const std::string &identifier) {return new msys::ShaderDecomposeCornea(context,identifier);});
-	context.GetShaderManager().RegisterShader("ssbumpmap_to_normalmap",[](prosper::Context &context,const std::string &identifier) {return new msys::ShaderSSBumpMapToNormalMap(context,identifier);});
-	context.GetShaderManager().RegisterShader("source2_generate_tangent_space_normal_map",[](prosper::Context &context,const std::string &identifier) {return new msys::source2::ShaderGenerateTangentSpaceNormalMap(context,identifier);});
-	context.GetShaderManager().RegisterShader("source2_generate_tangent_space_normal_map_proto",[](prosper::Context &context,const std::string &identifier) {return new msys::source2::ShaderGenerateTangentSpaceNormalMapProto(context,identifier);});
-	context.GetShaderManager().RegisterShader("source2_decompose_metalness_reflectance",[](prosper::Context &context,const std::string &identifier) {return new msys::source2::ShaderDecomposeMetalnessReflectance(context,identifier);});
-	context.GetShaderManager().RegisterShader("source2_decompose_pbr",[](prosper::Context &context,const std::string &identifier) {return new msys::source2::ShaderDecomposePBR(context,identifier);});
-	context.GetShaderManager().RegisterShader("extract_image_channel",[](prosper::Context &context,const std::string &identifier) {return new msys::ShaderExtractImageChannel(context,identifier);});
+	context.GetShaderManager().RegisterShader("decompose_cornea",[](prosper::IPrContext &context,const std::string &identifier) {return new msys::ShaderDecomposeCornea(context,identifier);});
+	context.GetShaderManager().RegisterShader("ssbumpmap_to_normalmap",[](prosper::IPrContext &context,const std::string &identifier) {return new msys::ShaderSSBumpMapToNormalMap(context,identifier);});
+	context.GetShaderManager().RegisterShader("source2_generate_tangent_space_normal_map",[](prosper::IPrContext &context,const std::string &identifier) {return new msys::source2::ShaderGenerateTangentSpaceNormalMap(context,identifier);});
+	context.GetShaderManager().RegisterShader("source2_generate_tangent_space_normal_map_proto",[](prosper::IPrContext &context,const std::string &identifier) {return new msys::source2::ShaderGenerateTangentSpaceNormalMapProto(context,identifier);});
+	context.GetShaderManager().RegisterShader("source2_decompose_metalness_reflectance",[](prosper::IPrContext &context,const std::string &identifier) {return new msys::source2::ShaderDecomposeMetalnessReflectance(context,identifier);});
+	context.GetShaderManager().RegisterShader("source2_decompose_pbr",[](prosper::IPrContext &context,const std::string &identifier) {return new msys::source2::ShaderDecomposePBR(context,identifier);});
+	context.GetShaderManager().RegisterShader("extract_image_channel",[](prosper::IPrContext &context,const std::string &identifier) {return new msys::ShaderExtractImageChannel(context,identifier);});
 }
 
 CMaterialManager::~CMaterialManager()

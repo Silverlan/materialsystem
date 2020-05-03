@@ -14,7 +14,7 @@ decltype(msys::ShaderSSBumpMapToNormalMap::DESCRIPTOR_SET_TEXTURE) msys::ShaderS
 		}
 	}
 };
-msys::ShaderSSBumpMapToNormalMap::ShaderSSBumpMapToNormalMap(prosper::Context &context,const std::string &identifier)
+msys::ShaderSSBumpMapToNormalMap::ShaderSSBumpMapToNormalMap(prosper::IPrContext &context,const std::string &identifier)
 	: ShaderBaseImageProcessing{context,identifier,"util/fs_ssbumpmap_to_normalmap.gls"}
 {}
 

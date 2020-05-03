@@ -14,7 +14,7 @@ decltype(msys::source2::ShaderDecomposeMetalnessReflectance::DESCRIPTOR_SET_TEXT
 		}
 	}
 };
-msys::source2::ShaderDecomposeMetalnessReflectance::ShaderDecomposeMetalnessReflectance(prosper::Context &context,const std::string &identifier)
+msys::source2::ShaderDecomposeMetalnessReflectance::ShaderDecomposeMetalnessReflectance(prosper::IPrContext &context,const std::string &identifier)
 	: ShaderBaseImageProcessing{context,identifier,"util/source2/fs_decompose_metalness_reflectance.gls"}
 {}
 

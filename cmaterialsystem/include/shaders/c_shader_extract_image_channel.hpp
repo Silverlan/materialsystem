@@ -55,8 +55,8 @@ namespace msys
 		};
 #pragma pack(pop)
 
-		ShaderExtractImageChannel(prosper::Context &context,const std::string &identifier);
-		std::shared_ptr<prosper::IImage> ExtractImageChannel(prosper::Context &context,prosper::Texture &texSrc,const std::array<Channel,4> &channelValues,Pipeline pipeline);
+		ShaderExtractImageChannel(prosper::IPrContext &context,const std::string &identifier);
+		std::shared_ptr<prosper::IImage> ExtractImageChannel(prosper::IPrContext &context,prosper::Texture &texSrc,const std::array<Channel,4> &channelValues,Pipeline pipeline);
 	protected:
 		virtual void InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx) override;
 		virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx) override;

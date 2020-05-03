@@ -108,7 +108,6 @@ bool CMaterialManager::InitializeVMatData(
 
 						imgCreateInfo.width = pMetalnessReflectanceMap->GetWidth();
 						imgCreateInfo.height = pMetalnessReflectanceMap->GetHeight();
-						auto &dev = context.GetDevice();
 						auto imgRMA = context.CreateImage(imgCreateInfo);
 
 						prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
@@ -283,7 +282,6 @@ bool CMaterialManager::InitializeVMatData(
 
 				imgCreateInfo.width = metallicRoughnessResolution.width;
 				imgCreateInfo.height = metallicRoughnessResolution.height;
-				auto &dev = context.GetDevice();
 				auto imgRescaled = context.CreateImage(imgCreateInfo);
 				auto &setupCmd = context.GetSetupCommandBuffer();
 				prosper::util::BlitInfo blitInfo {};
@@ -379,7 +377,6 @@ bool CMaterialManager::InitializeVMatData(
 
 							imgCreateInfo.width = pNormalMap->GetWidth();
 							imgCreateInfo.height = pNormalMap->GetHeight();
-							auto &dev = context.GetDevice();
 							auto imgNormal = context.CreateImage(imgCreateInfo);
 
 							prosper::util::ImageViewCreateInfo imgViewCreateInfo {};

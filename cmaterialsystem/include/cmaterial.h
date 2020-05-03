@@ -77,7 +77,7 @@ private:
 	std::shared_ptr<CallbackInfo> InitializeCallbackInfo(const std::function<void(void)> &onAllTexturesLoaded,const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded);
 
 	uint32_t GetMipmapMode(const std::shared_ptr<ds::Block> &data) const;
-	prosper::Context &GetContext();
+	prosper::IPrContext &GetContext();
 	void LoadTexture(const std::shared_ptr<ds::Block> &data,const std::shared_ptr<ds::Texture> &texture,TextureLoadFlags flags=TextureLoadFlags::None,const std::shared_ptr<CallbackInfo> &callbackInfo=nullptr);
 	void InitializeSampler();
 	void InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::shared_ptr<CallbackInfo> &info,TextureLoadFlags loadFlags);
