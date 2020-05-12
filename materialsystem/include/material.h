@@ -50,6 +50,13 @@ public:
 		ExecutingOnLoadCallbacks = Loaded<<1u,
 		Error = ExecutingOnLoadCallbacks<<1u
 	};
+
+	enum class AlphaMode : uint32_t
+	{
+		Opaque = 0,
+		Mask,
+		Blend
+	};
 	
 	Material(MaterialManager &manager);
 	Material(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);

@@ -36,7 +36,11 @@ static const std::unordered_map<std::string,std::string> ENUM_VARS = { // These 
 	{"BORDER_COLOR_FLOAT_OPAQUE_BLACK","2"},
 	{"BORDER_COLOR_INT_OPAQUE_BLACK","3"},
 	{"BORDER_COLOR_FLOAT_OPAQUE_WHITE","4"},
-	{"BORDER_COLOR_INT_OPAQUE_WHITE","5"}
+	{"BORDER_COLOR_INT_OPAQUE_WHITE","5"},
+
+	{"ALPHA_MODE_OPAQUE",std::to_string(umath::to_integral(Material::AlphaMode::Opaque))},
+	{"ALPHA_MODE_MASK",std::to_string(umath::to_integral(Material::AlphaMode::Mask))},
+	{"ALPHA_MODE_BLEND",std::to_string(umath::to_integral(Material::AlphaMode::Blend))}
 };
 
 MaterialManager::LoadInfo::LoadInfo()
