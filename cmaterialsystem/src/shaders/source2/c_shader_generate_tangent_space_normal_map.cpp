@@ -3,6 +3,7 @@
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "shaders/source2/c_shader_generate_tangent_space_normal_map.hpp"
+#include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_util.hpp>
 
 #pragma optimize("",off)
@@ -22,7 +23,7 @@ msys::source2::ShaderGenerateTangentSpaceNormalMap::ShaderGenerateTangentSpaceNo
 	: ShaderBaseImageProcessing{context,identifier,fragmentShader}
 {}
 
-void msys::source2::ShaderGenerateTangentSpaceNormalMap::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void msys::source2::ShaderGenerateTangentSpaceNormalMap::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
 	ShaderGraphics::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 

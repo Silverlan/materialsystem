@@ -3,6 +3,7 @@
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "shaders/c_shader_decompose_cornea.hpp"
+#include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_util.hpp>
 
 #pragma optimize("",off)
@@ -22,7 +23,7 @@ msys::ShaderDecomposeCornea::ShaderDecomposeCornea(prosper::IPrContext &context,
 	: ShaderBaseImageProcessing{context,identifier,"util/fs_decompose_cornea.gls"}
 {}
 
-void msys::ShaderDecomposeCornea::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void msys::ShaderDecomposeCornea::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
 	ShaderGraphics::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 

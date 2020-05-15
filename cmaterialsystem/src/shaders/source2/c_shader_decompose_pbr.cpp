@@ -7,6 +7,7 @@
 #undef MemoryBarrier
 #endif
 #include "shaders/source2/c_shader_decompose_pbr.hpp"
+#include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_util.hpp>
 #include <prosper_context.hpp>
 #include <prosper_descriptor_set_group.hpp>
@@ -99,7 +100,7 @@ msys::source2::ShaderDecomposePBR::DecomposedImageSet msys::source2::ShaderDecom
 	};
 }
 
-void msys::source2::ShaderDecomposePBR::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void msys::source2::ShaderDecomposePBR::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
 	ShaderGraphics::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 

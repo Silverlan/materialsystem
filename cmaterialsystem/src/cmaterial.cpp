@@ -53,20 +53,20 @@ void CMaterial::InitializeSampler()
 	auto bUseCustomSampler = false;
 
 	const std::unordered_map<std::string,int32_t> addressModes = {
-		{"ADDRESS_MODE_REPEAT",umath::to_integral(vk::SamplerAddressMode::eRepeat)},
-		{"ADDRESS_MODE_MIRRORED_REPEAT",umath::to_integral(vk::SamplerAddressMode::eMirroredRepeat)},
-		{"ADDRESS_MODE_CLAMP_TO_EDGE",umath::to_integral(vk::SamplerAddressMode::eClampToEdge)},
-		{"ADDRESS_MODE_CLAMP_TO_BORDER",umath::to_integral(vk::SamplerAddressMode::eClampToBorder)},
-		{"ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE",umath::to_integral(vk::SamplerAddressMode::eMirrorClampToEdge)}
+		{"ADDRESS_MODE_REPEAT",umath::to_integral(prosper::SamplerAddressMode::Repeat)},
+		{"ADDRESS_MODE_MIRRORED_REPEAT",umath::to_integral(prosper::SamplerAddressMode::MirroredRepeat)},
+		{"ADDRESS_MODE_CLAMP_TO_EDGE",umath::to_integral(prosper::SamplerAddressMode::ClampToEdge)},
+		{"ADDRESS_MODE_CLAMP_TO_BORDER",umath::to_integral(prosper::SamplerAddressMode::ClampToBorder)},
+		{"ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE",umath::to_integral(prosper::SamplerAddressMode::MirrorClampToEdge)}
 	};
 
 	const std::unordered_map<std::string,int32_t> borderColors = {
-		{"BORDER_COLOR_FLOAT_TRANSPARENT_BLACK",umath::to_integral(vk::BorderColor::eFloatTransparentBlack)},
-		{"BORDER_COLOR_INT_TRANSPARENT_BLACK",umath::to_integral(vk::BorderColor::eIntTransparentBlack)},
-		{"BORDER_COLOR_FLOAT_OPAQUE_BLACK",umath::to_integral(vk::BorderColor::eFloatOpaqueBlack)},
-		{"BORDER_COLOR_INT_OPAQUE_BLACK",umath::to_integral(vk::BorderColor::eIntOpaqueBlack)},
-		{"BORDER_COLOR_FLOAT_OPAQUE_WHITE",umath::to_integral(vk::BorderColor::eFloatOpaqueWhite)},
-		{"BORDER_COLOR_INT_OPAQUE_WHITE",umath::to_integral(vk::BorderColor::eIntOpaqueWhite)}
+		{"BORDER_COLOR_FLOAT_TRANSPARENT_BLACK",umath::to_integral(prosper::BorderColor::FloatTransparentBlack)},
+		{"BORDER_COLOR_INT_TRANSPARENT_BLACK",umath::to_integral(prosper::BorderColor::IntTransparentBlack)},
+		{"BORDER_COLOR_FLOAT_OPAQUE_BLACK",umath::to_integral(prosper::BorderColor::FloatOpaqueBlack)},
+		{"BORDER_COLOR_INT_OPAQUE_BLACK",umath::to_integral(prosper::BorderColor::IntOpaqueBlack)},
+		{"BORDER_COLOR_FLOAT_OPAQUE_WHITE",umath::to_integral(prosper::BorderColor::FloatOpaqueWhite)},
+		{"BORDER_COLOR_INT_OPAQUE_WHITE",umath::to_integral(prosper::BorderColor::IntOpaqueWhite)}
 	};
 
 	const auto fGetValue = [this](const std::unordered_map<std::string,int32_t> &map,const std::string &identifier,int32_t &outVal) -> bool {

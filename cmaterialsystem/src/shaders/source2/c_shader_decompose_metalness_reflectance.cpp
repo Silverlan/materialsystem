@@ -3,6 +3,7 @@
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "shaders/source2/c_shader_decompose_metalness_reflectance.hpp"
+#include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_util.hpp>
 
 #pragma optimize("",off)
@@ -18,7 +19,7 @@ msys::source2::ShaderDecomposeMetalnessReflectance::ShaderDecomposeMetalnessRefl
 	: ShaderBaseImageProcessing{context,identifier,"util/source2/fs_decompose_metalness_reflectance.gls"}
 {}
 
-void msys::source2::ShaderDecomposeMetalnessReflectance::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void msys::source2::ShaderDecomposeMetalnessReflectance::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
 	ShaderGraphics::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 

@@ -7,6 +7,7 @@
 #undef MemoryBarrier
 #endif
 #include "shaders/c_shader_extract_image_channel.hpp"
+#include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
 #include <prosper_command_buffer.hpp>
@@ -30,7 +31,7 @@ msys::ShaderExtractImageChannel::ShaderExtractImageChannel(prosper::IPrContext &
 	SetPipelineCount(2);
 }
 
-void msys::ShaderExtractImageChannel::InitializeGfxPipeline(Anvil::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void msys::ShaderExtractImageChannel::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
 {
 	ShaderGraphics::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
