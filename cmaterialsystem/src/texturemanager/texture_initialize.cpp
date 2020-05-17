@@ -13,9 +13,6 @@
 #include <prosper_util_image_buffer.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <prosper_command_buffer.hpp>
-#include <config.h>
-#include <wrappers/image.h>
-#include <wrappers/memory_block.h>
 #include <mathutil/glmutil.h>
 #include <gli/gli.hpp>
 #include <util_image.hpp>
