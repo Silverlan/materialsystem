@@ -11,14 +11,17 @@
 #include "shaders/source2/c_shader_generate_tangent_space_normal_map.hpp"
 #include "shaders/source2/c_shader_decompose_metalness_reflectance.hpp"
 #include "shaders/source2/c_shader_decompose_pbr.hpp"
+#include "sprite_sheet_animation.hpp"
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
+#include <sharedutils/util_path.hpp>
 #include <prosper_util.hpp>
 #include <prosper_command_buffer.hpp>
 #include <prosper_descriptor_set_group.hpp>
 #include <image/prosper_render_target.hpp>
 #include <util_texture_info.hpp>
 #include <util_image.hpp>
+#include <virtualfile.h>
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include "util_vmt.hpp"
@@ -91,6 +94,9 @@ void CMaterialManager::ReloadMaterialShaders()
 	}
 }
 
+#include <VTFFile.h>
+#include <sharedutils/datastream.h>
+#include <sstream>
 bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader)
 {
 	//TODO: These do not work if the textures haven't been imported yet!!
@@ -238,6 +244,110 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 			get_vmt_data<ds::Bool,int32_t>(ptrRoot,settings,"eyeball_radius",node);
 		if((node = vmtRoot->GetNode("$dilation")) != nullptr)
 			get_vmt_data<ds::Bool,int32_t>(ptrRoot,settings,"pupil_dilation",node);
+	}
+	else if(ustring::compare(shader,"spritecard",false))
+	{
+		// Some Source Engine textures contain embedded animation sheet data.
+		// Since our texture formats don't support that, we'll have to extract it and
+		// store it separately.
+		info.shader = "particle";
+		if((node = vmtRoot->GetNode("$basetexture")) != nullptr)
+		{
+			if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+			{
+				auto *baseTexture = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+				auto &textureManager = GetTextureManager();
+				TextureManager::LoadInfo loadInfo {};
+				loadInfo.flags = TextureLoadFlags::LoadInstantly;
+
+				std::shared_ptr<void> baseTexMap = nullptr;
+				auto &context = GetContext();
+				if(textureManager.Load(context,baseTexture->GetValue(),loadInfo,&baseTexMap))
+				{
+					auto baseTexName = std::static_pointer_cast<Texture>(baseTexMap)->GetName();
+					auto name = MaterialManager::GetRootMaterialLocation() +'/' +baseTexName +".vtf";
+					auto fptr = FileManager::OpenFile(name.c_str(),"rb");
+					if(fptr)
+					{
+						VirtualFile f{};
+						auto &data = f.GetData();
+						data.resize(fptr->GetSize());
+						fptr->Read(data.data(),data.size());
+						fptr = nullptr;
+
+						VTFLib::CVTFFile fVtf{};
+						if(fVtf.Load(&f,false))
+						{
+							vlUInt resSize;
+							auto *ptr = fVtf.GetResourceData(tagVTFResourceEntryType::VTF_RSRC_SHEET,resSize);
+							if(ptr)
+							{
+								DataStream ds {ptr,resSize};
+								ds->SetOffset(0);
+								auto version = ds->Read<int32_t>();
+								assert(version == 0 || version == 1);
+								auto numSequences = ds->Read<int32_t>();
+
+								SpriteSheetAnimation anim {};
+								auto &sequences = anim.sequences;
+								sequences.reserve(numSequences);
+								for(auto i=decltype(numSequences){0};i<numSequences;++i)
+								{
+									auto seqIdx = ds->Read<int32_t>();
+									if(seqIdx >= sequences.size())
+										sequences.resize(seqIdx +1);
+									auto &seq = sequences.at(i);
+									seq.loop = !static_cast<bool>(ds->Read<int32_t>());
+									auto numFrames = ds->Read<int32_t>();
+									seq.frames.resize(numFrames);
+									auto sequenceLength = ds->Read<float>();
+									for(auto j=decltype(numFrames){0};j<numFrames;++j)
+									{
+										auto &frame = seq.frames.at(j);
+										frame.duration = ds->Read<float>();
+
+										auto constexpr MAX_IMAGES_PER_FRAME = 4u;
+										frame.uvStart = ds->Read<Vector2>();
+										frame.uvEnd = ds->Read<Vector2>();
+
+										// Animation data can contain multiple images per frame.
+										// I'm not sure what the purpose of that is (multi-texture?), but we'll ignore it for
+										// the time being.
+										if(version > 0)
+											ds->SetOffset(ds->GetOffset() +sizeof(Vector2) *2 *(MAX_IMAGES_PER_FRAME -1));
+#if 0
+										for(auto t=decltype(MAX_IMAGES_PER_FRAME){0u};t<MAX_IMAGES_PER_FRAME;++t)
+										{
+											auto &img = frame.images.at(t);
+											img.xMin = ds->Read<float>();
+											img.yMin = ds->Read<float>();
+											img.xMax = ds->Read<float>();
+											img.yMax = ds->Read<float>();
+
+											if(version == 0)
+											{
+												for(uint8_t i=1;i<MAX_IMAGES_PER_FRAME;++i)
+													frame.images.at(i) = img;
+												break;
+											}
+										}
+#endif
+									}
+								}
+								auto sequenceFilePath = util::Path{"addons/converted/" +MaterialManager::GetRootMaterialLocation() +'/' +baseTexName +".psd"};
+								FileManager::CreatePath(sequenceFilePath.GetPath().c_str());
+								auto fSeq = FileManager::OpenFile<VFilePtrReal>(sequenceFilePath.GetString().c_str(),"wb");
+								if(fSeq)
+								{
+									anim.Save(fSeq);
+									rootData.AddValue("string","animation",util::Path{baseTexName}.GetString());
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	int32_t ssBumpmap;
 	if((node = vmtRoot->GetNode("$ssbump")) != nullptr && vmt_parameter_to_numeric_type<int32_t>(node,ssBumpmap) && ssBumpmap != 0)

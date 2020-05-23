@@ -7,6 +7,7 @@
 #include "cmaterialmanager.h"
 #include "cmaterial.h"
 #include "texture_type.h"
+#include "sprite_sheet_animation.hpp"
 #include <prosper_util.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <image/prosper_sampler.hpp>
@@ -169,6 +170,30 @@ void CMaterial::SetLoaded(bool b)
 	if(texNormalMap && texNormalMap->texture)
 		std::static_pointer_cast<Texture>(texNormalMap->texture)->AddFlags(Texture::Flags::NormalMap);
 	Material::SetLoaded(b);
+}
+void CMaterial::SetSpriteSheetAnimation(const SpriteSheetAnimation &animInfo) {m_spriteSheetAnimation = animInfo;}
+void CMaterial::ClearSpriteSheetAnimation() {m_spriteSheetAnimation = {};}
+const SpriteSheetAnimation *CMaterial::GetSpriteSheetAnimation() const {return const_cast<CMaterial*>(this)->GetSpriteSheetAnimation();}
+SpriteSheetAnimation *CMaterial::GetSpriteSheetAnimation()
+{
+	if(m_spriteSheetAnimation.has_value() == false)
+	{
+		// Lazy initialization
+		auto &data = GetDataBlock();
+		if(data)
+		{
+			auto &anim = data->GetValue("animation");
+			if(anim && typeid(*anim) == typeid(ds::String))
+			{
+				auto animFilePath = static_cast<ds::String&>(*anim).GetString();
+				auto f = FileManager::OpenFile(("materials/" +animFilePath +".psd").c_str(),"rb");
+				m_spriteSheetAnimation = SpriteSheetAnimation{};
+				if(f == nullptr || m_spriteSheetAnimation->Load(f) == false)
+					m_spriteSheetAnimation = {};
+			}
+		}
+	}
+	return m_spriteSheetAnimation.has_value() ? &*m_spriteSheetAnimation : nullptr;
 }
 void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &texInfo,TextureLoadFlags loadFlags,const std::shared_ptr<CallbackInfo> &callbackInfo)
 {

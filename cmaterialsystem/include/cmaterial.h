@@ -8,6 +8,7 @@
 #include "cmatsysdefinitions.h"
 #include "texturemanager/texture.h"
 #include "texture_load_flags.hpp"
+#include "sprite_sheet_animation.hpp"
 #include <shader/prosper_shader.hpp>
 #include <sharedutils/util_weak_handle.hpp>
 #include <material.h>
@@ -23,6 +24,7 @@ namespace ds
 };
 #pragma warning(push)
 #pragma warning(disable : 4251)
+struct SpriteSheetAnimation;
 class DLLCMATSYS CMaterial
 	: public Material
 {
@@ -50,6 +52,11 @@ public:
 	void SetSettingsBuffer(prosper::IBuffer &buffer);
 	prosper::IBuffer *GetSettingsBuffer();
 	virtual void SetLoaded(bool b) override;
+
+	void SetSpriteSheetAnimation(const SpriteSheetAnimation &animInfo);
+	void ClearSpriteSheetAnimation();
+	const SpriteSheetAnimation *GetSpriteSheetAnimation() const;
+	SpriteSheetAnimation *GetSpriteSheetAnimation();
 protected:
 	void LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &texInfo,TextureLoadFlags flags=TextureLoadFlags::None,const std::shared_ptr<CallbackInfo> &callbackInfo=nullptr);
 	void ClearDescriptorSets();
@@ -72,6 +79,7 @@ private:
 	std::shared_ptr<prosper::ISampler> m_sampler = nullptr;
 	std::shared_ptr<prosper::IBuffer> m_settingsBuffer = nullptr;
 	std::shared_ptr<CallbackInfo> m_callbackInfo;
+	std::optional<SpriteSheetAnimation> m_spriteSheetAnimation {};
 	std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>,ShaderHash,ShaderEqualFn>::iterator FindShaderDescriptorSetGroup(prosper::Shader &shader);
 	std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>,ShaderHash,ShaderEqualFn>::const_iterator FindShaderDescriptorSetGroup(prosper::Shader &shader) const;
 	std::shared_ptr<CallbackInfo> InitializeCallbackInfo(const std::function<void(void)> &onAllTexturesLoaded,const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded);
