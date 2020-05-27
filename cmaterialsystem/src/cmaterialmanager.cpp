@@ -296,7 +296,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 									auto seqIdx = ds->Read<int32_t>();
 									if(seqIdx >= sequences.size())
 										sequences.resize(seqIdx +1);
-									auto &seq = sequences.at(i);
+									auto &seq = sequences.at(seqIdx);
 									seq.loop = !static_cast<bool>(ds->Read<int32_t>());
 									auto numFrames = ds->Read<int32_t>();
 									seq.frames.resize(numFrames);
@@ -347,6 +347,27 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 					}
 				}
 			}
+		}
+
+		auto *nodeOverbrightFactor = vmtRoot->GetNode("$overbrightfactor");
+		if(nodeOverbrightFactor == nullptr)
+			nodeOverbrightFactor = vmtRoot->GetNode("srgb?$overbrightfactor");
+		if(nodeOverbrightFactor)
+		{
+			float overbrightFactor;
+			if(vmt_parameter_to_numeric_type(nodeOverbrightFactor,overbrightFactor))
+			{
+				auto strOverbrightFactor = std::to_string(overbrightFactor);
+				rootData.AddValue("vector4","color_factor",strOverbrightFactor +' ' +strOverbrightFactor +' ' +strOverbrightFactor +" 1.0");
+			}
+		}
+
+		auto *nodeAddSelf = vmtRoot->GetNode("$addself");
+		float addSelf;
+		if(nodeAddSelf && vmt_parameter_to_numeric_type(nodeAddSelf,addSelf))
+		{
+			auto strAddSelf = std::to_string(addSelf);
+			rootData.AddValue("vector4","bloom_color_factor",strAddSelf +' ' +strAddSelf +' ' +strAddSelf +" 1.0");
 		}
 	}
 	int32_t ssBumpmap;

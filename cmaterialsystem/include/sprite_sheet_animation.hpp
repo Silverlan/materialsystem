@@ -43,11 +43,23 @@ struct DLLCMATSYS SpriteSheetAnimation
 		std::vector<Frame> frames {};
 
 		bool GetInterpolatedFrameData(float ptTime,uint32_t &outFrame0,uint32_t &outFrame1,float &outInterpFactor) const;
+		uint32_t GetAbsoluteFrameIndex(uint32_t localFrameIdx) const;
+
+		uint32_t GetFrameOffset() const;
+		float GetDuration() const;
+	private:
+		friend SpriteSheetAnimation;
+		void SetFrameOffset(uint32_t offset);
+		uint32_t m_frameOffset = 0;
+		float m_duration = 0.f;
 	};
 	std::vector<Sequence> sequences {};
 
+	uint32_t GetAbsoluteFrameIndex(uint32_t sequenceIdx,uint32_t localFrameIdx) const;
 	void Save(std::shared_ptr<VFilePtrInternalReal> &f) const;
 	bool Load(std::shared_ptr<VFilePtrInternal> &f);
+
+	void UpdateLookupData();
 };
 
 #endif

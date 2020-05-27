@@ -9,6 +9,12 @@ static std::array<char,3> PSD_HEADER {'P','S','D'};
 constexpr uint32_t PSD_VERSION = 0;
 
 #pragma optimize("",off)
+uint32_t SpriteSheetAnimation::GetAbsoluteFrameIndex(uint32_t sequenceIdx,uint32_t localFrameIdx) const
+{
+	if(sequenceIdx >= sequences.size())
+		return std::numeric_limits<uint32_t>::max();
+	return sequences.at(sequenceIdx).GetAbsoluteFrameIndex(localFrameIdx);
+}
 void SpriteSheetAnimation::Save(std::shared_ptr<VFilePtrInternalReal> &f) const
 {
 	f->Write(PSD_HEADER.data(),PSD_HEADER.size());
@@ -27,6 +33,20 @@ void SpriteSheetAnimation::Save(std::shared_ptr<VFilePtrInternalReal> &f) const
 			f->Write<Vector2>(frame.uvEnd);
 			f->Write<float>(frame.duration);
 		}
+	}
+}
+void SpriteSheetAnimation::UpdateLookupData()
+{
+	uint32_t frameOffset = 0;
+	for(auto &seq : sequences)
+	{
+		seq.SetFrameOffset(frameOffset);
+		frameOffset += seq.frames.size();
+
+		auto duration = 0.f;
+		for(auto &frame : seq.frames)
+			duration += frame.duration;
+		seq.m_duration = duration;
 	}
 }
 bool SpriteSheetAnimation::Load(std::shared_ptr<VFilePtrInternal> &f)
@@ -52,8 +72,13 @@ bool SpriteSheetAnimation::Load(std::shared_ptr<VFilePtrInternal> &f)
 			frame.duration = f->Read<float>();
 		}
 	}
+	UpdateLookupData();
 	return true;
 }
+void SpriteSheetAnimation::Sequence::SetFrameOffset(uint32_t offset) {m_frameOffset = offset;}
+uint32_t SpriteSheetAnimation::Sequence::GetFrameOffset() const {return m_frameOffset;}
+float SpriteSheetAnimation::Sequence::GetDuration() const {return m_duration;}
+uint32_t SpriteSheetAnimation::Sequence::GetAbsoluteFrameIndex(uint32_t localFrameIdx) const {return GetFrameOffset() +localFrameIdx;}
 bool SpriteSheetAnimation::Sequence::GetInterpolatedFrameData(float ptTime,uint32_t &outFrame0,uint32_t &outFrame1,float &outInterpFactor) const
 {
 	if(frames.empty())
