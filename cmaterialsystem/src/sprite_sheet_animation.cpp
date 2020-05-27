@@ -79,6 +79,7 @@ void SpriteSheetAnimation::Sequence::SetFrameOffset(uint32_t offset) {m_frameOff
 uint32_t SpriteSheetAnimation::Sequence::GetFrameOffset() const {return m_frameOffset;}
 float SpriteSheetAnimation::Sequence::GetDuration() const {return m_duration;}
 uint32_t SpriteSheetAnimation::Sequence::GetAbsoluteFrameIndex(uint32_t localFrameIdx) const {return GetFrameOffset() +localFrameIdx;}
+uint32_t SpriteSheetAnimation::Sequence::GetLocalFrameIndex(uint32_t absFrameIdx) const {return absFrameIdx -GetFrameOffset();}
 bool SpriteSheetAnimation::Sequence::GetInterpolatedFrameData(float ptTime,uint32_t &outFrame0,uint32_t &outFrame1,float &outInterpFactor) const
 {
 	if(frames.empty())

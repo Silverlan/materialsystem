@@ -44,6 +44,7 @@ struct DLLCMATSYS SpriteSheetAnimation
 
 		bool GetInterpolatedFrameData(float ptTime,uint32_t &outFrame0,uint32_t &outFrame1,float &outInterpFactor) const;
 		uint32_t GetAbsoluteFrameIndex(uint32_t localFrameIdx) const;
+		uint32_t GetLocalFrameIndex(uint32_t absFrameIdx) const;
 
 		uint32_t GetFrameOffset() const;
 		float GetDuration() const;
