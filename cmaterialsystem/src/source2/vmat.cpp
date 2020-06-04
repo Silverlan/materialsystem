@@ -23,6 +23,7 @@
 #include <sharedutils/util_path.hpp>
 #include <util_texture_info.hpp>
 #include <util_vmat.hpp>
+#include <alpha_mode.hpp>
 
 #pragma optimize("",off)
 #include "impl_texture_formats.h"
@@ -315,7 +316,7 @@ bool CMaterialManager::InitializeVMatData(
 				rootData.DetachData(*aoValue);
 
 			if(useAlpha)
-				rootData.AddValue("bool","translucent","1");
+				rootData.AddValue("int","alpha_mode",std::to_string(umath::to_integral(AlphaMode::Blend)));
 		}
 	}
 

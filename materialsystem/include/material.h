@@ -7,6 +7,7 @@
 
 #include "matsysdefinitions.h"
 #include "textureinfo.h"
+#include <optional>
 #include <sharedutils/util_weak_handle.hpp>
 #include <sharedutils/def_handle.h>
 #include <sharedutils/functioncallback.h>
@@ -16,6 +17,7 @@ class Material;
 DECLARE_BASE_HANDLE(DLLMATSYS,Material,Material);
 
 namespace util {class ShaderInfo;};
+enum class AlphaMode : uint32_t;
 class MaterialManager;
 class MaterialHandle;
 class VFilePtrInternalReal;
@@ -49,13 +51,6 @@ public:
 		Loaded = Translucent<<1u,
 		ExecutingOnLoadCallbacks = Loaded<<1u,
 		Error = ExecutingOnLoadCallbacks<<1u
-	};
-
-	enum class AlphaMode : uint32_t
-	{
-		Opaque = 0,
-		Mask,
-		Blend
 	};
 	
 	Material(MaterialManager &manager);
@@ -98,11 +93,15 @@ public:
 	const TextureInfo *GetRMAMap() const;
 	TextureInfo *GetRMAMap();
 
+	AlphaMode GetAlphaMode() const;
+	float GetAlphaCutoff() const;
+
 	const std::shared_ptr<ds::Block> &GetDataBlock() const;
 	virtual void SetLoaded(bool b);
 	CallbackHandle CallOnLoaded(const std::function<void(void)> &f) const;
 	bool IsValid() const;
 	MaterialManager &GetManager() const;
+	std::optional<std::string> GetAbsolutePath() const;
 	bool Save(std::shared_ptr<VFilePtrInternalReal> f) const;
 	bool Save(const std::string &fileName,const std::string &rootPath="") const;
 	bool Save() const;

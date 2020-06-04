@@ -4,6 +4,7 @@
 
 #include "materialmanager.h"
 #include "textureinfo.h"
+#include <alpha_mode.hpp>
 #include <fsys/filesystem.h>
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
@@ -38,9 +39,9 @@ static const std::unordered_map<std::string,std::string> ENUM_VARS = { // These 
 	{"BORDER_COLOR_FLOAT_OPAQUE_WHITE","4"},
 	{"BORDER_COLOR_INT_OPAQUE_WHITE","5"},
 
-	{"ALPHA_MODE_OPAQUE",std::to_string(umath::to_integral(Material::AlphaMode::Opaque))},
-	{"ALPHA_MODE_MASK",std::to_string(umath::to_integral(Material::AlphaMode::Mask))},
-	{"ALPHA_MODE_BLEND",std::to_string(umath::to_integral(Material::AlphaMode::Blend))}
+	{"ALPHA_MODE_OPAQUE",std::to_string(umath::to_integral(AlphaMode::Opaque))},
+	{"ALPHA_MODE_MASK",std::to_string(umath::to_integral(AlphaMode::Mask))},
+	{"ALPHA_MODE_BLEND",std::to_string(umath::to_integral(AlphaMode::Blend))}
 };
 
 MaterialManager::LoadInfo::LoadInfo()

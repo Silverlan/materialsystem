@@ -1,5 +1,6 @@
 #include "materialmanager.h"
 #include <sharedutils/util_string.h>
+#include <alpha_mode.hpp>
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include "util_vmt.hpp"
@@ -301,10 +302,21 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 			return v *0.025f;
 			});
 	}
-	if((node = vmtRoot->GetNode("$translucent")) != nullptr)
-		get_vmt_data<ds::Bool,int32_t>(root,*dataSettings,"translucent",node);
-	if((node = vmtRoot->GetNode("$alphatest")) != nullptr)
-		get_vmt_data<ds::Bool,int32_t>(root,*dataSettings,"translucent",node);
+
+	auto translucent = false;
+	if(((node = vmtRoot->GetNode("$translucent")) && vmt_parameter_to_numeric_type<bool>(node,translucent)))
+		root->AddValue("int","alpha_mode",std::to_string(umath::to_integral(AlphaMode::Blend)));
+
+	auto alphaTest = false;
+	if(((node = vmtRoot->GetNode("$alphatest")) && vmt_parameter_to_numeric_type<bool>(node,alphaTest)))
+	{
+		root->AddValue("int","alpha_mode",std::to_string(umath::to_integral(AlphaMode::Mask)));
+		auto alphaCutoff = 0.5f; // TODO: Confirm that the default for Source is 0.5
+		if(node = vmtRoot->GetNode("$alphatestreference"))
+			vmt_parameter_to_numeric_type<float>(node,alphaCutoff);
+		root->AddValue("float","alpha_cutoff",std::to_string(alphaCutoff));
+	}
+
 	if((node = vmtRoot->GetNode("$surfaceprop")) != nullptr)
 	{
 		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)

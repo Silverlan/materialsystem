@@ -4,6 +4,7 @@
 
 #include "material.h"
 #include "materialmanager.h"
+#include "alpha_mode.hpp"
 #include <sharedutils/util_shaderinfo.hpp>
 #include <sstream>
 #include <fsys/filesystem.h>
@@ -185,6 +186,19 @@ bool Material::Save(std::shared_ptr<VFilePtrInternalReal> f) const
 	f->WriteString(ss.str());
 	return true;
 }
+std::optional<std::string> Material::GetAbsolutePath() const
+{
+	auto name = const_cast<Material*>(this)->GetName();
+	if(name.empty())
+		return {};
+	std::string absPath = GetManager().GetRootMaterialLocation() +"\\";
+	absPath += name;
+	ufile::remove_extension_from_filename(absPath);
+	absPath += ".wmi";
+	if(FileManager::FindLocalPath(absPath,absPath) == false)
+		return {};
+	return absPath;
+}
 bool Material::Save() const
 {
 	auto name = const_cast<Material*>(this)->GetName();
@@ -251,6 +265,17 @@ TextureInfo *Material::GetParallaxMap() {return m_texParallax;}
 
 const TextureInfo *Material::GetRMAMap() const {return const_cast<Material*>(this)->GetRMAMap();}
 TextureInfo *Material::GetRMAMap() {return m_texRma;}
+
+AlphaMode Material::GetAlphaMode() const
+{
+	auto &data = GetDataBlock();
+	return static_cast<AlphaMode>(data->GetInt("alpha_mode",umath::to_integral(AlphaMode::Opaque)));
+}
+float Material::GetAlphaCutoff() const
+{
+	auto &data = GetDataBlock();
+	return data->GetFloat("alpha_cutoff",0.5f);
+}
 
 void Material::SetName(const std::string &name) {m_name = name;}
 const std::string &Material::GetName() {return m_name;}
