@@ -12,6 +12,7 @@
 #include <sharedutils/def_handle.h>
 #include <sharedutils/functioncallback.h>
 #include <mathutil/umath.h>
+#include <mathutil/uvec.h>
 
 class Material;
 DECLARE_BASE_HANDLE(DLLMATSYS,Material,Material);
@@ -95,6 +96,11 @@ public:
 
 	AlphaMode GetAlphaMode() const;
 	float GetAlphaCutoff() const;
+
+	void SetColorFactor(const Vector4 &colorFactor);
+	Vector4 GetColorFactor() const;
+	void SetBloomColorFactor(const Vector4 &bloomColorFactor);
+	std::optional<Vector4> GetBloomColorFactor() const;
 
 	const std::shared_ptr<ds::Block> &GetDataBlock() const;
 	virtual void SetLoaded(bool b);

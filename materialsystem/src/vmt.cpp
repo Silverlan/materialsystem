@@ -106,10 +106,7 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 	if(shader == "worldvertextransition")
 		shaderName = "pbr";
 	else if(shader == "sprite")
-	{
 		shaderName = "particle";
-		root->AddValue("bool","black_to_alpha","1");
-	}
 	else if(shader == "water")
 	{
 		bWater = true;
@@ -140,6 +137,28 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 		shaderName = "unlit";
 	else //if(shader == "LightmappedGeneric")
 		shaderName = "pbr";
+
+	auto isParticleShader = (shaderName == "particle");
+	if(isParticleShader == false)
+	{
+		// If $vertexalpha parameter is set, it's probably a particle material?
+		if((node = vmtRoot->GetNode("$vertexalpha")) != nullptr)
+			vmt_parameter_to_numeric_type<bool>(node,isParticleShader);
+	}
+
+	if((node = vmtRoot->GetNode("$additive")) != nullptr)
+	{
+		auto additive = false;
+		if(vmt_parameter_to_numeric_type<bool>(node,additive) && additive)
+			root->AddValue("bool","additive","1");
+		if(additive && isParticleShader)
+		{
+			// Additive needs lower color values to match Source more closely
+			// (Example: "Explosion_Flashup" particle system with "effects/softglow" material)
+			root->AddValue("vector4","color_factor","0.1 0.1 0.1 1.0");
+			root->AddValue("vector4","bloom_color_factor","0 0 0 1");
+		}
+	}
 
 	auto bHasGlowMap = false;
 	auto bHasGlow = false;

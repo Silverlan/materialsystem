@@ -19,6 +19,7 @@
 #include <prosper_command_buffer.hpp>
 #include <prosper_descriptor_set_group.hpp>
 #include <image/prosper_render_target.hpp>
+#include <datasystem_vector.h>
 #include <util_texture_info.hpp>
 #include <util_image.hpp>
 #include <virtualfile.h>
@@ -355,10 +356,19 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 		if(nodeOverbrightFactor)
 		{
 			float overbrightFactor;
-			if(vmt_parameter_to_numeric_type(nodeOverbrightFactor,overbrightFactor))
+			if(vmt_parameter_to_numeric_type(nodeOverbrightFactor,overbrightFactor) && overbrightFactor != 0.f)
 			{
-				auto strOverbrightFactor = std::to_string(overbrightFactor);
-				rootData.AddValue("vector4","color_factor",strOverbrightFactor +' ' +strOverbrightFactor +' ' +strOverbrightFactor +" 1.0");
+				// Overbright factors can get fairly large (e.g. 31 -> "particle/blood1/blood_goop3_spray"), we'll scale it down for Pragma
+				// so that a factor of 30 roughly equals 1.9
+				overbrightFactor = umath::max(overbrightFactor,1.2f);
+				overbrightFactor = logf(overbrightFactor) /logf(6.f); // log base 6
+				Vector4 colorFactor{0.f,0.f,0.f,0.f};
+				auto vColorFactor = rootData.GetValue("bloom_color_factor");
+				if(vColorFactor && typeid(*vColorFactor) == typeid(ds::Vector4))
+					colorFactor = static_cast<ds::Vector4&>(*vColorFactor).GetValue();
+				colorFactor += Vector4{overbrightFactor,overbrightFactor,overbrightFactor,0.f};
+
+				rootData.AddValue("vector4","bloom_color_factor",std::to_string(colorFactor.r) +' ' +std::to_string(colorFactor.g) +' ' +std::to_string(colorFactor.b) +" 1.0");
 			}
 		}
 
@@ -366,8 +376,13 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 		float addSelf;
 		if(nodeAddSelf && vmt_parameter_to_numeric_type(nodeAddSelf,addSelf))
 		{
-			auto strAddSelf = std::to_string(addSelf);
-			rootData.AddValue("vector4","bloom_color_factor",strAddSelf +' ' +strAddSelf +' ' +strAddSelf +" 1.0");
+			Vector4 colorFactor{1.f,1.f,1.f,1.f};
+			auto vColorFactor = rootData.GetValue("color_factor");
+			if(vColorFactor && typeid(*vColorFactor) == typeid(ds::Vector4))
+				colorFactor = static_cast<ds::Vector4&>(*vColorFactor).GetValue();
+			colorFactor += Vector4{addSelf,addSelf,addSelf,0.f};
+
+			rootData.AddValue("vector4","color_factor",std::to_string(colorFactor.r) +' ' +std::to_string(colorFactor.g) +' ' +std::to_string(colorFactor.b) +" 1.0");
 		}
 	}
 	int32_t ssBumpmap;

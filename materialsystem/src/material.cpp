@@ -8,6 +8,7 @@
 #include <sharedutils/util_shaderinfo.hpp>
 #include <sstream>
 #include <fsys/filesystem.h>
+#include <datasystem_vector.h>
 #include <sharedutils/util_file.h>
 
 DEFINE_BASE_HANDLE(DLLMATSYS,Material,Material);
@@ -98,7 +99,7 @@ void Material::UpdateTextures()
 	m_texAlpha = GetTextureInfo(ALPHA_MAP_IDENTIFIER);
 	m_texRma = GetTextureInfo(RMA_MAP_IDENTIFIER);
 
-	umath::set_flag(m_stateFlags,StateFlags::Translucent,m_data->GetBool("translucent"));
+	umath::set_flag(m_stateFlags,StateFlags::Translucent,GetAlphaMode() != AlphaMode::Opaque);
 }
 
 void Material::SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo)
@@ -275,6 +276,33 @@ float Material::GetAlphaCutoff() const
 {
 	auto &data = GetDataBlock();
 	return data->GetFloat("alpha_cutoff",0.5f);
+}
+
+void Material::SetColorFactor(const Vector4 &colorFactor)
+{
+	auto &data = GetDataBlock();
+	data->AddValue("vector4","color_factor",std::to_string(colorFactor.r) +' ' +std::to_string(colorFactor.g) +' ' +std::to_string(colorFactor.b) +' ' +std::to_string(colorFactor.a));
+}
+Vector4 Material::GetColorFactor() const
+{
+	auto &data = GetDataBlock();
+	auto colFactor = data->GetValue("color_factor");
+	if(colFactor == nullptr || typeid(*colFactor) != typeid(ds::Vector4))
+		return {1.f,1.f,1.f,1.f};
+	return static_cast<ds::Vector4&>(*colFactor).GetValue();
+}
+void Material::SetBloomColorFactor(const Vector4 &bloomColorFactor)
+{
+	auto &data = GetDataBlock();
+	data->AddValue("vector4","bloom_color_factor",std::to_string(bloomColorFactor.r) +' ' +std::to_string(bloomColorFactor.g) +' ' +std::to_string(bloomColorFactor.b) +' ' +std::to_string(bloomColorFactor.a));
+}
+std::optional<Vector4> Material::GetBloomColorFactor() const
+{
+	auto &data = GetDataBlock();
+	auto colFactor = data->GetValue("bloom_color_factor");
+	if(colFactor == nullptr || typeid(*colFactor) != typeid(ds::Vector4))
+		return {};
+	return static_cast<ds::Vector4&>(*colFactor).GetValue();
 }
 
 void Material::SetName(const std::string &name) {m_name = name;}
