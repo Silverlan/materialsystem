@@ -4,7 +4,7 @@
 
 #include "materialmanager.h"
 #include "textureinfo.h"
-#include <alpha_mode.hpp>
+#include <sharedutils/alpha_mode.hpp>
 #include <fsys/filesystem.h>
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>

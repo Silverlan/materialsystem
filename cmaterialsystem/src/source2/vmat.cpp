@@ -23,7 +23,7 @@
 #include <sharedutils/util_path.hpp>
 #include <util_texture_info.hpp>
 #include <util_vmat.hpp>
-#include <alpha_mode.hpp>
+#include <sharedutils/alpha_mode.hpp>
 
 #pragma optimize("",off)
 #include "impl_texture_formats.h"

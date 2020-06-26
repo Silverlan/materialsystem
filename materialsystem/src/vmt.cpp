@@ -1,6 +1,6 @@
 #include "materialmanager.h"
 #include <sharedutils/util_string.h>
-#include <alpha_mode.hpp>
+#include <sharedutils/alpha_mode.hpp>
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include "util_vmt.hpp"
@@ -287,7 +287,10 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 		}
 	}
 	if((node = vmtRoot->GetNode("$additive")) != nullptr)
+	{
+		root->AddValue("int","alpha_mode",std::to_string(umath::to_integral(AlphaMode::Blend)));
 		get_vmt_data<ds::Bool,int32_t>(root,*dataSettings,"black_to_alpha",node);
+	}
 	if((node = vmtRoot->GetNode("$phong")) != nullptr)
 		get_vmt_data<ds::Bool,int32_t>(root,*dataSettings,"phong_normal_alpha",node);
 	if((node = vmtRoot->GetNode("$phongexponent")) != nullptr)

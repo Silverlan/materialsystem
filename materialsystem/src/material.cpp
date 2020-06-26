@@ -4,7 +4,7 @@
 
 #include "material.h"
 #include "materialmanager.h"
-#include "alpha_mode.hpp"
+#include <sharedutils/alpha_mode.hpp>
 #include <sharedutils/util_shaderinfo.hpp>
 #include <sstream>
 #include <fsys/filesystem.h>
