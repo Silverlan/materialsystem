@@ -12,6 +12,7 @@
 #include <array>
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
+#include <VTFLib.h>
 #include "util_vmt.hpp"
 #endif
 #ifndef DISABLE_VMAT_SUPPORT
@@ -210,6 +211,9 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 		VTFLib::CVMTFile vmt {};
 		if(vmt.Load(data.data(),static_cast<vlUInt>(sz)) == vlTrue)
 			return LoadVMT(vmt,info);
+		auto *err = vlGetLastError();
+		// TODO: Don't print this out directly, add an error handler!
+		std::cout<<"VMT Parsing error in material '"<<path<<"': "<<err<<std::endl;
 		return false;
 	}
 #endif
