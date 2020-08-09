@@ -211,7 +211,7 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 	}
 
 	// These are custom parameters; Used to make it easier to import PBR assets into Pragma
-	if((node = vmtRoot->GetNode("rmatexture")) != nullptr && node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+	if((node = vmtRoot->GetNode("$rmatexture")) != nullptr && node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 	{
 		auto *metalnessNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
 		root->AddData(Material::RMA_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,metalnessNode->GetValue()));
