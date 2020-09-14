@@ -416,6 +416,20 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 		}
 	}
 
+	if(isParticleShader == false)
+	{
+		if(((node = vmtRoot->GetNode("$color")) || (node = vmtRoot->GetNode("$color2"))) && node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			auto color = vmt_parameter_to_color(*node);
+			if(color.has_value())
+			{
+				root->AddValue("vector4","color_factor",std::to_string(color->r) +' ' +std::to_string(color->g) +' ' +std::to_string(color->b) +" 1.0");
+				if(root->HasValue(Material::ALBEDO_MAP_IDENTIFIER) == false) // $color / $color2 attributes work without a diffuse texture
+					root->AddData(Material::ALBEDO_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,"white"));
+			}
+		}
+	}
+
 	info.shader = shaderName;
 	info.root = root;
 	return InitializeVMTData(vmt,info,*root,*dataSettings,shader);

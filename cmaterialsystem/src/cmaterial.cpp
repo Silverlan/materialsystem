@@ -251,13 +251,13 @@ void CMaterial::SetTexture(const std::string &identifier,const std::string &text
 	auto dsSettingsTmp = ds::create_data_settings({});
 	auto dataTex = std::make_shared<ds::Texture>(*dsSettingsTmp,texture); // Data settings will be overwrriten by AddData-call below
 	m_data->AddData(identifier,dataTex);
+	UpdateTextures();
 
 	SetLoaded(false);
 	auto callbackInfo = InitializeCallbackInfo([this]() {
 		SetLoaded(true);
 		if(m_fOnLoaded != nullptr)
 			m_fOnLoaded();
-		UpdateTextures();
 		auto shaderHandler = static_cast<CMaterialManager&>(GetManager()).GetShaderHandler();
 		if(shaderHandler != nullptr)
 			shaderHandler(this);

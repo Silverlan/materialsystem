@@ -37,6 +37,9 @@ namespace ds
 		virtual int GetInt() const override;
 		virtual float GetFloat() const override;
 		virtual bool GetBool() const override;
+		virtual ::Color GetColor() const override;
+		virtual ::Vector3 GetVector() const override;
+		virtual ::Vector4 GetVector4() const override;
 	protected:
 		Texture(ds::Settings &dataSettings,const std::string &value,bool bCubemap);
 	private:

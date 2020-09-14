@@ -34,6 +34,24 @@ template<typename T>
 	return false;
 }
 
+static std::optional<Vector3> vmt_parameter_to_color(VTFLib::Nodes::CVMTNode &node)
+{
+	if(node.GetType() != VMTNodeType::NODE_TYPE_STRING)
+		return {};
+	auto &stringNode = static_cast<VTFLib::Nodes::CVMTStringNode&>(node);
+	std::string value = stringNode.GetValue();
+	auto start = value.find_first_of("[{");
+	auto end = value.find_first_of("]}",start);
+	if(end == std::string::npos)
+		return {};
+	auto colorValue = (value.at(start) == '{');
+	value = value.substr(start +1,end -start -1);
+	auto color = uvec::create(value);
+	if(colorValue)
+		color /= static_cast<float>(std::numeric_limits<uint8_t>::max());
+	return color;
+}
+
 template<class TData,typename TInternal>
 	void get_vmt_data(const std::shared_ptr<ds::Block> &root,ds::Settings &dataSettings,const std::string &key,VTFLib::Nodes::CVMTNode *node,const std::function<TInternal(TInternal)> &translate=nullptr)
 {
