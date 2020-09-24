@@ -46,6 +46,7 @@ static std::optional<Vector3> vmt_parameter_to_color(VTFLib::Nodes::CVMTNode &no
 		return {};
 	auto colorValue = (value.at(start) == '{');
 	value = value.substr(start +1,end -start -1);
+	ustring::remove_whitespace(value);
 	auto color = uvec::create(value);
 	if(colorValue)
 		color /= static_cast<float>(std::numeric_limits<uint8_t>::max());
