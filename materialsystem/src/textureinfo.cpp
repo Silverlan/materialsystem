@@ -67,6 +67,7 @@ float ds::Texture::GetFloat() const {return 0.f;}
 bool ds::Texture::GetBool() const {return true;}
 ::Color ds::Texture::GetColor() const {return {};}
 ::Vector3 ds::Texture::GetVector() const {return {};}
+::Vector2 ds::Texture::GetVector2() const {return {};}
 ::Vector4 ds::Texture::GetVector4() const {return {};}
 REGISTER_DATA_TYPE(ds::Texture,texture)
 

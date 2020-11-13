@@ -1,4 +1,5 @@
 #include "materialmanager.h"
+#include "detail_mode.hpp"
 #include <sharedutils/util_string.h>
 #include <sharedutils/alpha_mode.hpp>
 #ifndef DISABLE_VMT_SUPPORT
@@ -206,6 +207,76 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 				root->AddValue("float","glow_blend_diffuse_scale","1");
 				root->AddValue("bool","glow_alpha_only","1");
 				bHasGlow = true;
+			}
+		}
+	}
+	
+	if((node = vmtRoot->GetNode("$detail")) != nullptr)
+	{
+		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+		{
+			auto *texNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+			auto detailBlendMode = msys::DetailMode::Invalid;
+			static_assert(std::is_same_v<std::underlying_type_t<decltype(detailBlendMode)>,uint8_t>);
+			node = vmtRoot->GetNode("$detailblendmode");
+			if(node)
+				vmt_parameter_to_numeric_type<uint8_t>(node,reinterpret_cast<uint8_t&>(detailBlendMode));
+			if(umath::to_integral(detailBlendMode) >= 0 && umath::to_integral(detailBlendMode) < umath::to_integral(msys::DetailMode::Count))
+			{
+				root->AddValue("string","detail_blend_mode",msys::to_string(detailBlendMode));
+				root->AddData("detail_map",std::make_shared<ds::Texture>(*dataSettings,texNode->GetValue()));
+
+				node = vmtRoot->GetNode("$detailscale");
+				if(node)
+				{
+					Vector2 uvScale {4.f,4.f};
+					if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+					{
+						auto values = get_vmt_matrix(*static_cast<VTFLib::Nodes::CVMTStringNode*>(node));
+						if(values.size() > 0)
+						{
+							uvScale[0] = values.at(0);
+							uvScale[1] = values.at(0);
+						}
+						if(values.size() > 1)
+							uvScale[1] = values.at(1);
+					}
+					else
+					{
+						vmt_parameter_to_numeric_type<float>(node,uvScale.x);
+						uvScale.y = uvScale.x;
+					}
+					root->AddValue("vector2","detail_uv_scale",std::to_string(uvScale[0]) +' ' +std::to_string(uvScale[1]));
+				}
+
+				node = vmtRoot->GetNode("$detailblendfactor");
+				if(node)
+				{
+					Vector3 detailBlendFactor {1.f,1.f,1.f};
+					if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+					{
+						auto values = get_vmt_matrix(*static_cast<VTFLib::Nodes::CVMTStringNode*>(node));
+						for(uint8_t i=0;i<umath::min<uint32_t>(static_cast<uint32_t>(values.size()),static_cast<uint32_t>(3u));++i)
+							detailBlendFactor[i] = values.at(i);
+					}
+					else
+					{
+						vmt_parameter_to_numeric_type<float>(node,detailBlendFactor[0]);
+						detailBlendFactor[1] = detailBlendFactor[0];
+						detailBlendFactor[2] = detailBlendFactor[0];
+					}
+					root->AddValue("vector","detail_factor",std::to_string(detailBlendFactor[0]) +' ' +std::to_string(detailBlendFactor[1]) +' ' +std::to_string(detailBlendFactor[2]));
+				}
+				
+				Vector3 detailColorFactor {1.f,1.f,1.f};
+				node = vmtRoot->GetNode("$detailtint");
+				if(node)
+				{
+					auto color = vmt_parameter_to_color(*node);
+					if(color.has_value())
+						detailColorFactor = *color;
+				}
+				root->AddValue("vector","detail_color_factor",std::to_string(detailColorFactor[0]) +' ' +std::to_string(detailColorFactor[1]) +' ' +std::to_string(detailColorFactor[2]));
 			}
 		}
 	}
