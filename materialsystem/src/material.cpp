@@ -99,7 +99,7 @@ void Material::UpdateTextures()
 	m_texAlpha = GetTextureInfo(ALPHA_MAP_IDENTIFIER);
 	m_texRma = GetTextureInfo(RMA_MAP_IDENTIFIER);
 
-	umath::set_flag(m_stateFlags,StateFlags::Translucent,GetAlphaMode() != AlphaMode::Opaque);
+	umath::set_flag(m_stateFlags,StateFlags::Translucent,GetAlphaMode() == AlphaMode::Blend);
 }
 
 void Material::SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo)

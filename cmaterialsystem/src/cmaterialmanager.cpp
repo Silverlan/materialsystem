@@ -77,7 +77,7 @@ Material *CMaterialManager::CreateMaterial(const std::string *identifier,const s
 	auto *mat = CreateMaterial<CMaterial>(shaderManager.PreRegisterShader(shader),root); // Claims ownership of 'root' and frees the memory at destruction
 	mat->SetLoaded(true);
 	mat->SetName(matId);
-	m_materials.insert(decltype(m_materials)::value_type{ToMaterialIdentifier(matId),mat->GetHandle()});
+	AddMaterial(matId,*mat);
 	return mat;
 }
 Material *CMaterialManager::CreateMaterial(const std::string &identifier,const std::string &shader,const std::shared_ptr<ds::Block> &root) {return CreateMaterial(&identifier,shader,root);}
@@ -88,10 +88,10 @@ void CMaterialManager::ReloadMaterialShaders()
 	if(m_shaderHandler == nullptr)
 		return;
 	GetContext().WaitIdle();
-	for(auto &it : m_materials)
+	for(auto &hMat : m_materials)
 	{
-		if(it.second.IsValid() && it.second->IsLoaded() == true)
-			m_shaderHandler(it.second.get());
+		if(hMat.IsValid() && hMat->IsLoaded() == true)
+			m_shaderHandler(hMat.get());
 	}
 }
 
@@ -528,7 +528,7 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 	}
 	info.material->SetName(info.identifier);
 	// The material has to be registered before calling the callbacks below
-	m_materials.insert(decltype(m_materials)::value_type{ToMaterialIdentifier(info.identifier),info.material->GetHandle()});
+	AddMaterial(info.identifier,*info.material);
 	if(bInitializeTextures == true)
 	{
 		auto *mat = info.material;

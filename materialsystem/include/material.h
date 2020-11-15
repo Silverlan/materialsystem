@@ -17,6 +17,7 @@
 class Material;
 DECLARE_BASE_HANDLE(DLLMATSYS,Material,Material);
 
+using MaterialIndex = uint32_t;
 namespace util {class ShaderInfo;};
 enum class AlphaMode : uint32_t;
 class MaterialManager;
@@ -112,6 +113,8 @@ public:
 	bool Save(const std::string &fileName,const std::string &rootPath="") const;
 	bool Save() const;
 
+	MaterialIndex GetIndex() const {return m_index;}
+
 	// Returns true if all textures associated with this material have been fully loaded
 	bool IsLoaded() const;
 	void *GetUserData();
@@ -120,7 +123,9 @@ public:
 	void Initialize(const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
 	void Initialize(const std::string &shader,const std::shared_ptr<ds::Block> &data);
 protected:
+	friend MaterialManager;
 	virtual ~Material();
+	void SetIndex(MaterialIndex index) {m_index = index;}
 	MaterialHandle m_handle;
 	util::WeakHandle<util::ShaderInfo> m_shaderInfo = {};
 	std::unique_ptr<std::string> m_shader;
@@ -136,6 +141,7 @@ protected:
 	TextureInfo *m_texParallax = nullptr;
 	TextureInfo *m_texRma = nullptr;
 	void *m_userData;
+	MaterialIndex m_index = std::numeric_limits<MaterialIndex>::max();
 	template<class TMaterial>
 	TMaterial *Copy() const;
 };

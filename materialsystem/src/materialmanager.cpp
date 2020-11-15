@@ -96,8 +96,17 @@ Material *MaterialManager::CreateMaterial(const std::string *identifier,const st
 	}
 	auto *mat = CreateMaterial<Material>(shader,root); // Claims ownership of 'root' and frees the memory at destruction
 	mat->SetName(matId);
-	m_materials.insert(decltype(m_materials)::value_type{ToMaterialIdentifier(matId),mat->GetHandle()});
+	AddMaterial(matId,*mat);
 	return mat;
+}
+
+void MaterialManager::AddMaterial(const std::string &identifier,Material &mat)
+{
+	mat.SetIndex(m_materials.size());
+	if(m_materials.size() == m_materials.capacity())
+		m_materials.reserve(m_materials.size() *1.1 +100);
+	m_materials.push_back(mat.GetHandle());
+	m_nameToMaterialIndex[ToMaterialIdentifier(identifier)] = mat.GetIndex();
 }
 
 std::string MaterialManager::PathToIdentifier(const std::string &path,std::string *ext,bool &hadExtension) const
@@ -136,16 +145,21 @@ std::string MaterialManager::PathToIdentifier(const std::string &path) const
 Material *MaterialManager::FindMaterial(const std::string &identifier,std::string &internalMatId) const
 {
 	internalMatId = PathToIdentifier(identifier);
-	auto it = m_materials.find(ToMaterialIdentifier(internalMatId));
-	if(it == m_materials.end())
+	auto it = m_nameToMaterialIndex.find(ToMaterialIdentifier(internalMatId));
+	if(it == m_nameToMaterialIndex.end())
 		return nullptr;
-	return it->second.get();
+	return m_materials.at(it->second).get();
 }
 Material *MaterialManager::FindMaterial(const std::string &identifier) const
 {
 	std::string internalMatId;
 	return FindMaterial(identifier,internalMatId);
 }
+Material *MaterialManager::GetMaterial(MaterialIndex index)
+{
+	return (index < m_materials.size()) ? m_materials.at(index).get() : nullptr;
+}
+const Material *MaterialManager::GetMaterial(MaterialIndex index) const {return const_cast<MaterialManager*>(this)->GetMaterial(index);}
 std::shared_ptr<ds::Settings> MaterialManager::CreateDataSettings() const {return ds::create_data_settings(ENUM_VARS);}
 
 std::string MaterialManager::ToMaterialIdentifier(const std::string &id) const
@@ -164,14 +178,13 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 	matId = PathToIdentifier(path,&ext,bHadExtension);
 	matId = FileManager::GetCanonicalizedPath(matId);
 
-	auto it = m_materials.find(ToMaterialIdentifier(matId));
-	if(it != m_materials.end())
+	auto it = m_nameToMaterialIndex.find(ToMaterialIdentifier(matId));
+	if(it != m_nameToMaterialIndex.end())
 	{
-		if(!it->second.IsValid())
-			m_materials.erase(it);
-		else
+		auto &hMat = m_materials.at(it->second);
+		if(hMat.IsValid())
 		{
-			info.material = it->second.get();
+			info.material = hMat.get();
 			info.shader = info.material->GetShaderIdentifier();
 			if(bReload == false)
 				return true;
@@ -195,7 +208,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 		//if(matErr == m_materials.end())
 		//	return false;
 		auto *nmat = CreateMaterial<Material>();
-		m_materials.insert(decltype(m_materials)::value_type{ToMaterialIdentifier(matId),nmat->GetHandle()});
+		AddMaterial(matId,*nmat);
 		*mat = nmat;
 		return true;
 	};
@@ -279,7 +292,7 @@ Material *MaterialManager::Load(const std::string &path,bool bReload,bool *bFirs
 		info.material->SetLoaded(true);
 	}
 	info.material->SetName(info.identifier);
-	m_materials.insert(decltype(m_materials)::value_type{ToMaterialIdentifier(info.identifier),info.material->GetHandle()});
+	AddMaterial(info.identifier,*info.material);
 	if(info.saveOnDisk)
 		info.material->Save(info.material->GetName(),"addons/converted/");
 	return info.material;
@@ -295,17 +308,17 @@ void MaterialManager::SetErrorMaterial(Material *mat)
 	}
 }
 Material *MaterialManager::GetErrorMaterial() const {return m_error.get();}
-const std::unordered_map<std::string,MaterialHandle> &MaterialManager::GetMaterials() const {return m_materials;}
+const std::vector<MaterialHandle> &MaterialManager::GetMaterials() const {return m_materials;}
 uint32_t MaterialManager::Clear()
 {
-	for(auto &it : m_materials)
+	for(auto &hMaterial : m_materials)
 	{
-		auto &hMaterial = it.second;
 		if(hMaterial.IsValid())
 			hMaterial->Remove();
 	}
 	auto n = m_materials.size();
 	m_materials.clear();
+	m_nameToMaterialIndex.clear();
 	return n;
 }
 void MaterialManager::SetTextureImporter(const std::function<VFilePtr(const std::string&,const std::string&)> &fileHandler) {m_textureImporter = fileHandler;}
@@ -315,9 +328,17 @@ uint32_t MaterialManager::ClearUnused()
 	uint32_t n = 0;
 	for(auto it=m_materials.begin();it!=m_materials.end();)
 	{
-		auto &hMaterial = it->second;
+		auto &hMaterial = *it;
 		if(!hMaterial.IsValid() || (hMaterial.use_count() == 1 && hMaterial.get() != m_error.get())) // Use count = 1 => Only in use by us!
 		{
+			auto matIdx = hMaterial->GetIndex();
+			for(auto it=m_nameToMaterialIndex.begin();it!=m_nameToMaterialIndex.end();++it)
+			{
+				if(it->second != matIdx)
+					continue;
+				m_nameToMaterialIndex.erase(it);
+				break;
+			}
 			hMaterial->Remove();
 			it = m_materials.erase(it);
 			++n;

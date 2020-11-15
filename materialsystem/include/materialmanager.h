@@ -51,10 +51,12 @@ public:
 	Material *CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &root=nullptr);
 	Material *FindMaterial(const std::string &identifier,std::string &internalMatId) const;
 	Material *FindMaterial(const std::string &identifier) const;
+	Material *GetMaterial(MaterialIndex index);
+	const Material *GetMaterial(MaterialIndex index) const;
 	virtual Material *Load(const std::string &path,bool bReload=false,bool *bFirstTimeError=nullptr);
 	virtual void SetErrorMaterial(Material *mat);
 	Material *GetErrorMaterial() const;
-	const std::unordered_map<std::string,MaterialHandle> &GetMaterials() const;
+	const std::vector<MaterialHandle> &GetMaterials() const;
 	uint32_t Clear(); // Clears all materials (+Textures?)
 	uint32_t ClearUnused();
 	void SetTextureImporter(const std::function<std::shared_ptr<VFilePtrInternal>(const std::string&,const std::string&)> &fileHandler);
@@ -64,7 +66,8 @@ public:
 	static void SetRootMaterialLocation(const std::string &location);
 	static const std::string &GetRootMaterialLocation();
 protected:
-	std::unordered_map<std::string,MaterialHandle> m_materials;
+	std::vector<MaterialHandle> m_materials;
+	std::unordered_map<std::string,MaterialIndex> m_nameToMaterialIndex;
 	uint32_t m_unnamedIdx = 0;
 	std::string PathToIdentifier(const std::string &path,std::string *ext,bool &hadExtension) const;
 	std::string PathToIdentifier(const std::string &path,std::string *ext) const;
@@ -88,6 +91,7 @@ protected:
 
 	std::shared_ptr<ds::Settings> CreateDataSettings() const;
 	std::string ToMaterialIdentifier(const std::string &id) const;
+	void AddMaterial(const std::string &identifier,Material &mat);
 #ifndef DISABLE_VMT_SUPPORT
 	bool LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info);
 	virtual bool InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds::Block &rootData,ds::Settings &settings,const std::string &shader);
