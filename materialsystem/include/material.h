@@ -11,6 +11,7 @@
 #include <sharedutils/util_weak_handle.hpp>
 #include <sharedutils/def_handle.h>
 #include <sharedutils/functioncallback.h>
+#include <sharedutils/alpha_mode.hpp>
 #include <mathutil/umath.h>
 #include <mathutil/uvec.h>
 
@@ -19,7 +20,6 @@ DECLARE_BASE_HANDLE(DLLMATSYS,Material,Material);
 
 using MaterialIndex = uint32_t;
 namespace util {class ShaderInfo;};
-enum class AlphaMode : uint32_t;
 class MaterialManager;
 class MaterialHandle;
 class VFilePtrInternalReal;
@@ -49,8 +49,7 @@ public:
 	enum class StateFlags : uint32_t
 	{
 		None = 0u,
-		Translucent = 1u,
-		Loaded = Translucent<<1u,
+		Loaded = 1u,
 		ExecutingOnLoadCallbacks = Loaded<<1u,
 		Error = ExecutingOnLoadCallbacks<<1u
 	};
@@ -61,7 +60,7 @@ public:
 	Material(const Material&)=delete;
 	void Remove();
 	MaterialHandle GetHandle();
-	void SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo);
+	virtual void SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo);
 	const util::ShaderInfo *GetShaderInfo() const;
 	void UpdateTextures();
 	const std::string &GetShaderIdentifier() const;
@@ -119,7 +118,9 @@ public:
 	bool IsLoaded() const;
 	void *GetUserData();
 	void SetUserData(void *data);
-	void Reset();
+	void *GetUserData2() {return m_userData2;}
+	void SetUserData2(void *data) {m_userData2 = data;}
+	virtual void Reset();
 	void Initialize(const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
 	void Initialize(const std::string &shader,const std::shared_ptr<ds::Block> &data);
 protected:
@@ -141,6 +142,8 @@ protected:
 	TextureInfo *m_texParallax = nullptr;
 	TextureInfo *m_texRma = nullptr;
 	void *m_userData;
+	void *m_userData2 = nullptr;
+	AlphaMode m_alphaMode = AlphaMode::Opaque;
 	MaterialIndex m_index = std::numeric_limits<MaterialIndex>::max();
 	template<class TMaterial>
 	TMaterial *Copy() const;

@@ -52,7 +52,6 @@ void Material::Remove() {delete this;}
 
 void Material::Reset()
 {
-	umath::set_flag(m_stateFlags,StateFlags::Translucent,false);
 	umath::set_flag(m_stateFlags,StateFlags::Loaded,false);
 	m_data = nullptr;
 	m_shaderInfo.reset();
@@ -85,7 +84,7 @@ void Material::Initialize(const std::string &shader,const std::shared_ptr<ds::Bl
 void *Material::GetUserData() {return m_userData;}
 void Material::SetUserData(void *data) {m_userData = data;}
 
-bool Material::IsTranslucent() const {return umath::is_flag_set(m_stateFlags,StateFlags::Translucent);}
+bool Material::IsTranslucent() const {return m_alphaMode == AlphaMode::Blend;}
 
 void Material::UpdateTextures()
 {
@@ -99,7 +98,8 @@ void Material::UpdateTextures()
 	m_texAlpha = GetTextureInfo(ALPHA_MAP_IDENTIFIER);
 	m_texRma = GetTextureInfo(RMA_MAP_IDENTIFIER);
 
-	umath::set_flag(m_stateFlags,StateFlags::Translucent,GetAlphaMode() == AlphaMode::Blend);
+	auto &data = GetDataBlock();
+	m_alphaMode = static_cast<AlphaMode>(data->GetInt("alpha_mode",umath::to_integral(AlphaMode::Opaque)));
 }
 
 void Material::SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo)
@@ -228,11 +228,7 @@ TextureInfo *Material::GetParallaxMap() {return m_texParallax;}
 const TextureInfo *Material::GetRMAMap() const {return const_cast<Material*>(this)->GetRMAMap();}
 TextureInfo *Material::GetRMAMap() {return m_texRma;}
 
-AlphaMode Material::GetAlphaMode() const
-{
-	auto &data = GetDataBlock();
-	return static_cast<AlphaMode>(data->GetInt("alpha_mode",umath::to_integral(AlphaMode::Opaque)));
-}
+AlphaMode Material::GetAlphaMode() const {return m_alphaMode;}
 float Material::GetAlphaCutoff() const
 {
 	auto &data = GetDataBlock();

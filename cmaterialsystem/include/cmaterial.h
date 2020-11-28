@@ -47,11 +47,13 @@ public:
 	const std::shared_ptr<prosper::IDescriptorSetGroup> &GetDescriptorSetGroup(prosper::Shader &shader) const;
 	bool IsInitialized() const;
 	void SetDescriptorSetGroup(prosper::Shader &shader,const std::shared_ptr<prosper::IDescriptorSetGroup> &descSetGroup);
-	util::WeakHandle<prosper::Shader> GetPrimaryShader();
+	prosper::Shader *GetPrimaryShader();
 	std::shared_ptr<prosper::ISampler> GetSampler();
 	void SetSettingsBuffer(prosper::IBuffer &buffer);
 	prosper::IBuffer *GetSettingsBuffer();
 	virtual void SetLoaded(bool b) override;
+	virtual void SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo) override;
+	virtual void Reset() override;
 
 	void SetSpriteSheetAnimation(const SpriteSheetAnimation &animInfo);
 	void ClearSpriteSheetAnimation();
@@ -64,6 +66,7 @@ protected:
 	friend CMaterialManager;
 	TextureManager &GetTextureManager();
 private:
+	void UpdatePrimaryShader();
 	struct ShaderHash
 	{
 		std::size_t operator()(const util::WeakHandle<prosper::Shader> &whShader) const;
@@ -75,6 +78,7 @@ private:
 
 	virtual ~CMaterial() override;
 	std::function<void(void)> m_fOnLoaded;
+	prosper::Shader *m_primaryShader = nullptr;
 	std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>,ShaderHash,ShaderEqualFn> m_descriptorSetGroups;
 	std::shared_ptr<prosper::ISampler> m_sampler = nullptr;
 	std::shared_ptr<prosper::IBuffer> m_settingsBuffer = nullptr;
