@@ -158,6 +158,11 @@ void CMaterial::Reset()
 }
 void CMaterial::UpdatePrimaryShader()
 {
+	if(m_shader == nullptr && m_shaderInfo.expired())
+	{
+		m_primaryShader = nullptr;
+		return;
+	}
 	auto &context = GetContext();
 	auto &shaderManager = context.GetShaderManager();
 	m_primaryShader = shaderManager.GetShader(GetShaderIdentifier()).get();
