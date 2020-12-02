@@ -38,12 +38,12 @@ CMaterial::CMaterial(MaterialManager &manager)
 CMaterial::CMaterial(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data)
 	: Material(manager,shader,data)
 {
-	UpdatePrimaryShader();
+	// UpdatePrimaryShader();
 }
 CMaterial::CMaterial(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
 	: Material(manager,shader,data)
 {
-	UpdatePrimaryShader();
+	// UpdatePrimaryShader();
 }
 
 CMaterial::~CMaterial()
@@ -146,15 +146,12 @@ const std::shared_ptr<prosper::IDescriptorSetGroup> &CMaterial::GetDescriptorSet
 	return (it != m_descriptorSetGroups.end()) ? it->second : nptr;
 }
 bool CMaterial::IsInitialized() const {return (IsLoaded() && m_descriptorSetGroups.empty() == false) ? true : false;}
-void CMaterial::SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo)
-{
-	Material::SetShaderInfo(shaderInfo);
-	UpdatePrimaryShader();
-}
+void CMaterial::SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo) {Material::SetShaderInfo(shaderInfo);}
 void CMaterial::Reset()
 {
 	Material::Reset();
-	UpdatePrimaryShader();
+	m_primaryShader = nullptr;
+	// UpdatePrimaryShader();
 }
 void CMaterial::UpdatePrimaryShader()
 {
@@ -167,7 +164,12 @@ void CMaterial::UpdatePrimaryShader()
 	auto &shaderManager = context.GetShaderManager();
 	m_primaryShader = shaderManager.GetShader(GetShaderIdentifier()).get();
 }
-prosper::Shader *CMaterial::GetPrimaryShader() {return m_primaryShader;}
+prosper::Shader *CMaterial::GetPrimaryShader()
+{
+	if(m_primaryShader == nullptr)
+		UpdatePrimaryShader();
+	return m_primaryShader;
+}
 void CMaterial::SetDescriptorSetGroup(prosper::Shader &shader,const std::shared_ptr<prosper::IDescriptorSetGroup> &descSetGroup)
 {
 	auto it = FindShaderDescriptorSetGroup(shader);
