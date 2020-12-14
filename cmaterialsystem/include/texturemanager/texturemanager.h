@@ -72,6 +72,7 @@ public:
 	uint32_t Clear();
 	uint32_t ClearUnused();
 	std::shared_ptr<prosper::ISampler> &GetTextureSampler();
+	const std::vector<std::shared_ptr<Texture>> &GetTextures() const {return m_textures;}
 private:
 	bool Load(prosper::IPrContext &context,const std::string &cacheName,VFilePtr optFile,const LoadInfo &loadInfo,std::shared_ptr<void> *outTexture,bool bAbsolutePath);
 
