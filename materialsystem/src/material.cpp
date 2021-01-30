@@ -9,6 +9,7 @@
 #include <sstream>
 #include <fsys/filesystem.h>
 #include <datasystem_vector.h>
+#include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
 
 DEFINE_BASE_HANDLE(DLLMATSYS,Material,Material);
@@ -148,6 +149,7 @@ bool Material::Save(std::shared_ptr<VFilePtrInternalReal> f) const
 	f->WriteString(ss.str());
 	return true;
 }
+extern const std::array<std::string,3> g_knownMaterialFormats;
 std::optional<std::string> Material::GetAbsolutePath() const
 {
 	auto name = const_cast<Material*>(this)->GetName();
@@ -155,7 +157,7 @@ std::optional<std::string> Material::GetAbsolutePath() const
 		return {};
 	std::string absPath = GetManager().GetRootMaterialLocation() +"\\";
 	absPath += name;
-	ufile::remove_extension_from_filename(absPath);
+	ufile::remove_extension_from_filename(absPath,g_knownMaterialFormats);
 	absPath += ".wmi";
 	if(FileManager::FindLocalPath(absPath,absPath) == false)
 		return {};
@@ -168,7 +170,7 @@ bool Material::Save() const
 		return false;
 	std::string absPath = GetManager().GetRootMaterialLocation() +"\\";
 	absPath += name;
-	ufile::remove_extension_from_filename(absPath);
+	ufile::remove_extension_from_filename(absPath,g_knownMaterialFormats);
 	absPath += ".wmi";
 	if(FileManager::FindLocalPath(absPath,absPath) == false)
 		absPath = "addons/converted/" +absPath;
@@ -184,7 +186,7 @@ bool Material::Save(const std::string &fileName,const std::string &inRootPath) c
 	if(rootPath.empty() == false && rootPath.back() != '/' && rootPath.back() != '\\')
 		rootPath += '/';
 	auto fullPath = rootPath +MaterialManager::GetRootMaterialLocation() +"/" +fileName;
-	ufile::remove_extension_from_filename(fullPath);
+	ufile::remove_extension_from_filename(fullPath,g_knownMaterialFormats);
 	fullPath += ".wmi";
 
 	auto pathWithoutFileName = ufile::get_path_from_filename(fullPath);

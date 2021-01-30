@@ -10,11 +10,13 @@
 #include "squish.h"
 #include "textureinfo.h"
 #include "texturemanager/texture.h"
+#include <materialmanager.h>
 #include <prosper_util.hpp>
 #include <image/prosper_sampler.hpp>
 #include <mathutil/glmutil.h>
 #include <gli/gli.hpp>
 #include <gli/texture2d.hpp>
+#include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
 #ifndef DISABLE_VTF_SUPPORT
 #include <Proc.h>
@@ -190,10 +192,18 @@ std::shared_ptr<Texture> TextureManager::GetErrorTexture() {return m_error;}
 std::shared_ptr<Texture> TextureManager::GetTexture(const std::string &name)
 {
 	auto nameNoExt = name;
-	ufile::remove_extension_from_filename(nameNoExt);
+	static std::vector<std::string> supportedExtensions;
+	if(supportedExtensions.empty())
+	{
+		auto &supportedFormats = MaterialManager::get_supported_image_formats();
+		supportedExtensions.reserve(supportedFormats.size());
+		for(auto &format : supportedFormats)
+			supportedExtensions.push_back(format.extension);
+	}
+	ufile::remove_extension_from_filename(nameNoExt,supportedExtensions);
 	auto it = std::find_if(m_textures.begin(),m_textures.end(),[&nameNoExt](const std::shared_ptr<Texture> &tex) {
 		auto texNoExt = tex->GetName();
-		ufile::remove_extension_from_filename(texNoExt);
+		ufile::remove_extension_from_filename(texNoExt,supportedExtensions);
 		return FileManager::ComparePath(nameNoExt,texNoExt);
 	});
 	return (it != m_textures.end()) ? *it : nullptr;

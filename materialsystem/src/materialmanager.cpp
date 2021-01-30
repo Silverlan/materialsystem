@@ -109,10 +109,21 @@ void MaterialManager::AddMaterial(const std::string &identifier,Material &mat)
 	m_nameToMaterialIndex[ToMaterialIdentifier(identifier)] = mat.GetIndex();
 }
 
+extern const std::array<std::string,3> g_knownMaterialFormats = {"wmi","vmat_c","vmt"};
 std::string MaterialManager::PathToIdentifier(const std::string &path,std::string *ext,bool &hadExtension) const
 {
 	auto matPath = FileManager::GetNormalizedPath(path);
-	if(ufile::get_extension(matPath,ext) == false)
+	std::string fext;
+	auto hasExt = ufile::get_extension(matPath,&fext);
+	if(hasExt)
+	{
+		auto lext = fext;
+		ustring::to_lower(lext);
+		auto it = std::find(g_knownMaterialFormats.begin(),g_knownMaterialFormats.end(),lext);
+		if(it == g_knownMaterialFormats.end())
+			hasExt = false; // Assume that it's part of the filename
+	}
+	if(hasExt == false)
 	{
 		hadExtension = false;
 		*ext = "wmi";
@@ -165,7 +176,7 @@ std::shared_ptr<ds::Settings> MaterialManager::CreateDataSettings() const {retur
 std::string MaterialManager::ToMaterialIdentifier(const std::string &id) const
 {
 	auto identifier = id;
-	ufile::remove_extension_from_filename(identifier);
+	ufile::remove_extension_from_filename(identifier,g_knownMaterialFormats);
 	ustring::to_lower(identifier);
 	return identifier;
 }
