@@ -275,7 +275,8 @@ const std::string &Material::GetShaderIdentifier() const
 {
 	if(m_shaderInfo.expired() == false)
 		return m_shaderInfo.get()->GetIdentifier();
-	return *m_shader;
+	static std::string empty;
+	return m_shader ? *m_shader : empty;
 }
 
 const TextureInfo *Material::GetTextureInfo(const std::string &key) const {return const_cast<Material*>(this)->GetTextureInfo(key);}
