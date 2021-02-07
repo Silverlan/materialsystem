@@ -67,7 +67,6 @@ link_external_library(prosper)
 link_external_library(zlib)
 link_external_library(iglfw)
 link_external_library(glfw)
-link_external_library(glslang)
 link_external_library(util_source2)
 
 add_include_dir(glm)
