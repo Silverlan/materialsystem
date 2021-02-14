@@ -39,6 +39,7 @@ CMaterialManager::CMaterialManager(prosper::IPrContext &context)
 	context.GetShaderManager().RegisterShader("source2_decompose_metalness_reflectance",[](prosper::IPrContext &context,const std::string &identifier) {return new msys::source2::ShaderDecomposeMetalnessReflectance(context,identifier);});
 	context.GetShaderManager().RegisterShader("source2_decompose_pbr",[](prosper::IPrContext &context,const std::string &identifier) {return new msys::source2::ShaderDecomposePBR(context,identifier);});
 	context.GetShaderManager().RegisterShader("extract_image_channel",[](prosper::IPrContext &context,const std::string &identifier) {return new msys::ShaderExtractImageChannel(context,identifier);});
+	context.GetShaderManager().GetShader("copy_image"); // Make sure copy_image shader has been initialized
 }
 
 CMaterialManager::~CMaterialManager()
@@ -401,6 +402,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 
 		auto &context = GetContext();
 		auto *shaderSSBumpMapToNormalMap = static_cast<msys::ShaderSSBumpMapToNormalMap*>(context.GetShader("ssbumpmap_to_normalmap").get());
+		context.GetShaderManager().GetShader("copy_image"); // Make sure copy_image shader has been initialized
 		if(shaderSSBumpMapToNormalMap)
 		{
 			auto &textureManager = GetTextureManager();

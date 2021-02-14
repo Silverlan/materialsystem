@@ -6,7 +6,6 @@
 #include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_util.hpp>
 
-#pragma optimize("",off)
 decltype(msys::ShaderSSBumpMapToNormalMap::DESCRIPTOR_SET_TEXTURE) msys::ShaderSSBumpMapToNormalMap::DESCRIPTOR_SET_TEXTURE = {
 	{
 		prosper::DescriptorSetInfo::Binding { // SSBumpMap
@@ -34,4 +33,3 @@ void msys::ShaderSSBumpMapToNormalMap::InitializeRenderPass(std::shared_ptr<pros
 			{prosper::Format::R32G32B32A32_SFloat} // Normalmap
 	},outRenderPass,pipelineIdx);
 }
-#pragma optimize("",on)

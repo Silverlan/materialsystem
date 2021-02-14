@@ -397,7 +397,6 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 					auto &tgaInfo = *tga->tgainfo;
 					auto imgBuffer = uimg::ImageBuffer::Create(tgaInfo.GetData(),tgaInfo.GetWidth(),tgaInfo.GetHeight(),(tga->tgainfo->GetChannelCount() == 3) ? uimg::ImageBuffer::Format::RGB8 : uimg::ImageBuffer::Format::RGBA8);
 					imgBuffer->Convert(uimg::ImageBuffer::Format::RGBA8);
-					imgBuffer->FlipVertically();
 
 					ImageFormatLoader tgaLoader {};
 					tgaLoader.userData = static_cast<uimg::ImageBuffer*>(tga->tgainfo.get());
