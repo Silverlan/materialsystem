@@ -102,11 +102,15 @@ Material *MaterialManager::CreateMaterial(const std::string *identifier,const st
 
 void MaterialManager::AddMaterial(const std::string &identifier,Material &mat)
 {
+	auto nidentifier = ToMaterialIdentifier(identifier);
+	auto it = m_nameToMaterialIndex.find(nidentifier);
+	if(it != m_nameToMaterialIndex.end())
+		return;
 	mat.SetIndex(m_materials.size());
 	if(m_materials.size() == m_materials.capacity())
 		m_materials.reserve(m_materials.size() *1.1 +100);
 	m_materials.push_back(mat.GetHandle());
-	m_nameToMaterialIndex[ToMaterialIdentifier(identifier)] = mat.GetIndex();
+	m_nameToMaterialIndex[nidentifier] = mat.GetIndex();
 }
 
 extern const std::array<std::string,3> g_knownMaterialFormats = {"wmi","vmat_c","vmt"};
