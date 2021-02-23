@@ -105,7 +105,10 @@ void MaterialManager::AddMaterial(const std::string &identifier,Material &mat)
 	auto nidentifier = ToMaterialIdentifier(identifier);
 	auto it = m_nameToMaterialIndex.find(nidentifier);
 	if(it != m_nameToMaterialIndex.end())
+	{
+		mat.SetIndex(it->second);
 		return;
+	}
 	mat.SetIndex(m_materials.size());
 	if(m_materials.size() == m_materials.capacity())
 		m_materials.reserve(m_materials.size() *1.1 +100);
