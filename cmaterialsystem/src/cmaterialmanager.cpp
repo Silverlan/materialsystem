@@ -69,7 +69,7 @@ Material *CMaterialManager::CreateMaterial(const std::string *identifier,const s
 		}
 	}
 	else
-		matId = "__anonymous" +(m_unnamedIdx++);
+		matId = "__anonymous" +std::to_string(m_unnamedIdx++);
 	if(root == nullptr)
 	{
 		auto dataSettings = CreateDataSettings();
