@@ -388,18 +388,18 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 			}
 			else
 			{
-				auto *tga = dynamic_cast<TextureQueueItemTGA*>(&item);
-				if(tga != nullptr && (tga->tgainfo->GetChannelCount() == 3 || tga->tgainfo->GetChannelCount() == 4))
+				auto *stbi = dynamic_cast<TextureQueueItemStbi*>(&item);
+				if(stbi != nullptr && (stbi->imageBuffer->GetChannelCount() == 3 || stbi->imageBuffer->GetChannelCount() == 4))
 				{
 					static constexpr auto TGA_VK_FORMAT = prosper::Format::R8G8B8A8_UNorm;
 					texture->AddFlags(Texture::Flags::SRGB);
 
-					auto &tgaInfo = *tga->tgainfo;
-					auto imgBuffer = uimg::ImageBuffer::Create(tgaInfo.GetData(),tgaInfo.GetWidth(),tgaInfo.GetHeight(),(tga->tgainfo->GetChannelCount() == 3) ? uimg::ImageBuffer::Format::RGB8 : uimg::ImageBuffer::Format::RGBA8);
+					auto &tgaInfo = *stbi->imageBuffer;
+					auto imgBuffer = uimg::ImageBuffer::Create(tgaInfo.GetData(),tgaInfo.GetWidth(),tgaInfo.GetHeight(),(stbi->imageBuffer->GetChannelCount() == 3) ? uimg::ImageBuffer::Format::RGB8 : uimg::ImageBuffer::Format::RGBA8);
 					imgBuffer->Convert(uimg::ImageBuffer::Format::RGBA8);
 
 					ImageFormatLoader tgaLoader {};
-					tgaLoader.userData = static_cast<uimg::ImageBuffer*>(tga->tgainfo.get());
+					tgaLoader.userData = static_cast<uimg::ImageBuffer*>(stbi->imageBuffer.get());
 					tgaLoader.get_image_info = [](
 						void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,prosper::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
 						std::optional<prosper::Format> &outConversionFormat
@@ -493,6 +493,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 						initialize_image(item,*texture,vtexLoader,image);
 					}
 #endif
+					static_assert(umath::to_integral(TextureType::Count) == 13,"Update this implementation when new texture types have been added!");
 				}
 			}
 		}

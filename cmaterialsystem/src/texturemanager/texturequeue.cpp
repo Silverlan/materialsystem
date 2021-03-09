@@ -44,10 +44,10 @@ TextureQueueItemPNG::~TextureQueueItemPNG()
 
 ////////////////////////
 
-TextureQueueItemTGA::TextureQueueItemTGA()
-	: TextureQueueItem(),tgainfo()
+TextureQueueItemStbi::TextureQueueItemStbi(TextureType texType)
+	: TextureQueueItem(),imageBuffer()
 {
-	texturetype = TextureType::TGA;
+	texturetype = texType;
 }
 
 ////////////////////////

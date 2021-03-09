@@ -101,6 +101,18 @@ bool TextureManager::Load(prosper::IPrContext &context,const std::string &cacheN
 					type = TextureType::VTF;
 				else if(ustring::compare(ext,"vtex_c",false))
 					type = TextureType::VTex;
+				else if(ustring::compare(ext,"jpg",false))
+					type = TextureType::JPG;
+				else if(ustring::compare(ext,"bmp",false))
+					type = TextureType::BMP;
+				else if(ustring::compare(ext,"psd",false))
+					type = TextureType::PSD;
+				else if(ustring::compare(ext,"gif",false))
+					type = TextureType::GIF;
+				else if(ustring::compare(ext,"hdr",false))
+					type = TextureType::HDR;
+				else if(ustring::compare(ext,"pic",false))
+					type = TextureType::PIC;
 			}
 		}
 	}
@@ -122,8 +134,8 @@ bool TextureManager::Load(prosper::IPrContext &context,const std::string &cacheN
 		item = std::make_unique<TextureQueueItemSurface>(type);
 	else if(type == TextureType::PNG)
 		item = std::make_unique<TextureQueueItemPNG>();
-	else if(type == TextureType::TGA)
-		item = std::make_unique<TextureQueueItemTGA>();
+	else if(type == TextureType::TGA || type == TextureType::JPG || type == TextureType::BMP || type == TextureType::PSD || type == TextureType::GIF || type == TextureType::HDR || type == TextureType::PIC)
+		item = std::make_unique<TextureQueueItemStbi>(type);
 #ifndef DISABLE_VTF_SUPPORT
 	else if(type == TextureType::VTF)
 		item = std::make_unique<TextureQueueItemVTF>();
@@ -132,6 +144,7 @@ bool TextureManager::Load(prosper::IPrContext &context,const std::string &cacheN
 	else if(type == TextureType::VTex)
 		item = std::make_unique<TextureQueueItemVTex>();
 #endif
+	static_assert(umath::to_integral(TextureType::Count) == 13,"Update this implementation when new texture types have been added!");
 	item->name = cacheName; // Actual path to file
 	item->path = path;
 	item->cache = pathCache; // Normalized name without extension

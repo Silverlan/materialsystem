@@ -14,6 +14,12 @@ const std::vector<MaterialManager::ImageFormat> &MaterialManager::get_supported_
 		{TextureType::DDS,"dds"},
 		{TextureType::PNG,"png"},
 		{TextureType::TGA,"tga"},
+		{TextureType::JPG,"jpg"},
+		{TextureType::BMP,"bmp"},
+		{TextureType::PSD,"psd"},
+		{TextureType::GIF,"gif"},
+		{TextureType::HDR,"hdr"},
+		{TextureType::PIC,"pic"},
 #ifndef DISABLE_VTF_SUPPORT
 		{TextureType::VTF,"vtf"},
 #endif
@@ -21,6 +27,7 @@ const std::vector<MaterialManager::ImageFormat> &MaterialManager::get_supported_
 		{TextureType::VTex,"vtex_c"},
 #endif
 	};
+	static_assert(umath::to_integral(TextureType::Count) == 13,"Update this implementation when new texture types have been added!");
 	return s_supportedImageFormats;
 }
 

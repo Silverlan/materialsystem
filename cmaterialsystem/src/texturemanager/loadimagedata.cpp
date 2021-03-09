@@ -58,11 +58,11 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 		}
 		else
 		{
-			auto *tga = dynamic_cast<TextureQueueItemTGA*>(&item);
+			auto *tga = dynamic_cast<TextureQueueItemStbi*>(&item);
 			if(tga != nullptr)
 			{
-				tga->tgainfo = item.file ? uimg::load_image(item.file) : uimg::load_image(tga->path.c_str());
-				if(tga->cubemap || tga->tgainfo == nullptr)
+				tga->imageBuffer = item.file ? uimg::load_image(item.file) : uimg::load_image(tga->path.c_str());
+				if(tga->cubemap || tga->imageBuffer == nullptr)
 					tga->valid = false;
 				else
 					tga->valid = true;
@@ -156,6 +156,7 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 					}
 				}
 #endif
+				static_assert(umath::to_integral(TextureType::Count) == 13,"Update this implementation when new texture types have been added!");
 			}
 		}
 	}

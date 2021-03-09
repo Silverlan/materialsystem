@@ -62,13 +62,14 @@ public:
 	std::shared_ptr<uimg::ImageBuffer> pnginfo = nullptr;
 };
 
-class DLLCMATSYS TextureQueueItemTGA
+class DLLCMATSYS TextureQueueItemStbi
 	: public TextureQueueItem
 {
 public:
-	TextureQueueItemTGA();
-	std::shared_ptr<uimg::ImageBuffer> tgainfo = nullptr;
+	TextureQueueItemStbi(TextureType texType);
+	std::shared_ptr<uimg::ImageBuffer> imageBuffer = nullptr;
 };
+
 #ifndef DISABLE_VTF_SUPPORT
 class DLLCMATSYS TextureQueueItemVTF
 	: public TextureQueueItem

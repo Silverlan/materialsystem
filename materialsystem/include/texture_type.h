@@ -14,12 +14,20 @@ enum class TextureType : uint32_t
 	KTX,
 	PNG,
 	TGA,
+	JPG,
+	BMP,
+	PSD,
+	GIF,
+	HDR,
+	PIC,
 #ifndef DISABLE_VTF_SUPPORT
 	VTF,
 #endif
 #ifndef DISABLE_VTEX_SUPPORT
-	VTex
+	VTex,
 #endif
+
+	Count
 };
 
 enum class TextureMipmapMode : int32_t
