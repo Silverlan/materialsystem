@@ -24,11 +24,19 @@ class MaterialManager;
 class MaterialHandle;
 class VFilePtrInternalReal;
 namespace ds {class Block;};
+namespace udm {struct AssetData;};
 #pragma warning(push)
 #pragma warning(disable : 4251)
 class DLLMATSYS Material
 {
 public:
+	static constexpr auto PMAT_IDENTIFIER = "PMAT";
+	static constexpr uint32_t PMAT_VERSION = 1;
+
+	static constexpr auto FORMAT_MATERIAL_BINARY = "pmat_b";
+	static constexpr auto FORMAT_MATERIAL_ASCII = "pmat";
+	static constexpr auto FORMAT_MATERIAL_LEGACY = "wmi";
+
 	// inline static class-strings cause an internal compiler error with VS2019, so we can't use them for the time being
 	// inline static const std::string DIFFUSE_MAP_IDENTIFIER = "diffuse_map";
 	static const std::string DIFFUSE_MAP_IDENTIFIER;
@@ -108,9 +116,14 @@ public:
 	bool IsValid() const;
 	MaterialManager &GetManager() const;
 	std::optional<std::string> GetAbsolutePath() const;
-	bool Save(std::shared_ptr<VFilePtrInternalReal> f) const;
-	bool Save(const std::string &fileName,const std::string &rootPath="") const;
-	bool Save() const;
+
+	bool Save(udm::AssetData &outData,std::string &outErr);
+	bool Save(const std::string &fileName,std::string &outErr);
+	bool Save(std::string &outErr);
+
+	bool SaveLegacy(std::shared_ptr<VFilePtrInternalReal> f) const;
+	bool SaveLegacy(const std::string &fileName,const std::string &rootPath="") const;
+	bool SaveLegacy() const;
 
 	MaterialIndex GetIndex() const {return m_index;}
 

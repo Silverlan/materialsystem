@@ -6,10 +6,12 @@
 #include "textureinfo.h"
 #include <sharedutils/alpha_mode.hpp>
 #include <fsys/filesystem.h>
+#include <datasystem_color.h>
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
 #include <sharedutils/util.h>
 #include <array>
+#include <udm.hpp>
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include <VTFLib.h>
@@ -116,7 +118,7 @@ void MaterialManager::AddMaterial(const std::string &identifier,Material &mat)
 	m_nameToMaterialIndex[nidentifier] = mat.GetIndex();
 }
 
-extern const std::array<std::string,3> g_knownMaterialFormats = {"wmi","vmat_c","vmt"};
+extern const std::array<std::string,5> g_knownMaterialFormats = {Material::FORMAT_MATERIAL_BINARY,Material::FORMAT_MATERIAL_ASCII,"wmi","vmat_c","vmt"};
 std::string MaterialManager::PathToIdentifier(const std::string &path,std::string *ext,bool &hadExtension) const
 {
 	auto matPath = FileManager::GetNormalizedPath(path);
@@ -133,15 +135,12 @@ std::string MaterialManager::PathToIdentifier(const std::string &path,std::strin
 	if(hasExt == false)
 	{
 		hadExtension = false;
-		*ext = "wmi";
-#ifndef DISABLE_VAT_SUPPORT
-		if(!FileManager::Exists(g_materialLocation +"\\" +matPath +'.' +*ext))
-			*ext = "vmat_c";
-#endif
-#ifndef DISABLE_VMT_SUPPORT
-		if(!FileManager::Exists(g_materialLocation +"\\" +matPath +'.' +*ext))
-			*ext = "vmt";
-#endif
+		for(auto &exts : g_knownMaterialFormats)
+		{
+			*ext = exts;
+			if(FileManager::Exists(g_materialLocation +"\\" +matPath +'.' +*ext))
+				break;
+		}
 		matPath += '.' +*ext;
 	}
 	else
@@ -256,6 +255,9 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 	}
 #endif
 
+	if(ustring::compare(ext,Material::FORMAT_MATERIAL_ASCII,false) || ustring::compare(ext,Material::FORMAT_MATERIAL_BINARY,false))
+		return LoadUdm(f,info);
+
 	auto root = ds::System::ReadData(f,ENUM_VARS);
 	f.reset();
 	if(root == nullptr)
@@ -312,8 +314,100 @@ Material *MaterialManager::Load(const std::string &path,bool bReload,bool *bFirs
 	info.material->SetName(info.identifier);
 	AddMaterial(info.identifier,*info.material);
 	if(info.saveOnDisk)
-		info.material->Save(info.material->GetName(),"addons/converted/");
+		info.material->Save("addons/converted/materials/" +info.material->GetName());
 	return info.material;
+}
+bool MaterialManager::LoadUdm(std::shared_ptr<VFilePtrInternal> &f,LoadInfo &loadInfo)
+{
+	std::shared_ptr<udm::Data> udmData = nullptr;
+	try
+	{
+		udmData = udm::Data::Load(f);
+	}
+	catch(const udm::Exception &e)
+	{
+		return false;
+	}
+	if(udmData == nullptr)
+		return false;
+	auto data = udmData->GetAssetData().GetData();
+
+	auto dataSettings = CreateDataSettings();
+	auto root = std::make_shared<ds::Block>(*dataSettings);
+
+	std::function<void(const std::string &key,udm::LinkedPropertyWrapper &prop,ds::Block &block,bool texture)> udmToDataSys = nullptr;
+	udmToDataSys = [&udmToDataSys,&dataSettings](const std::string &key,udm::LinkedPropertyWrapper &prop,ds::Block &block,bool texture) {
+		prop.InitializeProperty();
+		if(prop.prop)
+		{
+			switch(prop.prop->type)
+			{
+			case udm::Type::String:
+				block.AddValue(texture ? "texture" : "string",key,prop.prop->ToValue<std::string>(""));
+				break;
+			case udm::Type::Int8:
+			case udm::Type::UInt8:
+			case udm::Type::Int16:
+			case udm::Type::UInt16:
+			case udm::Type::Int32:
+			case udm::Type::UInt32:
+			case udm::Type::Int64:
+			case udm::Type::UInt64:
+				block.AddValue("int",key,std::to_string(prop.prop->ToValue<int32_t>(0)));
+				break;
+			case udm::Type::Float:
+			case udm::Type::Double:
+				block.AddValue("float",key,std::to_string(prop.prop->ToValue<float>(0.f)));
+				break;
+			case udm::Type::Boolean:
+				block.AddValue("bool",key,std::to_string(prop.prop->ToValue<bool>(false)));
+				break;
+			case udm::Type::Vector2:
+			{
+				auto v = prop.prop->ToValue<Vector2>(Vector2{});
+				block.AddValue("vector2",key,std::to_string(v.x) +' ' +std::to_string(v.y));
+				break;
+			}
+			case udm::Type::Vector3:
+			{
+				auto v = prop.prop->ToValue<Vector3>(Vector3{});
+				block.AddValue("vector",key,std::to_string(v.x) +' ' +std::to_string(v.y) +' ' +std::to_string(v.z));
+				break;
+			}
+			case udm::Type::Vector4:
+			{
+				auto v = prop.prop->ToValue<Vector4>(Vector4{});
+				block.AddValue("vector4",key,std::to_string(v.x) +' ' +std::to_string(v.y) +' ' +std::to_string(v.z) +' ' +std::to_string(v.w));
+				break;
+			}
+			case udm::Type::Element:
+			{
+				auto childBlock = block.AddBlock(key);
+				for(auto udmChild : prop.ElIt())
+					udmToDataSys(std::string{udmChild.key},udmChild.property,*childBlock,texture);
+				break;
+			}
+			}
+			static_assert(umath::to_integral(udm::Type::Count) == 29u);
+		}
+		prop.GetValuePtr<float>();
+	};
+	auto it = data.begin_el();
+	if(it == data.end_el())
+		return false;
+	auto &firstEl = *it;
+
+	auto udmTextures = firstEl.property["textures"];
+	for(auto udmTex : udmTextures.ElIt())
+		udmToDataSys(std::string{udmTex.key},udmTex.property,*root,true);
+	
+	auto udmProps = firstEl.property["properties"];
+	for(auto udmProp : udmProps.ElIt())
+		udmToDataSys(std::string{udmProp.key},udmProp.property,*root,false);
+
+	loadInfo.shader = firstEl.key;
+	loadInfo.root = root;
+	return true;
 }
 void MaterialManager::SetErrorMaterial(Material *mat)
 {

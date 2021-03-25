@@ -109,6 +109,7 @@ protected:
 		VMatOrigin origin
 	);
 #endif
+	bool LoadUdm(std::shared_ptr<VFilePtrInternal> &f,LoadInfo &loadInfo);
 };
 #pragma warning(pop)
 

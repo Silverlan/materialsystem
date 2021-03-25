@@ -11,8 +11,13 @@
 #include <datasystem_vector.h>
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
+#include <sharedutils/util_path.hpp>
+#include <datasystem_color.h>
+#include <udm.hpp>
 
 DEFINE_BASE_HANDLE(DLLMATSYS,Material,Material);
+
+#undef CreateFile
 
 #pragma optimize("",off)
 decltype(Material::DIFFUSE_MAP_IDENTIFIER) Material::DIFFUSE_MAP_IDENTIFIER = "diffuse_map";
@@ -140,7 +145,121 @@ void Material::SetLoaded(bool b)
 		umath::set_flag(m_stateFlags,StateFlags::ExecutingOnLoadCallbacks,false);
 	}
 }
-bool Material::Save(std::shared_ptr<VFilePtrInternalReal> f) const
+bool Material::Save(udm::AssetData &outData,std::string &outErr)
+{
+	auto udm = (*outData)[GetShaderIdentifier()];
+	std::function<void(udm::LinkedPropertyWrapper&,ds::Block&)> dataBlockToUdm = nullptr;
+	dataBlockToUdm = [&dataBlockToUdm,&udm](udm::LinkedPropertyWrapper &prop,ds::Block &block) {
+		for(auto &pair : *block.GetData())
+		{
+			auto &key = pair.first;
+			auto &val = pair.second;
+			if(val->IsBlock())
+			{
+				auto &block = static_cast<ds::Block&>(*pair.second);
+				dataBlockToUdm(prop[key],block);
+				continue;
+			}
+			if(val->IsContainer())
+			{
+				auto &container = static_cast<ds::Container&>(*pair.second);
+				auto &children = container.GetBlocks();
+				auto udmChildren = prop.AddArray(key,children.size());
+				uint32_t idx = 0;
+				for(auto &child : children)
+				{
+					if(child->IsContainer() || child->IsBlock())
+						continue;
+					auto *dsValue = dynamic_cast<ds::Value*>(pair.second.get());
+					if(dsValue == nullptr)
+						continue;
+					udmChildren[idx++] = dsValue->GetString();
+				}
+				udmChildren.Resize(idx);
+				continue;
+			}
+			auto *dsValue = dynamic_cast<ds::Value*>(val.get());
+			assert(dsValue);
+			if(dsValue)
+			{
+				auto *dsStr = dynamic_cast<ds::String*>(dsValue);
+				if(dsStr)
+					prop[key] = dsStr->GetString();
+				auto *dsInt = dynamic_cast<ds::Int*>(dsValue);
+				if(dsInt)
+					prop[key] = dsInt->GetInt();
+				auto *dsFloat = dynamic_cast<ds::Float*>(dsValue);
+				if(dsFloat)
+					prop[key] = dsFloat->GetFloat();
+				auto *dsBool = dynamic_cast<ds::Bool*>(dsValue);
+				if(dsBool)
+					prop[key] = dsBool->GetBool();
+				auto *dsVec = dynamic_cast<ds::Vector*>(dsValue);
+				if(dsVec)
+					prop[key] = dsVec->GetVector();
+				auto *dsVec4 = dynamic_cast<ds::Vector4*>(dsValue);
+				if(dsVec4)
+					prop[key] = dsVec4->GetVector4();
+				auto *dsVec2 = dynamic_cast<ds::Vector2*>(dsValue);
+				if(dsVec2)
+					prop[key] = dsVec2->GetVector2();
+				auto *dsTex = dynamic_cast<ds::Texture*>(dsValue);
+				if(dsTex)
+					udm["textures"][key] = dsTex->GetString();
+				auto *dsCol = dynamic_cast<ds::Color*>(dsValue);
+				if(dsCol)
+					prop[key] = dsCol->GetColor().ToVector4();
+			}
+		}
+	};
+
+	outData.SetAssetType(PMAT_IDENTIFIER);
+	outData.SetAssetVersion(PMAT_VERSION);
+	dataBlockToUdm(udm["properties"],*m_data);
+	return true;
+}
+extern const std::array<std::string,5> g_knownMaterialFormats;
+bool Material::Save(const std::string &fileName,std::string &outErr)
+{
+	auto udmData = udm::Data::Create();
+	std::string err;
+	auto result = Save(udmData->GetAssetData(),err);
+	if(result == false)
+		return false;
+	FileManager::CreatePath(ufile::get_path_from_filename(fileName).c_str());
+	auto writeFileName = fileName;
+	ufile::remove_extension_from_filename(writeFileName,g_knownMaterialFormats);
+	writeFileName += '.' +std::string{FORMAT_MATERIAL_ASCII};
+	auto f = FileManager::OpenFile<VFilePtrReal>(writeFileName.c_str(),"w");
+	if(f == nullptr)
+	{
+		outErr = "Unable to open file '" +writeFileName +"'!";
+		return false;
+	}
+	result = udmData->SaveAscii(f,false);
+	if(result == false)
+	{
+		outErr = "Unable to save UDM data!";
+		return false;
+	}
+	return true;
+}
+bool Material::Save(std::string &outErr)
+{
+	auto mdlName = GetName();
+	std::string absFileName;
+	auto result = FileManager::FindAbsolutePath("materials/" +mdlName,absFileName);
+	if(result == false)
+		absFileName = "materials/" +mdlName;
+	else
+	{
+		auto path = util::Path::CreateFile(absFileName);
+		path.MakeRelative(util::get_program_path());
+		absFileName = path.GetString();
+	}
+	return Save(absFileName,outErr);
+}
+bool Material::SaveLegacy(std::shared_ptr<VFilePtrInternalReal> f) const
 {
 	auto &rootData = GetDataBlock();
 	std::stringstream ss;
@@ -149,7 +268,6 @@ bool Material::Save(std::shared_ptr<VFilePtrInternalReal> f) const
 	f->WriteString(ss.str());
 	return true;
 }
-extern const std::array<std::string,3> g_knownMaterialFormats;
 std::optional<std::string> Material::GetAbsolutePath() const
 {
 	auto name = const_cast<Material*>(this)->GetName();
@@ -163,7 +281,7 @@ std::optional<std::string> Material::GetAbsolutePath() const
 		return {};
 	return absPath;
 }
-bool Material::Save() const
+bool Material::SaveLegacy() const
 {
 	auto name = const_cast<Material*>(this)->GetName();
 	if(name.empty())
@@ -178,9 +296,9 @@ bool Material::Save() const
 	auto f = FileManager::OpenFile<VFilePtrReal>(absPath.c_str(),"w");
 	if(f == nullptr)
 		return false;
-	return Save(f);
+	return SaveLegacy(f);
 }
-bool Material::Save(const std::string &fileName,const std::string &inRootPath) const
+bool Material::SaveLegacy(const std::string &fileName,const std::string &inRootPath) const
 {
 	auto rootPath = inRootPath;
 	if(rootPath.empty() == false && rootPath.back() != '/' && rootPath.back() != '\\')
@@ -195,7 +313,7 @@ bool Material::Save(const std::string &fileName,const std::string &inRootPath) c
 	auto f = FileManager::OpenFile<VFilePtrReal>(fullPath.c_str(),"w");
 	if(f == nullptr)
 		return false;
-	return Save(f);
+	return SaveLegacy(f);
 }
 CallbackHandle Material::CallOnLoaded(const std::function<void(void)> &f) const
 {
