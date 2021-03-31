@@ -388,7 +388,7 @@ bool MaterialManager::LoadUdm(std::shared_ptr<VFilePtrInternal> &f,LoadInfo &loa
 				break;
 			}
 			}
-			static_assert(umath::to_integral(udm::Type::Count) == 29u);
+			static_assert(umath::to_integral(udm::Type::Count) == 36u);
 		}
 		prop.GetValuePtr<float>();
 	};
