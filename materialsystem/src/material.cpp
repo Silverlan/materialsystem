@@ -236,7 +236,7 @@ bool Material::Save(const std::string &fileName,std::string &outErr)
 		outErr = "Unable to open file '" +writeFileName +"'!";
 		return false;
 	}
-	result = udmData->SaveAscii(f,false);
+	result = udmData->SaveAscii(f,udm::AsciiSaveFlags::None);
 	if(result == false)
 	{
 		outErr = "Unable to save UDM data!";
