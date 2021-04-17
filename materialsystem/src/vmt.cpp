@@ -252,20 +252,16 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 				node = vmtRoot->GetNode("$detailblendfactor");
 				if(node)
 				{
-					Vector3 detailBlendFactor {1.f,1.f,1.f};
+					auto detailBlendFactor = 1.f;
 					if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 					{
 						auto values = get_vmt_matrix(*static_cast<VTFLib::Nodes::CVMTStringNode*>(node));
-						for(uint8_t i=0;i<umath::min<uint32_t>(static_cast<uint32_t>(values.size()),static_cast<uint32_t>(3u));++i)
-							detailBlendFactor[i] = values.at(i);
+						for(uint8_t i=0;i<umath::min<uint32_t>(static_cast<uint32_t>(values.size()),static_cast<uint32_t>(1u));++i)
+							detailBlendFactor = values.at(i);
 					}
 					else
-					{
-						vmt_parameter_to_numeric_type<float>(node,detailBlendFactor[0]);
-						detailBlendFactor[1] = detailBlendFactor[0];
-						detailBlendFactor[2] = detailBlendFactor[0];
-					}
-					root->AddValue("vector","detail_factor",std::to_string(detailBlendFactor[0]) +' ' +std::to_string(detailBlendFactor[1]) +' ' +std::to_string(detailBlendFactor[2]));
+						vmt_parameter_to_numeric_type<float>(node,detailBlendFactor);
+					root->AddValue("float","detail_factor",std::to_string(detailBlendFactor));
 				}
 				
 				Vector3 detailColorFactor {1.f,1.f,1.f};
