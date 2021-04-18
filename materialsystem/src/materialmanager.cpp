@@ -255,7 +255,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 	}
 #endif
 
-	if(ustring::compare(ext,Material::FORMAT_MATERIAL_ASCII,false) || ustring::compare(ext,Material::FORMAT_MATERIAL_BINARY,false))
+	if(ext.empty() || ustring::compare(ext,Material::FORMAT_MATERIAL_ASCII,false) || ustring::compare(ext,Material::FORMAT_MATERIAL_BINARY,false))
 		return LoadUdm(f,info);
 
 	auto root = ds::System::ReadData(f,ENUM_VARS);
