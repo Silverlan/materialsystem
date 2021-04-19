@@ -68,7 +68,7 @@ link_external_library(zlib)
 link_external_library(iglfw)
 link_external_library(glfw)
 link_external_library(util_source2)
-add_external_library(util_udm)
+link_external_library(util_udm)
 
 add_include_dir(glm)
 add_include_dir(gli)
