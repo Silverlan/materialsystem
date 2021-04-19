@@ -7,7 +7,6 @@
 #include "texturemanager/texturequeue.h"
 #include "texturemanager/loadimagedata.h"
 #include "sharedutils/functioncallback.h"
-#include "squish.h"
 #include "textureinfo.h"
 #include "texturemanager/texture.h"
 #include <materialmanager.h>
