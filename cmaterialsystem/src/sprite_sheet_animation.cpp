@@ -17,6 +17,7 @@ uint32_t SpriteSheetAnimation::GetAbsoluteFrameIndex(uint32_t sequenceIdx,uint32
 }
 void SpriteSheetAnimation::Save(std::shared_ptr<VFilePtrInternalReal> &f) const
 {
+	// TODO: Transition to UDM
 	f->Write(PSD_HEADER.data(),PSD_HEADER.size());
 	f->Write<uint32_t>(PSD_VERSION);
 
@@ -51,6 +52,7 @@ void SpriteSheetAnimation::UpdateLookupData()
 }
 bool SpriteSheetAnimation::Load(std::shared_ptr<VFilePtrInternal> &f)
 {
+	// TODO: Transition to UDM
 	auto header = f->Read<std::array<char,3>>();
 	if(header != PSD_HEADER)
 		return false;
