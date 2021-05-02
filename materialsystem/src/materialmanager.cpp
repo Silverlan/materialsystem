@@ -314,7 +314,10 @@ Material *MaterialManager::Load(const std::string &path,bool bReload,bool *bFirs
 	info.material->SetName(info.identifier);
 	AddMaterial(info.identifier,*info.material);
 	if(info.saveOnDisk)
-		info.material->Save("addons/converted/materials/" +info.material->GetName());
+	{
+		std::string err;
+		info.material->Save("addons/converted/materials/" +info.material->GetName(),err);
+	}
 	return info.material;
 }
 bool MaterialManager::LoadUdm(std::shared_ptr<VFilePtrInternal> &f,LoadInfo &loadInfo)

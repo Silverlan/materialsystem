@@ -8,6 +8,7 @@
 #include "matsysdefinitions.h"
 #include "textureinfo.h"
 #include <optional>
+#include <sharedutils/util_path.hpp>
 #include <sharedutils/util_weak_handle.hpp>
 #include <sharedutils/def_handle.h>
 #include <sharedutils/functioncallback.h>
@@ -118,7 +119,7 @@ public:
 	std::optional<std::string> GetAbsolutePath() const;
 
 	bool Save(udm::AssetData &outData,std::string &outErr);
-	bool Save(const std::string &fileName,std::string &outErr);
+	bool Save(const std::string &fileName,std::string &outErr,bool absolutePath=false);
 	bool Save(std::string &outErr);
 
 	bool SaveLegacy(std::shared_ptr<VFilePtrInternalReal> f) const;

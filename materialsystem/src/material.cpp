@@ -219,14 +219,16 @@ bool Material::Save(udm::AssetData &outData,std::string &outErr)
 	return true;
 }
 extern const std::array<std::string,5> g_knownMaterialFormats;
-bool Material::Save(const std::string &relFileName,std::string &outErr)
+bool Material::Save(const std::string &relFileName,std::string &outErr,bool absolutePath)
 {
 	auto udmData = udm::Data::Create();
 	std::string err;
 	auto result = Save(udmData->GetAssetData(),err);
 	if(result == false)
 		return false;
-	auto fileName = "materials/" +relFileName;
+	auto fileName = relFileName;
+	if(absolutePath == false)
+		fileName = "materials/" +fileName;
 	FileManager::CreatePath(ufile::get_path_from_filename(fileName).c_str());
 	auto writeFileName = fileName;
 	ufile::remove_extension_from_filename(writeFileName,g_knownMaterialFormats);
@@ -250,16 +252,17 @@ bool Material::Save(std::string &outErr)
 	auto mdlName = GetName();
 	std::string absFileName;
 	auto result = FileManager::FindAbsolutePath("materials/" +mdlName,absFileName);
+	auto absolutePath = false;
 	if(result == false)
 		absFileName = mdlName;
 	else
 	{
 		auto path = util::Path::CreateFile(absFileName);
 		path.MakeRelative(util::get_program_path());
-		path.PopFront();
 		absFileName = path.GetString();
+		absolutePath = true;
 	}
-	return Save(absFileName,outErr);
+	return Save(absFileName,outErr,absolutePath);
 }
 bool Material::SaveLegacy(std::shared_ptr<VFilePtrInternalReal> f) const
 {

@@ -556,7 +556,10 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 			m_shaderHandler(info.material);
 	}
 	if(info.saveOnDisk)
-		info.material->Save("addons/converted/materials/" +info.material->GetName());
+	{
+		std::string err;
+		info.material->Save("addons/converted/materials/" +info.material->GetName(),err);
+	}
 	return info.material;
 }
 
