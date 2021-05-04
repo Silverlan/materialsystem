@@ -285,7 +285,7 @@ uint32_t TextureManager::ClearUnused()
 	uint32_t n = 0;
 	for(auto &tex : m_textures)
 	{
-		if(tex.use_count() == 1)
+		if(tex.use_count() == 1 && tex->GetVkTexture())
 		{
 			tex->Reset();
 			++n;

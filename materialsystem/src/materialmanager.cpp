@@ -108,6 +108,7 @@ void MaterialManager::AddMaterial(const std::string &identifier,Material &mat)
 	auto it = m_nameToMaterialIndex.find(nidentifier);
 	if(it != m_nameToMaterialIndex.end())
 	{
+		m_materials[it->second] = mat.GetHandle();
 		mat.SetIndex(it->second);
 		return;
 	}
@@ -444,18 +445,22 @@ uint32_t MaterialManager::ClearUnused()
 	for(auto it=m_materials.begin();it!=m_materials.end();)
 	{
 		auto &hMaterial = *it;
-		if(!hMaterial.IsValid() || (hMaterial.use_count() == 1 && hMaterial.get() != m_error.get())) // Use count = 1 => Only in use by us!
+		// Note: If a material has a use count of 2 (i.e. 2 handles), it means it's not actually being used, since the material itself
+		// has one handle, and the material manager has one as well.
+		if(hMaterial.IsValid() && hMaterial.use_count() <= 2 && hMaterial.get() != m_error.get())
 		{
 			auto matIdx = hMaterial->GetIndex();
-			for(auto it=m_nameToMaterialIndex.begin();it!=m_nameToMaterialIndex.end();++it)
+			/*for(auto it=m_nameToMaterialIndex.begin();it!=m_nameToMaterialIndex.end();++it)
 			{
 				if(it->second != matIdx)
 					continue;
 				m_nameToMaterialIndex.erase(it);
 				break;
-			}
+			}*/
 			hMaterial->Remove();
-			it = m_materials.erase(it);
+			//it = m_materials.erase(it);
+			*it = {};
+			++it;
 			++n;
 		}
 		else
