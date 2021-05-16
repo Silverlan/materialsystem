@@ -168,7 +168,7 @@ bool TextureManager::Load(prosper::IPrContext &context,const std::string &cacheN
 	if(outTexture != nullptr)
 		*outTexture = text;
 	if(!FileManager::Exists(path.c_str()))
-		bLoadInstantly = true; // No point in queuing it if the texture doesn't even exist
+		bLoadInstantly = true; // No point in queueing it if the texture doesn't even exist
 	if(bLoadInstantly == true)
 	{
 		InitializeTextureData(*item);

@@ -12,10 +12,17 @@
 #include <buffers/prosper_buffer.hpp>
 #include <image/prosper_sampler.hpp>
 #include <sharedutils/util_string.h>
-
+#pragma optimize("",off)
 CMaterial::CallbackInfo::CallbackInfo(const std::function<void(std::shared_ptr<Texture>)> &_onload)
-	: count(0),onload(_onload)
-{}
+	: count(0)
+{
+	if(_onload)
+	{
+		onload = FunctionCallback<void,std::shared_ptr<Texture>>::Create([_onload](std::shared_ptr<Texture> tex) {
+			_onload(tex);
+		});
+	}
+}
 
 ////////////////////////////////
 
@@ -47,7 +54,10 @@ CMaterial::CMaterial(MaterialManager &manager,const std::string &shader,const st
 }
 
 CMaterial::~CMaterial()
-{}
+{
+	if(m_callbackInfo && m_callbackInfo->onload.IsValid())
+		m_callbackInfo->onload.Remove();
+}
 
 Material *CMaterial::Copy() const {return Material::Copy<CMaterial>();}
 
@@ -333,13 +343,13 @@ std::shared_ptr<CMaterial::CallbackInfo> CMaterial::InitializeCallbackInfo(const
 	{
 		m_callbackInfo = std::make_shared<CallbackInfo>();
 		auto *info = m_callbackInfo.get();
-		m_callbackInfo->onload = [info,onTextureLoaded,onAllTexturesLoaded](std::shared_ptr<Texture> texture) {
+		m_callbackInfo->onload = FunctionCallback<void,std::shared_ptr<Texture>>::Create([info,onTextureLoaded,onAllTexturesLoaded](std::shared_ptr<Texture> texture) {
 			--info->count;
 			if(texture != nullptr && onTextureLoaded != nullptr)
 				onTextureLoaded(texture);
 			if(info->count == 0)
 				onAllTexturesLoaded();
-		};
+		});
 	}
 	return m_callbackInfo;
 }
@@ -349,5 +359,6 @@ void CMaterial::InitializeTextures(const std::shared_ptr<ds::Block> &data,const 
 	auto callbackInfo = InitializeCallbackInfo(onAllTexturesLoaded,onTextureLoaded);
 	++callbackInfo->count; // Dummy, in case all textures are loaded immediately (In which case the final callback would be triggered multiple times.).
 	InitializeTextures(data,callbackInfo,loadFlags);
-	callbackInfo->onload(nullptr); // Clear dummy
+	callbackInfo->onload(std::shared_ptr<Texture>{nullptr}); // Clear dummy
 }
+#pragma optimize("",on)

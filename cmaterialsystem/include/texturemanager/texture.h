@@ -30,7 +30,8 @@ public:
 	Texture(prosper::IPrContext &context,std::shared_ptr<prosper::Texture> texture=nullptr);
 	~Texture();
 	void Reset();
-	void CallOnLoaded(const std::function<void(std::shared_ptr<Texture>)> &callback);
+	CallbackHandle CallOnLoaded(const std::function<void(std::shared_ptr<Texture>)> &callback);
+	CallbackHandle CallOnLoaded(const CallbackHandle &callback);
 	CallbackHandle CallOnRemove(const std::function<void()> &callback);
 	void RunOnLoadedCallbacks();
 
@@ -53,7 +54,7 @@ public:
 	void SetFlags(Flags flags);
 private:
 
-	std::queue<std::function<void(std::shared_ptr<Texture>)>> m_onLoadCallbacks;
+	std::queue<CallbackHandle> m_onLoadCallbacks;
 	std::queue<CallbackHandle> m_onRemoveCallbacks;
 	Flags m_flags = Flags::Error;
 	prosper::IPrContext &m_context;

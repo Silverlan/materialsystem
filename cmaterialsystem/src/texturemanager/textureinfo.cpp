@@ -49,14 +49,19 @@ Texture::Flags Texture::GetFlags() const {return m_flags;}
 void Texture::SetFlags(Flags flags) {m_flags = flags;}
 void Texture::AddFlags(Flags flags) {m_flags |= flags;}
 
-void Texture::CallOnLoaded(const std::function<void(std::shared_ptr<Texture>)> &callback)
+CallbackHandle Texture::CallOnLoaded(const CallbackHandle &callback)
 {
 	if(IsLoaded())
 	{
-		callback(shared_from_this());
-		return;
+		const_cast<CallbackHandle&>(callback)(shared_from_this());
+		return {};
 	}
 	m_onLoadCallbacks.push(callback);
+	return callback;
+}
+CallbackHandle Texture::CallOnLoaded(const std::function<void(std::shared_ptr<Texture>)> &callback)
+{
+	return CallOnLoaded(FunctionCallback<void,std::shared_ptr<Texture>>::Create(callback));
 }
 CallbackHandle Texture::CallOnRemove(const std::function<void()> &callback)
 {

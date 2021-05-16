@@ -41,7 +41,7 @@ public:
 	struct DLLCMATSYS LoadInfo
 	{
 		LoadInfo();
-		std::function<void(std::shared_ptr<Texture>)> onLoadCallback = nullptr;
+		CallbackHandle onLoadCallback {};
 		TextureMipmapMode mipmapLoadMode;
 		std::shared_ptr<prosper::ISampler> sampler = nullptr;
 		TextureLoadFlags flags = TextureLoadFlags::None;

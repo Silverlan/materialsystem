@@ -33,7 +33,7 @@ public:
 	{
 		CallbackInfo(const std::function<void(std::shared_ptr<Texture>)> &onload=nullptr);
 		uint32_t count;
-		std::function<void(std::shared_ptr<Texture>)> onload;
+		CallbackHandle onload {};
 	};
 public:
 	CMaterial(MaterialManager &manager);
