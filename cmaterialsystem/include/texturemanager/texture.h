@@ -45,6 +45,8 @@ public:
 	void ClearVkTexture();
 	bool HasValidVkTexture() const;
 
+	uint32_t GetUpdateCount() const {return m_updateCount;}
+
 	bool HasFlag(Flags flag) const;
 	bool IsIndexed() const;
 	bool IsLoaded() const;
@@ -53,13 +55,13 @@ public:
 	Flags GetFlags() const;
 	void SetFlags(Flags flags);
 private:
-
 	std::queue<CallbackHandle> m_onLoadCallbacks;
 	std::queue<CallbackHandle> m_onRemoveCallbacks;
 	Flags m_flags = Flags::Error;
 	prosper::IPrContext &m_context;
 	std::shared_ptr<prosper::Texture> m_texture = nullptr;
 	std::string m_name;
+	uint32_t m_updateCount = 0;
 };
 REGISTER_BASIC_BITWISE_OPERATORS(Texture::Flags);
 #pragma warning(pop)

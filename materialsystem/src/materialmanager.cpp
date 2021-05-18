@@ -182,8 +182,9 @@ std::shared_ptr<ds::Settings> MaterialManager::CreateDataSettings() const {retur
 
 std::string MaterialManager::ToMaterialIdentifier(const std::string &id) const
 {
-	auto identifier = id;
-	ufile::remove_extension_from_filename(identifier,g_knownMaterialFormats);
+	auto path = util::Path::CreateFile(id);
+	path.RemoveFileExtension(g_knownMaterialFormats);
+	auto identifier = path.GetString();
 	ustring::to_lower(identifier);
 	return identifier;
 }

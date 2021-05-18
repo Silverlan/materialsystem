@@ -42,6 +42,9 @@ void Texture::SetVkTexture(std::shared_ptr<prosper::Texture> texture)
 		m_context.KeepResourceAliveUntilPresentationComplete(m_texture);
 	}
 	m_texture = texture;
+	++m_updateCount;
+	if(umath::is_flag_set(m_flags,Texture::Flags::Loaded))
+		RunOnLoadedCallbacks();
 }
 bool Texture::HasValidVkTexture() const {return m_texture != nullptr;}
 
