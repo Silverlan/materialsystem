@@ -12,6 +12,7 @@ Texture::Texture(prosper::IPrContext &context,std::shared_ptr<prosper::Texture> 
 
 Texture::~Texture()
 {
+	m_onLoadCallbacks = {};
 	while(m_onRemoveCallbacks.empty() == false)
 	{
 		auto &cb = m_onRemoveCallbacks.front();
@@ -75,6 +76,8 @@ CallbackHandle Texture::CallOnRemove(const std::function<void()> &callback)
 
 void Texture::RunOnLoadedCallbacks()
 {
+	if(m_onLoadCallbacks.empty())
+		return;
 	auto ptr = shared_from_this();
 	while(!m_onLoadCallbacks.empty())
 	{
