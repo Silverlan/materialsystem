@@ -422,4 +422,18 @@ const std::shared_ptr<ds::Block> &Material::GetDataBlock() const
 	static std::shared_ptr<ds::Block> nptr = nullptr;
 	return (m_data != nullptr) ? m_data : nptr;
 }
+
+std::ostream &operator<<(std::ostream &out,const Material &o)
+{
+	out<<"Material";
+	out<<"[Index:"<<o.GetIndex()<<"]";
+	out<<"[Name:"<<const_cast<Material&>(o).GetName()<<"]";
+	out<<"[Shader:"<<o.GetShaderIdentifier()<<"]";
+	out<<"[AlphaMode:"<<magic_enum::enum_name(o.GetAlphaMode())<<"]";
+	out<<"[AlphaCutoff:"<<o.GetAlphaCutoff()<<"]";
+	out<<"[ColorFactor:"<<o.GetColorFactor()<<"]";
+	out<<"[Error:"<<o.IsError()<<"]";
+	out<<"[Loaded:"<<o.IsLoaded()<<"]";
+	return out;
+}
 #pragma optimize("",on)

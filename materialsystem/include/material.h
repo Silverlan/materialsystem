@@ -165,6 +165,8 @@ protected:
 REGISTER_BASIC_ARITHMETIC_OPERATORS(Material::StateFlags)
 #pragma warning(pop)
 
+DLLMATSYS std::ostream &operator<<(std::ostream &out,const Material &o);
+
 template<class TMaterial>
 	TMaterial *Material::Copy() const
 {
