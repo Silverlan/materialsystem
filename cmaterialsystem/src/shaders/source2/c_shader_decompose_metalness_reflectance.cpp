@@ -6,7 +6,6 @@
 #include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_util.hpp>
 
-#pragma optimize("",off)
 decltype(msys::source2::ShaderDecomposeMetalnessReflectance::DESCRIPTOR_SET_TEXTURE) msys::source2::ShaderDecomposeMetalnessReflectance::DESCRIPTOR_SET_TEXTURE = {
 	{
 		prosper::DescriptorSetInfo::Binding { // Metalness-reflectance Map
@@ -34,4 +33,3 @@ void msys::source2::ShaderDecomposeMetalnessReflectance::InitializeRenderPass(st
 			{prosper::Format::R8G8B8A8_UNorm} // RMA
 	},outRenderPass,pipelineIdx);
 }
-#pragma optimize("",on)

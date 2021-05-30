@@ -1,4 +1,3 @@
-#pragma optimize("",off)
 #include "materialmanager.h"
 #include <sharedutils/util_path.hpp>
 #include <sharedutils/util_file.h>
@@ -143,4 +142,3 @@ bool MaterialManager::LoadVMat(source2::resource::Resource &resource,LoadInfo &i
 	return InitializeVMatData(resource,*s2Mat,info,*root,*dataSettings,shaderName,origin);
 }
 #endif
-#pragma optimize("",on)

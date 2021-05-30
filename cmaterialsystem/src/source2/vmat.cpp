@@ -24,8 +24,6 @@
 #include <util_texture_info.hpp>
 #include <util_vmat.hpp>
 #include <sharedutils/alpha_mode.hpp>
-
-#pragma optimize("",off)
 #include "impl_texture_formats.h"
 
 static std::shared_ptr<prosper::Texture> load_texture(CMaterialManager &matManager,const std::string &texPath,bool reload=false)
@@ -526,5 +524,4 @@ bool CMaterialManager::InitializeVMatData(
 	GetTextureManager().ClearUnused();
 	return true;
 }
-#pragma optimize("",on)
 #endif

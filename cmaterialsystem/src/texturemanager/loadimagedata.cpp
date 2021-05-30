@@ -13,7 +13,6 @@
 #include <source2/resource_data.hpp>
 #endif
 
-#pragma optimize("",off)
 VFilePtr TextureManager::OpenTextureFile(const std::string &fpath)
 {
 	if(m_texFileHandler != nullptr)
@@ -161,4 +160,3 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 		}
 	}
 }
-#pragma optimize("",on)

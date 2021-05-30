@@ -7,7 +7,6 @@
 #include "util_vmt.hpp"
 #endif
 
-#pragma optimize("",off)
 #ifndef DISABLE_VMT_SUPPORT
 // Find highest dx node version and merge its values with the specified node
 static void merge_dx_node_values(VTFLib::Nodes::CVMTGroupNode &node)
@@ -502,4 +501,3 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 	return InitializeVMTData(vmt,info,*root,*dataSettings,shader);
 }
 #endif
-#pragma optimize("",on)

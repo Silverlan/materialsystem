@@ -6,7 +6,6 @@
 #include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_util.hpp>
 
-#pragma optimize("",off)
 decltype(msys::source2::ShaderGenerateTangentSpaceNormalMap::DESCRIPTOR_SET_TEXTURE) msys::source2::ShaderGenerateTangentSpaceNormalMap::DESCRIPTOR_SET_TEXTURE = {
 	{
 		prosper::DescriptorSetInfo::Binding { // Normal Map
@@ -44,4 +43,3 @@ void msys::source2::ShaderGenerateTangentSpaceNormalMap::InitializeRenderPass(st
 msys::source2::ShaderGenerateTangentSpaceNormalMapProto::ShaderGenerateTangentSpaceNormalMapProto(prosper::IPrContext &context,const std::string &identifier)
 	: ShaderGenerateTangentSpaceNormalMap{context,identifier,"util/source2/fs_generate_tangent_space_normal_map_proto.gls"}
 {}
-#pragma optimize("",on)

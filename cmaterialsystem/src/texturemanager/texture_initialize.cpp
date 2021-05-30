@@ -25,7 +25,6 @@
 
 #define FLUSH_INIT_CMD 1
 
-#pragma optimize("",off)
 static void change_image_transfer_dst_layout_to_shader_read(prosper::ICommandBuffer &cmdBuffer,prosper::IImage &img)
 {
 	cmdBuffer.RecordImageBarrier(img,prosper::ImageLayout::TransferDstOptimal,prosper::ImageLayout::ShaderReadOnlyOptimal);
@@ -530,4 +529,3 @@ void TextureManager::FinalizeTexture(TextureQueueItem &item)
 	texture->SetFlags(texture->GetFlags() | Texture::Flags::Loaded);
 	texture->RunOnLoadedCallbacks();
 }
-#pragma optimize("",on)

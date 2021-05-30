@@ -15,7 +15,6 @@
 #include <image/prosper_render_target.hpp>
 #include <image/prosper_texture.hpp>
 
-#pragma optimize("",off)
 decltype(msys::source2::ShaderDecomposePBR::DESCRIPTOR_SET_TEXTURE) msys::source2::ShaderDecomposePBR::DESCRIPTOR_SET_TEXTURE = {
 	{
 		prosper::DescriptorSetInfo::Binding { // Albedo Map
@@ -118,4 +117,3 @@ void msys::source2::ShaderDecomposePBR::InitializeRenderPass(std::shared_ptr<pro
 			{prosper::Format::R8G8B8A8_UNorm} // Albedo
 	},outRenderPass,pipelineIdx);
 }
-#pragma optimize("",on)

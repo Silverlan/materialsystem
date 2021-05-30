@@ -12,7 +12,7 @@
 #include <buffers/prosper_buffer.hpp>
 #include <image/prosper_sampler.hpp>
 #include <sharedutils/util_string.h>
-#pragma optimize("",off)
+
 CMaterial::CallbackInfo::CallbackInfo(const std::function<void(std::shared_ptr<Texture>)> &_onload)
 	: count(0)
 {
@@ -361,4 +361,3 @@ void CMaterial::InitializeTextures(const std::shared_ptr<ds::Block> &data,const 
 	InitializeTextures(data,callbackInfo,loadFlags);
 	callbackInfo->onload(std::shared_ptr<Texture>{nullptr}); // Clear dummy
 }
-#pragma optimize("",on)

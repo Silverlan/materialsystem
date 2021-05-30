@@ -16,7 +16,6 @@
 #include <image/prosper_render_target.hpp>
 #include <prosper_descriptor_set_group.hpp>
 
-#pragma optimize("",off)
 decltype(msys::ShaderExtractImageChannel::DESCRIPTOR_SET_TEXTURE) msys::ShaderExtractImageChannel::DESCRIPTOR_SET_TEXTURE = {
 	{
 		prosper::DescriptorSetInfo::Binding { // Image map
@@ -113,4 +112,3 @@ std::shared_ptr<prosper::IImage> msys::ShaderExtractImageChannel::ExtractImageCh
 
 	return rt->GetTexture().GetImage().shared_from_this();
 }
-#pragma optimize("",on)

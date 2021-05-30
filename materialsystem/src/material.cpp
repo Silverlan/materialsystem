@@ -19,7 +19,6 @@ DEFINE_BASE_HANDLE(DLLMATSYS,Material,Material);
 
 #undef CreateFile
 
-#pragma optimize("",off)
 decltype(Material::DIFFUSE_MAP_IDENTIFIER) Material::DIFFUSE_MAP_IDENTIFIER = "diffuse_map";
 decltype(Material::ALBEDO_MAP_IDENTIFIER) Material::ALBEDO_MAP_IDENTIFIER = "albedo_map";
 decltype(Material::ALBEDO_MAP2_IDENTIFIER) Material::ALBEDO_MAP2_IDENTIFIER = "albedo_map2";
@@ -436,4 +435,3 @@ std::ostream &operator<<(std::ostream &out,const Material &o)
 	out<<"[Loaded:"<<o.IsLoaded()<<"]";
 	return out;
 }
-#pragma optimize("",on)

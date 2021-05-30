@@ -28,7 +28,6 @@
 #include "util_vmt.hpp"
 #endif
 
-#pragma optimize("",off)
 CMaterialManager::CMaterialManager(prosper::IPrContext &context)
 	: MaterialManager{},prosper::ContextObject(context),m_textureManager(context)
 {
@@ -567,4 +566,3 @@ Material *CMaterialManager::Load(const std::string &path,bool bReload,bool *bFir
 {
 	return Load(path,nullptr,nullptr,bReload,bFirstTimeError);
 }
-#pragma optimize("",on)

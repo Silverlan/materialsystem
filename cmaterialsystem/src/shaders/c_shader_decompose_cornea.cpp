@@ -6,7 +6,6 @@
 #include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_util.hpp>
 
-#pragma optimize("",off)
 decltype(msys::ShaderDecomposeCornea::DESCRIPTOR_SET_TEXTURE) msys::ShaderDecomposeCornea::DESCRIPTOR_SET_TEXTURE = {
 	{
 		prosper::DescriptorSetInfo::Binding { // Iris Map
@@ -41,4 +40,3 @@ void msys::ShaderDecomposeCornea::InitializeRenderPass(std::shared_ptr<prosper::
 			{prosper::Format::R8G8B8A8_UNorm} // Noise
 	},outRenderPass,pipelineIdx);
 }
-#pragma optimize("",on)

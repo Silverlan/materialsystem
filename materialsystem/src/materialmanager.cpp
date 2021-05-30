@@ -22,7 +22,6 @@
 #include <source2/resource.hpp>
 #endif
 
-#pragma optimize("",off)
 static const std::unordered_map<std::string,std::string> ENUM_VARS = { // These have to correspond with their respective vulkan enum values!
 	{"SAMPLER_ADDRESS_MODE_REPEAT","0"},
 	{"SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT","1"},
@@ -469,4 +468,3 @@ uint32_t MaterialManager::ClearUnused()
 	}
 	return n;
 }
-#pragma optimize("",on)

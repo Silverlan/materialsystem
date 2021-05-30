@@ -8,7 +8,6 @@
 static std::array<char,3> PSD_HEADER {'P','S','D'};
 constexpr uint32_t PSD_VERSION = 0;
 
-#pragma optimize("",off)
 uint32_t SpriteSheetAnimation::GetAbsoluteFrameIndex(uint32_t sequenceIdx,uint32_t localFrameIdx) const
 {
 	if(sequenceIdx >= sequences.size())
@@ -113,4 +112,3 @@ bool SpriteSheetAnimation::Sequence::GetInterpolatedFrameData(float ptTime,uint3
 	}
 	return true;
 }
-#pragma optimize("",on)

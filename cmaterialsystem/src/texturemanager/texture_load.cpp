@@ -10,7 +10,7 @@
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
 #include <map>
-#pragma optimize("",off)
+
 void TextureManager::ReloadTexture(const std::string &tex,const LoadInfo &loadInfo)
 {
 	std::string ext;
@@ -211,4 +211,3 @@ bool TextureManager::Load(prosper::IPrContext &context,const std::string &imgFil
 {
 	return Load(context,imgFile,nullptr,loadInfo,outTexture,bAbsolutePath);
 }
-#pragma optimize("",on)
