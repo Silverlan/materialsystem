@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "material.h"
+#include "material_copy.hpp"
 #include "materialmanager.h"
 #include <sharedutils/alpha_mode.hpp>
 #include <sharedutils/util_shaderinfo.hpp>
@@ -144,11 +145,11 @@ void Material::SetLoaded(bool b)
 		umath::set_flag(m_stateFlags,StateFlags::ExecutingOnLoadCallbacks,false);
 	}
 }
-bool Material::Save(udm::AssetData &outData,std::string &outErr)
+bool Material::Save(udm::AssetData outData,std::string &outErr)
 {
 	auto udm = (*outData)[GetShaderIdentifier()];
-	std::function<void(udm::LinkedPropertyWrapper&,ds::Block&)> dataBlockToUdm = nullptr;
-	dataBlockToUdm = [&dataBlockToUdm,&udm](udm::LinkedPropertyWrapper &prop,ds::Block &block) {
+	std::function<void(udm::LinkedPropertyWrapper,ds::Block&)> dataBlockToUdm = nullptr;
+	dataBlockToUdm = [&dataBlockToUdm,&udm](udm::LinkedPropertyWrapper prop,ds::Block &block) {
 		for(auto &pair : *block.GetData())
 		{
 			auto &key = pair.first;

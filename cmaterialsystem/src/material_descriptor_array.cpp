@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <prosper_context.hpp>
+#include <prosper_util.hpp>
 #include "material_descriptor_array.hpp"
 #include "textureinfo.h"
 #include "texturemanager/texture.h"
@@ -10,7 +11,6 @@
 #include <cmaterialmanager.h>
 #include <buffers/prosper_uniform_resizable_buffer.hpp>
 #include <prosper_descriptor_set_group.hpp>
-#include <prosper_util.hpp>
 #include <datasystem.h>
 
 MaterialDescriptorArrayManager::~MaterialDescriptorArrayManager()

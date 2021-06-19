@@ -118,7 +118,7 @@ public:
 	MaterialManager &GetManager() const;
 	std::optional<std::string> GetAbsolutePath() const;
 
-	bool Save(udm::AssetData &outData,std::string &outErr);
+	bool Save(udm::AssetData outData,std::string &outErr);
 	bool Save(const std::string &fileName,std::string &outErr,bool absolutePath=false);
 	bool Save(std::string &outErr);
 
@@ -166,22 +166,5 @@ REGISTER_BASIC_ARITHMETIC_OPERATORS(Material::StateFlags)
 #pragma warning(pop)
 
 DLLMATSYS std::ostream &operator<<(std::ostream &out,const Material &o);
-
-template<class TMaterial>
-	TMaterial *Material::Copy() const
-{
-	Material *r = nullptr;
-	if(!IsValid())
-		r = GetManager().CreateMaterial("pbr");
-	else if(m_shaderInfo.expired() == false)
-		r = GetManager().CreateMaterial(m_shaderInfo->GetIdentifier(),std::shared_ptr<ds::Block>(m_data->Copy()));
-	else
-		r = GetManager().CreateMaterial(*m_shader,std::shared_ptr<ds::Block>(m_data->Copy()));
-	if(IsLoaded())
-		r->SetLoaded(true);
-	r->m_stateFlags = m_stateFlags;
-	return static_cast<TMaterial*>(r);
-}
-
 
 #endif

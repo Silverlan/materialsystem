@@ -4,6 +4,7 @@
 
 #include <prosper_context.hpp>
 #include <sharedutils/util_shaderinfo.hpp>
+#include <material_copy.hpp>
 #include "cmaterialmanager.h"
 #include "cmaterial.h"
 #include "texture_type.h"
