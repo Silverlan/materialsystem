@@ -55,8 +55,8 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 	if(format == prosper::Format::B8G8R8_UNorm_PoorCoverage && context.IsImageFormatSupported(format,usage,prosper::ImageType::e2D,prosper::ImageTiling::Optimal) == false)
 	{
 		manualConverter = [](const void *imgData,std::shared_ptr<uimg::ImageBuffer> &outImg,uint32_t width,uint32_t height) {
-			outImg = uimg::ImageBuffer::Create(imgData,width,height,uimg::ImageBuffer::Format::RGB8);
-			outImg->Convert(uimg::ImageBuffer::Format::RGBA8);
+			outImg = uimg::ImageBuffer::Create(imgData,width,height,uimg::Format::RGB8);
+			outImg->Convert(uimg::Format::RGBA8);
 		};
 		format = prosper::Format::B8G8R8A8_UNorm;
 		conversionFormat = {};
@@ -394,8 +394,8 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 					texture->AddFlags(Texture::Flags::SRGB);
 
 					auto &tgaInfo = *stbi->imageBuffer;
-					auto imgBuffer = uimg::ImageBuffer::Create(tgaInfo.GetData(),tgaInfo.GetWidth(),tgaInfo.GetHeight(),(stbi->imageBuffer->GetChannelCount() == 3) ? uimg::ImageBuffer::Format::RGB8 : uimg::ImageBuffer::Format::RGBA8);
-					imgBuffer->Convert(uimg::ImageBuffer::Format::RGBA8);
+					auto imgBuffer = uimg::ImageBuffer::Create(tgaInfo.GetData(),tgaInfo.GetWidth(),tgaInfo.GetHeight(),(stbi->imageBuffer->GetChannelCount() == 3) ? uimg::Format::RGB8 : uimg::Format::RGBA8);
+					imgBuffer->Convert(uimg::Format::RGBA8);
 
 					ImageFormatLoader tgaLoader {};
 					tgaLoader.userData = static_cast<uimg::ImageBuffer*>(stbi->imageBuffer.get());
@@ -429,12 +429,11 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 						// In theory the input image should have a srgb flag if it's srgb, but in practice that's almost never the case,
 						// so we just assume the image is srgb by default.
 						texture->AddFlags(Texture::Flags::SRGB);
-						// swizzle = vkImgData.swizzle;
 
 						auto &vtfFile = vtf->texture;
 						ImageFormatLoader vtfLoader {};
 						vtfLoader.userData = static_cast<VTFLib::CVTFFile*>(vtfFile.get());
-						vtfLoader.get_image_info = [](
+						vtfLoader.get_image_info = [&swizzle](
 							void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,prosper::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
 							std::optional<prosper::Format> &outConversionFormat
 						) -> void {
@@ -447,6 +446,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 							outCubemap = vtfFile.GetFaceCount() == 6;
 							outLayerCount = outCubemap ? 6 : 1;
 							outMipmapCount = vtfFile.GetMipmapCount();
+							swizzle = vkFormat.swizzle;
 							if(vtfFile.GetFlag(VTFImageFlag::TEXTUREFLAGS_NOMIP))
 								outMipmapCount = 1u;
 						};
@@ -467,7 +467,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 						auto &vtexFile = vtex->texture;
 						ImageFormatLoader vtexLoader {};
 						vtexLoader.userData = static_cast<source2::resource::Texture*>(vtexFile.get());
-						vtexLoader.get_image_info = [](
+						vtexLoader.get_image_info = [&swizzle](
 							void *userData,const TextureQueueItem &item,uint32_t &outWidth,uint32_t &outHeight,prosper::Format &outFormat,bool &outCubemap,uint32_t &outLayerCount,uint32_t &outMipmapCount,
 							std::optional<prosper::Format> &outConversionFormat
 							) -> void {
@@ -480,6 +480,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 								outCubemap = false; // TODO
 								outLayerCount = outCubemap ? 6 : 1;
 								outMipmapCount = vtexFile.GetMipMapCount();
+								swizzle = vkFormat.swizzle;
 						};
 						std::vector<uint8_t> mipmapData {};
 						vtexLoader.get_image_data = [&mipmapData](void *userData,const TextureQueueItem &item,uint32_t layer,uint32_t mipmapIdx,uint32_t &outDataSize) -> const void* {
