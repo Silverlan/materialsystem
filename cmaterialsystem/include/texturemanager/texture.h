@@ -8,11 +8,13 @@
 #include "cmatsysdefinitions.h"
 #include <image/prosper_texture.hpp>
 #include <sharedutils/functioncallback.h>
+#include <sharedutils/util_path.hpp>
 #include <queue>
 
 class TextureManager;
 #pragma warning(push)
 #pragma warning(disable : 4251)
+enum class TextureType : uint32_t;
 class DLLCMATSYS Texture final
 	: public std::enable_shared_from_this<Texture>
 {
@@ -47,6 +49,10 @@ public:
 
 	uint32_t GetUpdateCount() const {return m_updateCount;}
 
+	TextureType GetFileFormatType() const {return m_fileFormatType;}
+	const std::optional<util::Path> &GetFilePath() {return m_filePath;}
+	void SetFileInfo(const util::Path &path,TextureType type);
+
 	bool HasFlag(Flags flag) const;
 	bool IsIndexed() const;
 	bool IsLoaded() const;
@@ -58,6 +64,8 @@ private:
 	std::queue<CallbackHandle> m_onLoadCallbacks;
 	std::queue<CallbackHandle> m_onRemoveCallbacks;
 	Flags m_flags = Flags::Error;
+	TextureType m_fileFormatType;
+	std::optional<util::Path> m_filePath {};
 	prosper::IPrContext &m_context;
 	std::shared_ptr<prosper::Texture> m_texture = nullptr;
 	std::string m_name;

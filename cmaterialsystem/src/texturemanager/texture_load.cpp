@@ -162,6 +162,16 @@ bool TextureManager::Load(prosper::IPrContext &context,const std::string &cacheN
 		ptrTexture->CallOnLoaded(loadInfo.onLoadCallback);
 	ptrTexture->ClearVkTexture();
 	ptrTexture->SetName(item->cache);
+	{
+		util::Path filePath {item->path};
+		std::string rpath;
+		if(FileManager::FindAbsolutePath(filePath.GetString(),rpath))
+		{
+			filePath = {rpath};
+			filePath.MakeRelative(util::Path::CreatePath(FileManager::GetProgramPath()) +MaterialManager::GetRootMaterialLocation());
+		}
+		ptrTexture->SetFileInfo(filePath,type);
+	}
 	item->context = context.shared_from_this();
 
 	m_texturesTmp.push_back(std::static_pointer_cast<Texture>(text));

@@ -3,11 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "texturemanager/texture.h"
+#include "texture_type.h"
 #include <image/prosper_texture.hpp>
 #include <prosper_context.hpp>
 
 Texture::Texture(prosper::IPrContext &context,std::shared_ptr<prosper::Texture> tex)
-	: m_context{context},m_texture(tex)
+	: m_context{context},m_texture(tex),m_fileFormatType{TextureType::Invalid}
 {}
 
 Texture::~Texture()
@@ -21,6 +22,12 @@ Texture::~Texture()
 		m_onRemoveCallbacks.pop();
 	}
 	ClearVkTexture();
+}
+
+void Texture::SetFileInfo(const util::Path &path,TextureType type)
+{
+	m_fileFormatType = type;
+	m_filePath = path;
 }
 
 bool Texture::HasFlag(Flags flag) const {return umath::is_flag_set(m_flags,flag);}
