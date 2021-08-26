@@ -221,11 +221,9 @@ static VulkanImageData vtf_format_to_vulkan_format(VTFImageFormat format)
 			vkImgData.format = prosper::Format::R8G8B8_UNorm_PoorCoverage;
 			break;
 		case VTFImageFormat::IMAGE_FORMAT_BGRA8888:
-			vkImgData.swizzle = {prosper::ComponentSwizzle::B,prosper::ComponentSwizzle::G,prosper::ComponentSwizzle::R,prosper::ComponentSwizzle::A};
 			vkImgData.format = prosper::Format::B8G8R8A8_UNorm;
 			break;
 		case VTFImageFormat::IMAGE_FORMAT_BGR888: // Needs to be converted
-			vkImgData.swizzle = {prosper::ComponentSwizzle::B,prosper::ComponentSwizzle::G,prosper::ComponentSwizzle::R,prosper::ComponentSwizzle::A};
 			vkImgData.conversionFormat = prosper::Format::B8G8R8A8_UNorm;
 			vkImgData.format = prosper::Format::B8G8R8_UNorm_PoorCoverage;
 			break;
@@ -243,7 +241,6 @@ static VulkanImageData vtf_format_to_vulkan_format(VTFImageFormat format)
 			vkImgData.format = prosper::Format::A8B8G8R8_UNorm_Pack32;
 			break;
 		case VTFImageFormat::IMAGE_FORMAT_BGRX8888:
-			vkImgData.swizzle = {prosper::ComponentSwizzle::B,prosper::ComponentSwizzle::G,prosper::ComponentSwizzle::R,prosper::ComponentSwizzle::One};
 			vkImgData.format = prosper::Format::B8G8R8A8_UNorm;
 			break;
 		default:
