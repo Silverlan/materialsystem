@@ -40,8 +40,14 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 			auto sz = f->GetSize();
 			std::vector<uint8_t> data(sz);
 			f->Read(data.data(),sz);
-			surface->texture = std::make_unique<gli::texture2d>(gli::load(static_cast<char*>(static_cast<void*>(data.data())),data.size()));
-			surface->valid = surface->texture != nullptr;
+			auto tex = gli::load(static_cast<char*>(static_cast<void*>(data.data())),data.size());
+			if(tex.empty())
+				item.valid = false;
+			else
+			{
+				surface->texture = std::make_unique<gli::texture2d>(tex);
+				surface->valid = surface->texture != nullptr;
+			}
 		}
 	}
 	else
