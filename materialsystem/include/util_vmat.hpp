@@ -18,7 +18,7 @@ namespace vmat
 		path.PopFront();
 
 		auto outputPath = path;
-		if(ustring::compare(front,"materials",false) == false)
+		if(ustring::compare<std::string_view>(front,"materials",false) == false)
 			outputPath = "models/" +outputPath;
 
 		if(optOutInputPath)

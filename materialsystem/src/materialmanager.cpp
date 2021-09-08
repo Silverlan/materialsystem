@@ -215,7 +215,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 	auto sub = matId;
 	std::string openMode = "r";
 #ifndef DISABLE_VMAT_SUPPORT
-	if(ustring::compare(ext,"vmat_c",false))
+	if(ustring::compare<std::string>(ext,"vmat_c",false))
 		openMode = "rb";
 #endif
 	auto f = FileManager::OpenFile(absPath.c_str(),openMode.c_str());
@@ -249,14 +249,14 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 	}
 #endif
 #ifndef DISABLE_VMAT_SUPPORT
-	if(ustring::compare(ext,"vmat_c",false))
+	if(ustring::compare<std::string>(ext,"vmat_c",false))
 	{
 		auto resource = source2::load_resource(f);
 		return resource ? LoadVMat(*resource,info) : false;
 	}
 #endif
 
-	if(ext.empty() || ustring::compare(ext,Material::FORMAT_MATERIAL_ASCII,false) || ustring::compare(ext,Material::FORMAT_MATERIAL_BINARY,false))
+	if(ext.empty() || ustring::compare<std::string>(ext,Material::FORMAT_MATERIAL_ASCII,false) || ustring::compare<std::string>(ext,Material::FORMAT_MATERIAL_BINARY,false))
 		return LoadUdm(f,info);
 
 	auto root = ds::System::ReadData(f,ENUM_VARS);

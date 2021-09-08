@@ -105,7 +105,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 		return false;
 	VTFLib::Nodes::CVMTNode *node = nullptr;
 	auto *vmtRoot = vmt.GetRoot();
-	if(ustring::compare(shader,"eyerefract",false))
+	if(ustring::compare<std::string>(shader,"eyerefract",false))
 	{
 		info.shader = "eye";
 		std::string irisTexture = "";
@@ -246,7 +246,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 		if((node = vmtRoot->GetNode("$dilation")) != nullptr)
 			get_vmt_data<ds::Bool,int32_t>(ptrRoot,settings,"pupil_dilation",node);
 	}
-	else if(ustring::compare(shader,"spritecard",false))
+	else if(ustring::compare<std::string>(shader,"spritecard",false))
 	{
 		// Some Source Engine textures contain embedded animation sheet data.
 		// Since our texture formats don't support that, we'll have to extract it and
@@ -336,7 +336,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 									}
 								}
 								auto sequenceFilePath = util::Path{"addons/converted/" +MaterialManager::GetRootMaterialLocation() +'/' +baseTexName +".psd"};
-								FileManager::CreatePath(sequenceFilePath.GetPath().c_str());
+								FileManager::CreatePath(sequenceFilePath.GetPath().data());
 								auto fSeq = FileManager::OpenFile<VFilePtrReal>(sequenceFilePath.GetString().c_str(),"wb");
 								if(fSeq)
 								{

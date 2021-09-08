@@ -89,29 +89,29 @@ bool TextureManager::Load(prosper::IPrContext &context,const std::string &cacheN
 			std::string ext;
 			if(ufile::get_extension(f->GetPath(),&ext))
 			{
-				if(ustring::compare(ext,"dds",false))
+				if(ustring::compare<std::string>(ext,"dds",false))
 					type = TextureType::DDS;
-				else if(ustring::compare(ext,"ktx",false))
+				else if(ustring::compare<std::string>(ext,"ktx",false))
 					type = TextureType::KTX;
-				else if(ustring::compare(ext,"png",false))
+				else if(ustring::compare<std::string>(ext,"png",false))
 					type = TextureType::PNG;
-				else if(ustring::compare(ext,"tga",false))
+				else if(ustring::compare<std::string>(ext,"tga",false))
 					type = TextureType::TGA;
-				else if(ustring::compare(ext,"vtf",false))
+				else if(ustring::compare<std::string>(ext,"vtf",false))
 					type = TextureType::VTF;
-				else if(ustring::compare(ext,"vtex_c",false))
+				else if(ustring::compare<std::string>(ext,"vtex_c",false))
 					type = TextureType::VTex;
-				else if(ustring::compare(ext,"jpg",false))
+				else if(ustring::compare<std::string>(ext,"jpg",false))
 					type = TextureType::JPG;
-				else if(ustring::compare(ext,"bmp",false))
+				else if(ustring::compare<std::string>(ext,"bmp",false))
 					type = TextureType::BMP;
-				else if(ustring::compare(ext,"psd",false))
+				else if(ustring::compare<std::string>(ext,"psd",false))
 					type = TextureType::PSD;
-				else if(ustring::compare(ext,"gif",false))
+				else if(ustring::compare<std::string>(ext,"gif",false))
 					type = TextureType::GIF;
-				else if(ustring::compare(ext,"hdr",false))
+				else if(ustring::compare<std::string>(ext,"hdr",false))
 					type = TextureType::HDR;
-				else if(ustring::compare(ext,"pic",false))
+				else if(ustring::compare<std::string>(ext,"pic",false))
 					type = TextureType::PIC;
 			}
 		}
