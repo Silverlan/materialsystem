@@ -105,7 +105,13 @@ void Material::UpdateTextures()
 	m_texRma = GetTextureInfo(RMA_MAP_IDENTIFIER);
 
 	auto &data = GetDataBlock();
-	m_alphaMode = static_cast<AlphaMode>(data->GetInt("alpha_mode",umath::to_integral(AlphaMode::Opaque)));
+	if(data->IsString("alpha_mode"))
+	{
+		auto e = magic_enum::enum_cast<AlphaMode>(data->GetString("alpha_mode"));
+		m_alphaMode = e.has_value() ? *e : AlphaMode::Opaque;
+	}
+	else
+		m_alphaMode = static_cast<AlphaMode>(data->GetInt("alpha_mode",umath::to_integral(AlphaMode::Opaque)));
 }
 
 void Material::SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo)
