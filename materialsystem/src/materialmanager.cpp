@@ -193,9 +193,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 	std::string ext;
 	auto &matId = info.identifier;
 	auto bHadExtension = false;
-	matId = PathToIdentifier(path,&ext,bHadExtension);
-	matId = FileManager::GetCanonicalizedPath(matId);
-
+	matId = FileManager::GetNormalizedPath(path);
 	auto it = m_nameToMaterialIndex.find(ToMaterialIdentifier(matId));
 	if(it != m_nameToMaterialIndex.end())
 	{
@@ -208,6 +206,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 				return true;
 		}
 	}
+	matId = PathToIdentifier(matId,&ext,bHadExtension);
 	std::string absPath = g_materialLocation +"\\";
 	absPath += path;
 	if(bHadExtension == false)
