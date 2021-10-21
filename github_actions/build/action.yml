@@ -31,6 +31,12 @@ runs:
             cmake_var: 'DEPENDENCY_MATERIALSYSTEM_INCLUDE'
             dir: 'external_libs'
             
+    - name: Generate LZ4 CMake file
+      shell: bash
+      run: |
+        # TODO: It would be better to just add the LZ4 CMake file to the repository
+        printf '%s' "cmake_minimum_required(VERSION 2.8)\nproject(lz4)\ninclude_directories(../lz4/lib)\nfile(GLOB_RECURSE SRC ../lz4/lib/*.c)\nfile(GLOB_RECURSE INCLUDES ../lz4/lib/*.h)\nset(CMAKE_CXX_FLAGS '${CMAKE_CXX_FLAGS} -Wall -O3')\nadd_library(lz4 STATIC ${SRC})" >> third_party_libs/lz4-cmake/CMakeLists.txt
+            
     - name: Build submodule - util_image
       uses: Silverlan/util_image/github_actions/build@master
       with:
