@@ -31,6 +31,7 @@ runs:
             cmake_var: 'DEPENDENCY_MATERIALSYSTEM_INCLUDE'
             dir: 'external_libs'
             
+    - uses: GuillaumeFalourd/setup-windows10-sdk-action@v1
     - uses: openrndr/setup-opengl@v1.1
             
     - name: Download submodule - VTFLib
