@@ -46,8 +46,8 @@ runs:
         cmake_var: 'DEPENDENCY_VTFLIB_INCLUDE'
         cmake_var_lib: 'DEPENDENCY_VTFLIB_LIBRARY'
         include_dir: 'src'
-        lib_name: 'src/${{ matrix.config.build_dir }}/VTFLib13'
-        pre_build_cmd: 'cp ${{ env.GA_ROOT_DIR }}/${{ matrix.config.build_type }}/third_party_libs/vtflib/src/config.h ${{ env.GA_ROOT_DIR }}/third_party_libs/vtflib/src/config.h'
+        lib_name: 'src/${{ matrix.config.build_type }}/VTFLib13'
+        pre_build_cmd: 'cp ${{ env.GA_ROOT_DIR }}/${{ matrix.config.build_dir }}/third_party_libs/vtflib/src/config.h ${{ env.GA_ROOT_DIR }}/third_party_libs/vtflib/src/config.h'
             
     - name: Build submodule - util_source2
       uses: Silverlan/util_source2/github_actions/build@master
