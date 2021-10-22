@@ -30,6 +30,12 @@ runs:
             repo_name: 'materialsystem'
             cmake_var: 'DEPENDENCY_MATERIALSYSTEM_INCLUDE'
             dir: 'external_libs'
+            include_dir: 'materialsystem/include'
+            
+    - name: Define CMaterialSystem CMake variables
+      uses: Silverlan/common_actions/define_cmake_var@main
+      with:
+        cmake_var: ' -DDEPENDENCY_CMATERIALSYSTEM_INCLUDE=${{ env.GA_ROOT_DIR }}/external_libs/materialsystem/cmaterialsystem/include'
             
     - name: Define VTFLib CMake variables
       uses: Silverlan/common_actions/define_cmake_var@main
