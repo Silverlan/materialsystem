@@ -78,6 +78,13 @@ runs:
         build_target: materialsystem
         build_dir: '${{ matrix.config.build_dir }}/${{ inputs.dir }}'
         cmake_script_location: '${{ inputs.dir }}'
+        
+    # CMaterialSystem dependencies
+    
+    - name: Build submodule - prosper
+      uses: Silverlan/prosper/github_actions/build@master
+      with:
+        root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/prosper"
 
     - uses: Silverlan/common_actions/build_cmake@main
       name: CMake Build
