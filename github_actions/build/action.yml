@@ -55,7 +55,7 @@ runs:
         root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_source2"
             
     - name: Build submodule - util_udm
-      uses: Silverlan/util_udm/github_actions/build@actions
+      uses: Silverlan/util_udm/github_actions/build@master
       with:
         root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_udm"
             
