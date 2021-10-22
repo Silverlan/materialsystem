@@ -31,6 +31,8 @@ runs:
             cmake_var: 'DEPENDENCY_MATERIALSYSTEM_INCLUDE'
             dir: 'external_libs'
             
+    - uses: openrndr/setup-opengl@v1.1
+            
     - name: Download submodule - VTFLib
       uses: Silverlan/common_actions/build_submodule@main
       with:
