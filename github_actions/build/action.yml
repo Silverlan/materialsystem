@@ -32,7 +32,7 @@ runs:
             dir: 'external_libs'
             
     - name: Build submodule - util_source2
-      uses: Silverlan/util_udm/github_actions/build@master
+      uses: Silverlan/util_source2/github_actions/build@master
       with:
         root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_source2"
             
@@ -47,7 +47,7 @@ runs:
         root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_image"
             
     - name: Build submodule - datasystem
-      uses: Silverlan/util_udm/github_actions/build@master
+      uses: Silverlan/datasystem/github_actions/build@master
       with:
         root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/datasystem"
 
