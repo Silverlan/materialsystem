@@ -31,6 +31,11 @@ runs:
             cmake_var: 'DEPENDENCY_MATERIALSYSTEM_INCLUDE'
             dir: 'external_libs'
             
+    - name: Build submodule - util_source2
+      uses: Silverlan/util_udm/github_actions/build@master
+      with:
+        root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_source2"
+            
     - name: Build submodule - util_udm
       uses: Silverlan/util_udm/github_actions/build@actions
       with:
@@ -40,11 +45,6 @@ runs:
       uses: Silverlan/util_image/github_actions/build@master
       with:
         root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_image"
-            
-    - name: Build submodule - util_source2
-      uses: Silverlan/util_udm/github_actions/build@master
-      with:
-        root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_source2"
             
     - name: Build submodule - datasystem
       uses: Silverlan/util_udm/github_actions/build@master
