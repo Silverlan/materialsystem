@@ -1,0 +1,80 @@
+name: Build
+description: 'Build library'
+inputs:
+  root_dir:
+    description: 'Root directory'
+    required: true
+  should_checkout:
+    description: 'Checkout the core library?'
+    required: true
+    default: '1'
+  dir:
+    description: 'Library directory'
+    required: true
+    default: 'external_libs/materialsystem'
+runs:
+  using: "composite"
+  steps:
+    - name: Initialize Env
+      id: init-env
+      uses: Silverlan/common_actions/set_common_env_vars@main
+      
+    - uses: ChristopherHX/conditional@b4a9649204f81002ec9a4ef7d4bf7d6b2ab7fa55
+      name: CMake Build
+      with:
+        if: ${{inputs.should_checkout == '1'}}
+        step: |
+          uses: Silverlan/common_actions/get_submodule@main
+          with:
+            repo: 'Silverlan/materialsystem'
+            repo_name: 'materialsystem'
+            cmake_var: 'DEPENDENCY_MATERIALSYSTEM_INCLUDE'
+            dir: 'external_libs'
+            
+    - name: Define VTFLib CMake variables
+      uses: Silverlan/common_actions/define_cmake_var@main
+      with:
+        cmake_var: ' -DUSE_LIBTXC_DXTN=OFF'
+        
+    - name: Download submodule - VTFLib
+      uses: Silverlan/common_actions/build_submodule@main
+      with:
+        build_target: 'src/VTFLib13'
+        repo: 'https://github.com/Silverlan/VTFLib'
+        repo_name: 'VTFLib'
+        repo_branch: 'master'
+        cmake_var: 'DEPENDENCY_VTFLIB_INCLUDE'
+        cmake_var_lib: 'DEPENDENCY_VTFLIB_LIBRARY'
+        include_dir: 'src'
+        lib_name: 'src/${{ matrix.config.build_type }}/VTFLib13'
+        pre_build_cmd: 'cp ${{ env.GA_ROOT_DIR }}/${{ matrix.config.build_dir }}/third_party_libs/vtflib/src/config.h ${{ env.GA_ROOT_DIR }}/third_party_libs/vtflib/src/config.h'
+            
+    - name: Build submodule - util_source2
+      uses: Silverlan/util_source2/github_actions/build@master
+      with:
+        root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_source2"
+            
+    - name: Build submodule - util_udm
+      uses: Silverlan/util_udm/github_actions/build@master
+      with:
+        root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_udm"
+            
+    - name: Build submodule - util_image
+      uses: Silverlan/util_image/github_actions/build@master
+      with:
+        root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_image"
+            
+    - name: Build submodule - datasystem
+      uses: Silverlan/datasystem/github_actions/build@master
+      with:
+        root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/datasystem"
+
+    - uses: Silverlan/common_actions/build_cmake@main
+      name: CMake Build
+      with:
+        build_type: ${{ matrix.config.build_type }}
+        build_generator: ${{ matrix.config.generators }}
+        cmake_var: 'DEPENDENCY_MATERIALSYSTEM_LIBRARY'
+        build_target: materialsystem
+        build_dir: '${{ matrix.config.build_dir }}/${{ inputs.dir }}'
+        cmake_script_location: '${{ inputs.dir }}'
