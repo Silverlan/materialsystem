@@ -31,6 +31,17 @@ runs:
             cmake_var: 'DEPENDENCY_MATERIALSYSTEM_INCLUDE'
             dir: 'external_libs'
             
+    - name: Download submodule - VTFLib
+      uses: Silverlan/common_actions/build_submodule@main
+      with:
+        build_target: 'src/VTFLib13'
+        repo: 'https://github.com/Silverlan/VTFLib'
+        repo_name: 'VTFLib'
+        repo_branch: 'master'
+        cmake_var: 'DEPENDENCY_VTFLIB_INCLUDE'
+        cmake_var_lib: 'DEPENDENCY_VTFLIB_LIBRARY'
+        include_dir: 'src'
+            
     - name: Build submodule - util_source2
       uses: Silverlan/util_source2/github_actions/build@master
       with:
