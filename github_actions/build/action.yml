@@ -79,7 +79,8 @@ runs:
             cd "${{ env.GA_ROOT_DIR }}/${{ matrix.config.build_dir }}/third_party_libs/VTFLib/"
             ls -R
             make -j`nproc`
-            sudo make VTFLib
+            sudo make VTFLib13
+            echo "Done!"
             
     - name: Build submodule - util_source2
       uses: Silverlan/util_source2/github_actions/build@master
