@@ -76,6 +76,8 @@ runs:
           name: Build VTFLib
           shell: bash
           run: |
+            cd "${{ env.GA_ROOT_DIR }}/${{ matrix.config.build_dir }}/third_party_libs/vtflib/"
+            ls -R
             make -j`nproc`
             sudo make VTFLib
             
