@@ -53,7 +53,7 @@ runs:
         cmake_var_lib: 'DEPENDENCY_VTFLIB_LIBRARY'
         include_dir: 'src'
         lib_name: 'src/${{ matrix.config.build_type }}/VTFLib13'
-        pre_build_cmd: 'cp ${{ env.GA_ROOT_DIR }}/${{ matrix.config.build_dir }}/third_party_libs/vtflib/src/config.h ${{ env.GA_ROOT_DIR }}/third_party_libs/vtflib/src/config.h'
+        pre_build_cmd: 'if [[ "$RUNNER_OS" == "Windows" ]]; then cp ${{ env.GA_ROOT_DIR }}/${{ matrix.config.build_dir }}/third_party_libs/vtflib/src/config.h ${{ env.GA_ROOT_DIR }}/third_party_libs/vtflib/src/config.h; fi'
             
     - name: Build submodule - util_source2
       uses: Silverlan/util_source2/github_actions/build@master
