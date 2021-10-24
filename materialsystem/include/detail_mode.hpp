@@ -8,6 +8,7 @@
 #include "matsysdefinitions.h"
 #include <string>
 #include <cinttypes>
+#include <limits>
 
 namespace msys
 {
