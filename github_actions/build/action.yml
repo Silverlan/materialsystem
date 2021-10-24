@@ -65,7 +65,7 @@ runs:
         cmake_var_lib: 'DEPENDENCY_VTFLIB_LIBRARY'
         include_dir: 'src'
         lib_name: 'src/${{ matrix.config.build_type }}/VTFLib13'
-        pre_build_cmd: 'if [[ "$RUNNER_OS" == "Windows" ]]; then cp ${{ env.GA_ROOT_DIR }}/${{ matrix.config.build_dir }}/third_party_libs/vtflib/src/config.h ${{ env.GA_ROOT_DIR }}/third_party_libs/vtflib/src/config.h; fi'
+        pre_build_cmd: 'cp ${{ env.GA_ROOT_DIR }}/${{ matrix.config.build_dir }}/third_party_libs/VTFLib/src/config.h ${{ env.GA_ROOT_DIR }}/third_party_libs/VTFLib/src/config.h'
         build: '${{ steps.setup-vtflib-build.outputs.build-vtflib-default }}'
             
     # We'll have to build it another way on Linux
