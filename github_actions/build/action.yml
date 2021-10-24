@@ -64,7 +64,8 @@ runs:
         cmake_var: 'DEPENDENCY_VTFLIB_INCLUDE'
         cmake_var_lib: 'DEPENDENCY_VTFLIB_LIBRARY'
         include_dir: 'src'
-        lib_name: 'src/${{ matrix.config.build_type }}/${{ env.GA_STATIC_LIBRARY_PREFIX }}VTFLib13'
+        lib_name_windows: 'src/${{ matrix.config.build_type }}/${{ env.GA_STATIC_LIBRARY_PREFIX }}VTFLib13'
+        lib_name_linux: 'src/${{ env.GA_STATIC_LIBRARY_PREFIX }}VTFLib13'
         pre_build_cmd: 'cp ${{ env.GA_ROOT_DIR }}/${{ matrix.config.build_dir }}/third_party_libs/VTFLib/src/config.h ${{ env.GA_ROOT_DIR }}/third_party_libs/VTFLib/src/config.h'
         build: '${{ steps.setup-vtflib-build.outputs.build-vtflib-default }}'
             
