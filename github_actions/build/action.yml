@@ -77,9 +77,9 @@ runs:
           shell: bash
           run: |
             cd "${{ env.GA_ROOT_DIR }}/${{ matrix.config.build_dir }}/third_party_libs/VTFLib/"
-            ls -R
             make -j`nproc`
             sudo make VTFLib13
+            ls -R
             echo "Done!"
             
     - name: Build submodule - util_source2
