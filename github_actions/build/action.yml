@@ -94,7 +94,7 @@ runs:
         root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_udm"
             
     - name: Build submodule - util_image
-      uses: Silverlan/util_image/github_actions/build@actions
+      uses: Silverlan/util_image/github_actions/build@master
       with:
         root_dir: "${{ env.GA_ROOT_DIR }}/external_libs/util_image"
             
