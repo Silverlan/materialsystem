@@ -42,6 +42,18 @@ runs:
       with:
         cmake_var: ' -DUSE_LIBTXC_DXTN=OFF'
         
+    - name: Setup VTFLib Build
+      id: setup-vtflib-build
+      shell: bash
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          echo "::set-output name=build-vtflib-default::0"
+        else
+          echo "::set-output name=build-vtflib-default::1"
+        fi
+        echo "::set-output name=runner-os::$RUNNER_OS"
+        
+    # Get VTFLib (and build on Windows)
     - name: Download submodule - VTFLib
       uses: Silverlan/common_actions/build_submodule@main
       with:
@@ -52,8 +64,24 @@ runs:
         cmake_var: 'DEPENDENCY_VTFLIB_INCLUDE'
         cmake_var_lib: 'DEPENDENCY_VTFLIB_LIBRARY'
         include_dir: 'src'
-        lib_name: 'src/${{ matrix.config.build_type }}/VTFLib13'
-        pre_build_cmd: 'cp ${{ env.GA_ROOT_DIR }}/${{ matrix.config.build_dir }}/third_party_libs/vtflib/src/config.h ${{ env.GA_ROOT_DIR }}/third_party_libs/vtflib/src/config.h'
+        lib_name_windows: 'src/${{ matrix.config.build_type }}/${{ env.GA_STATIC_LIBRARY_PREFIX }}VTFLib13'
+        lib_name_linux: 'src/${{ env.GA_STATIC_LIBRARY_PREFIX }}VTFLib13'
+        pre_build_cmd: 'cp ${{ env.GA_ROOT_DIR }}/${{ matrix.config.build_dir }}/third_party_libs/VTFLib/src/config.h ${{ env.GA_ROOT_DIR }}/third_party_libs/VTFLib/src/config.h'
+        build: '${{ steps.setup-vtflib-build.outputs.build-vtflib-default }}'
+            
+    # We'll have to build it another way on Linux
+    - uses: ChristopherHX/conditional@b4a9649204f81002ec9a4ef7d4bf7d6b2ab7fa55
+      with:
+        if: ${{steps.setup-vtflib-build.outputs.runner-os == 'Linux'}}
+        step: |
+          name: Build VTFLib
+          shell: bash
+          run: |
+            cd "${{ env.GA_ROOT_DIR }}/${{ matrix.config.build_dir }}/third_party_libs/VTFLib/"
+            make -j`nproc`
+            sudo make VTFLib13
+            ls -R
+            echo "Done!"
             
     - name: Build submodule - util_source2
       uses: Silverlan/util_source2/github_actions/build@master
