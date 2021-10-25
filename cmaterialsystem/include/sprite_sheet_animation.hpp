@@ -11,6 +11,7 @@
 #include "cmatsysdefinitions.h"
 #include <mathutil/uvec.h>
 #include <vector>
+#include <memory>
 
 class VFilePtrInternal;
 class VFilePtrInternalReal;
