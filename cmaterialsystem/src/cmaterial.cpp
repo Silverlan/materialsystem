@@ -40,6 +40,24 @@ bool CMaterial::ShaderEqualFn::operator()(const util::WeakHandle<prosper::Shader
 
 ////////////////////////////////
 
+CMaterial *CMaterial::Create(MaterialManager &manager)
+{
+	auto *mat = new CMaterial{manager};
+	mat->Reset();
+	return mat;
+}
+CMaterial *CMaterial::Create(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data)
+{
+	auto *mat = new CMaterial{manager,shader,data};
+	mat->Initialize(shader,data);
+	return mat;
+}
+CMaterial *CMaterial::Create(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
+{
+	auto *mat = new CMaterial{manager,shader,data};
+	mat->Initialize(shader,data);
+	return mat;
+}
 CMaterial::CMaterial(MaterialManager &manager)
 	: Material(manager)
 {}
@@ -58,6 +76,11 @@ CMaterial::~CMaterial()
 {
 	if(m_callbackInfo && m_callbackInfo->onload.IsValid())
 		m_callbackInfo->onload.Remove();
+	for(auto &cb : m_onVkTexturesChanged)
+	{
+		if(cb.IsValid())
+			cb.Remove();
+	}
 }
 
 Material *CMaterial::Copy() const {return Material::Copy<CMaterial>();}
@@ -243,6 +266,12 @@ void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &
 			loadInfo.onLoadCallback = callbackInfo->onload;
 		textureManager.Load(context,texInfo.name,loadInfo,&texInfo.texture);
 
+		if(texInfo.texture)
+		{
+			auto cb = static_cast<Texture*>(texInfo.texture.get())->CallOnVkTextureChanged([this]() {ClearDescriptorSets();});
+			m_onVkTexturesChanged.push_back(cb);
+		}
+
 		auto info = callbackInfo;
 		std::static_pointer_cast<Texture>(texInfo.texture)->CallOnLoaded([info](std::shared_ptr<Texture>) {info.use_count();}); // Keep it alive until the texture is loaded ('use_count' to make sure the compiler doesn't get the idea of optimzing anything here.).
 	}
@@ -278,6 +307,33 @@ void CMaterial::SetTexture(const std::string &identifier,Texture *texture)
 }
 
 void CMaterial::SetOnLoadedCallback(const std::function<void(void)> &f) {m_fOnLoaded = f;}
+
+void CMaterial::OnTexturesUpdated()
+{
+	Material::OnTexturesUpdated();
+	for(auto &cb : m_onVkTexturesChanged)
+	{
+		if(cb.IsValid())
+			cb.Remove();
+	}
+	m_onVkTexturesChanged.clear();
+	for(auto &pair : *m_data->GetData())
+	{
+		auto &val = static_cast<ds::Value&>(*pair.second);
+		auto &type = typeid(val);
+		if(type != typeid(ds::Texture))
+			continue;
+		auto &dsTex = static_cast<ds::Texture&>(val);
+		auto &texInfo = dsTex.GetValue();
+		if(!texInfo.texture)
+			continue;
+		auto &tex = *static_cast<::Texture*>(texInfo.texture.get());
+		// If one of our textures has changed, we have to clear our descriptor sets because
+		// they may no longer be valid.
+		auto cb = tex.CallOnVkTextureChanged([this]() {ClearDescriptorSets();});
+		m_onVkTexturesChanged.push_back(cb);
+	}
+}
 
 void CMaterial::SetTexture(const std::string &identifier,const std::string &texture)
 {

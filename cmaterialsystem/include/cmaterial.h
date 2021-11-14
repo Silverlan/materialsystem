@@ -36,9 +36,9 @@ public:
 		CallbackHandle onload {};
 	};
 public:
-	CMaterial(MaterialManager &manager);
-	CMaterial(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data);
-	CMaterial(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
+	static CMaterial *Create(MaterialManager &manager);
+	static CMaterial *Create(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data);
+	static CMaterial *Create(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
 	void SetOnLoadedCallback(const std::function<void(void)> &f);
 	void SetTexture(const std::string &identifier,Texture *texture);
 	void SetTexture(const std::string &identifier,const std::string &texture);
@@ -60,6 +60,10 @@ public:
 	const SpriteSheetAnimation *GetSpriteSheetAnimation() const;
 	SpriteSheetAnimation *GetSpriteSheetAnimation();
 protected:
+	CMaterial(MaterialManager &manager);
+	CMaterial(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data);
+	CMaterial(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
+	virtual void OnTexturesUpdated() override;
 	void LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &texInfo,TextureLoadFlags flags=TextureLoadFlags::None,const std::shared_ptr<CallbackInfo> &callbackInfo=nullptr);
 	void ClearDescriptorSets();
 	void InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::function<void(void)> &onAllTexturesLoaded=nullptr,const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded=nullptr,TextureLoadFlags loadFlags=TextureLoadFlags::None);
@@ -79,6 +83,7 @@ private:
 	virtual ~CMaterial() override;
 	std::function<void(void)> m_fOnLoaded;
 	prosper::Shader *m_primaryShader = nullptr;
+	std::vector<CallbackHandle> m_onVkTexturesChanged;
 	std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>,ShaderHash,ShaderEqualFn> m_descriptorSetGroups;
 	std::shared_ptr<prosper::ISampler> m_sampler = nullptr;
 	std::shared_ptr<prosper::IBuffer> m_settingsBuffer = nullptr;

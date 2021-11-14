@@ -114,6 +114,6 @@ protected:
 #pragma warning(pop)
 
 template<class TMaterial,typename... TARGS>
-	TMaterial *MaterialManager::CreateMaterial(TARGS ...args) {return new TMaterial{*this,std::forward<TARGS>(args)...};}
+	TMaterial *MaterialManager::CreateMaterial(TARGS ...args) {return TMaterial::Create(*this,std::forward<TARGS>(args)...);}
 
 #endif

@@ -63,9 +63,9 @@ public:
 		Error = ExecutingOnLoadCallbacks<<1u
 	};
 	
-	Material(MaterialManager &manager);
-	Material(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
-	Material(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
+	static Material *Create(MaterialManager &manager);
+	static Material *Create(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
+	static Material *Create(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
 	Material(const Material&)=delete;
 	void Remove();
 	MaterialHandle GetHandle();
@@ -139,7 +139,11 @@ public:
 	void Initialize(const std::string &shader,const std::shared_ptr<ds::Block> &data);
 protected:
 	friend MaterialManager;
+	Material(MaterialManager &manager);
+	Material(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
+	Material(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
 	virtual ~Material();
+	virtual void OnTexturesUpdated();
 	void SetIndex(MaterialIndex index) {m_index = index;}
 	MaterialHandle m_handle;
 	util::WeakHandle<util::ShaderInfo> m_shaderInfo = {};

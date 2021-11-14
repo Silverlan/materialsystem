@@ -44,6 +44,8 @@ void Texture::SetVkTexture(prosper::Texture &texture) {SetVkTexture(texture.shar
 void Texture::ClearVkTexture() {SetVkTexture(nullptr);}
 void Texture::SetVkTexture(std::shared_ptr<prosper::Texture> texture)
 {
+	if(texture.get() == m_texture.get())
+		return;
 	if(m_texture)
 	{
 		// Make sure the old texture/image/image view/sampler are kept alive until rendering is complete
@@ -53,6 +55,17 @@ void Texture::SetVkTexture(std::shared_ptr<prosper::Texture> texture)
 	++m_updateCount;
 	if(umath::is_flag_set(m_flags,Texture::Flags::Loaded))
 		RunOnLoadedCallbacks();
+	for(auto it=m_onVkTextureChanged.begin();it!=m_onVkTextureChanged.end();)
+	{
+		auto &cb = *it;
+		if(!cb.IsValid())
+		{
+			it = m_onVkTextureChanged.erase(it);
+			continue;
+		}
+		cb();
+		++it;
+	}
 }
 bool Texture::HasValidVkTexture() const {return m_texture != nullptr;}
 
@@ -69,6 +82,12 @@ CallbackHandle Texture::CallOnLoaded(const CallbackHandle &callback)
 	}
 	m_onLoadCallbacks.push(callback);
 	return callback;
+}
+CallbackHandle Texture::CallOnVkTextureChanged(const std::function<void()> &callback)
+{
+	auto cb = FunctionCallback<void>::Create(callback);
+	m_onVkTextureChanged.push_back(cb);
+	return cb;
 }
 CallbackHandle Texture::CallOnLoaded(const std::function<void(std::shared_ptr<Texture>)> &callback)
 {

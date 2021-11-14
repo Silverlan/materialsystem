@@ -35,23 +35,35 @@ decltype(Material::WRINKLE_STRETCH_MAP_IDENTIFIER) Material::WRINKLE_STRETCH_MAP
 decltype(Material::WRINKLE_COMPRESS_MAP_IDENTIFIER) Material::WRINKLE_COMPRESS_MAP_IDENTIFIER = "wrinkle_compress_map";
 decltype(Material::EXPONENT_MAP_IDENTIFIER) Material::EXPONENT_MAP_IDENTIFIER = "exponent_map";
 
+Material *Material::Create(MaterialManager &manager)
+{
+	auto *mat = new Material{manager};
+	mat->Reset();
+	return mat;
+}
+Material *Material::Create(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data)
+{
+	auto *mat = new Material{manager,shaderInfo,data};
+	mat->Initialize(shaderInfo,data);
+	return mat;
+}
+Material *Material::Create(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
+{
+	auto *mat = new Material{manager,shader,data};
+	mat->Initialize(shader,data);
+	return mat;
+}
 Material::Material(MaterialManager &manager)
 	: m_handle(new PtrMaterial(this)),m_data(nullptr),m_shader(nullptr),m_manager(manager)
-{
-	Reset();
-}
+{}
 
 Material::Material(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data)
 	: Material(manager)
-{
-	Initialize(shaderInfo,data);
-}
+{}
 
 Material::Material(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
 	: Material(manager)
-{
-	Initialize(shader,data);
-}
+{}
 MaterialHandle Material::GetHandle() {return m_handle;}
 
 void Material::Remove() {delete this;}
@@ -112,7 +124,11 @@ void Material::UpdateTextures()
 	}
 	else
 		m_alphaMode = static_cast<AlphaMode>(data->GetInt("alpha_mode",umath::to_integral(AlphaMode::Opaque)));
+
+	OnTexturesUpdated();
 }
+
+void Material::OnTexturesUpdated() {}
 
 void Material::SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo)
 {

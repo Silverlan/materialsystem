@@ -29,7 +29,6 @@ const std::vector<MaterialManager::ImageFormat> &MaterialManager::get_supported_
 	static_assert(umath::to_integral(TextureType::Count) == 13,"Update this implementation when new texture types have been added!");
 	return s_supportedImageFormats;
 }
-
 std::string translate_image_path(const std::string &imgFile,TextureType &type,std::string path,const std::function<VFilePtr(const std::string&)> &fileHandler,bool *optOutFound)
 {
 	path += FileManager::GetNormalizedPath(imgFile);

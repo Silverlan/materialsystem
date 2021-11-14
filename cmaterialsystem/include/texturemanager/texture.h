@@ -34,6 +34,7 @@ public:
 	void Reset();
 	CallbackHandle CallOnLoaded(const std::function<void(std::shared_ptr<Texture>)> &callback);
 	CallbackHandle CallOnLoaded(const CallbackHandle &callback);
+	CallbackHandle CallOnVkTextureChanged(const std::function<void()> &callback);
 	CallbackHandle CallOnRemove(const std::function<void()> &callback);
 	void RunOnLoadedCallbacks();
 
@@ -61,6 +62,7 @@ public:
 	Flags GetFlags() const;
 	void SetFlags(Flags flags);
 private:
+	std::vector<CallbackHandle> m_onVkTextureChanged;
 	std::queue<CallbackHandle> m_onLoadCallbacks;
 	std::queue<CallbackHandle> m_onRemoveCallbacks;
 	Flags m_flags = Flags::Error;
