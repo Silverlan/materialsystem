@@ -127,6 +127,41 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt,LoadInfo &info)
 				root->AddData(Material::NORMAL_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,normalMapNode->GetValue()));
 			}
 		}
+
+		auto fog = root->AddBlock("fog");
+		if((node = vmtRoot->GetNode("$fogenable")) != nullptr)
+		{
+			auto fogEnabled = true;
+			vmt_parameter_to_numeric_type<bool>(node,fogEnabled);
+			fog->AddValue("bool","enabled",fogEnabled ? "1" : "0");
+		}
+		
+		auto fInchesToMeters = [](float inches) {
+			return inches *0.0254f;
+		};
+		if((node = vmtRoot->GetNode("$fogstart")) != nullptr)
+		{
+			auto fogStart = 0.f;
+			vmt_parameter_to_numeric_type<float>(node,fogStart);
+			fog->AddValue("float","start",std::to_string(fInchesToMeters(fogStart)));
+		}
+			
+		if((node = vmtRoot->GetNode("$fogend")) != nullptr)
+		{
+			auto fogEnd = 0.f;
+			vmt_parameter_to_numeric_type<float>(node,fogEnd);
+			fog->AddValue("float","end",std::to_string(fInchesToMeters(fogEnd)));
+		}
+			
+		if((node = vmtRoot->GetNode("$fogcolor")) != nullptr)
+		{
+			auto vColor = vmt_parameter_to_color(*node);
+			if(vColor.has_value())
+			{
+				Color color {*vColor};
+				fog->AddValue("color","color",std::to_string(color.r) +' ' +std::to_string(color.g) +' ' +std::to_string(color.b));
+			}
+		}
 	}
 	else if(shader == "teeth")
 	{
