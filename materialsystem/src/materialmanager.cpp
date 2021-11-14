@@ -316,7 +316,7 @@ Material *MaterialManager::Load(const std::string &path,bool bReload,bool *bFirs
 	if(info.saveOnDisk)
 	{
 		std::string err;
-		info.material->Save("addons/converted/materials/" +info.material->GetName(),err);
+		info.material->Save("addons/converted/materials/" +info.material->GetName(),err,true);
 	}
 	return info.material;
 }

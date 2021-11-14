@@ -557,7 +557,7 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 	if(info.saveOnDisk)
 	{
 		std::string err;
-		info.material->Save("addons/converted/materials/" +info.material->GetName(),err);
+		info.material->Save("addons/converted/materials/" +info.material->GetName(),err,true);
 	}
 	return info.material;
 }
