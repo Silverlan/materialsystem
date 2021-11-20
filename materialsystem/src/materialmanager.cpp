@@ -6,6 +6,7 @@
 #include "textureinfo.h"
 #include <sharedutils/alpha_mode.hpp>
 #include <fsys/filesystem.h>
+#include <fsys/ifile.hpp>
 #include <datasystem_color.h>
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
@@ -217,8 +218,8 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 	if(ustring::compare<std::string>(ext,"vmat_c",false))
 		openMode = "rb";
 #endif
-	auto f = FileManager::OpenFile(absPath.c_str(),openMode.c_str());
-	if(f == nullptr)
+	auto fp = FileManager::OpenFile(absPath.c_str(),openMode.c_str());
+	if(fp == nullptr)
 		return false;
 	auto handleLoadError = [this](const std::string &matId,Material **mat) -> bool {
 		//auto matErr = m_materials.find("error");
@@ -232,10 +233,10 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 #ifndef DISABLE_VMT_SUPPORT
 	if(ext == "vmt") // Load from vmt-file
 	{
-		auto sz = f->GetSize();
+		auto sz = fp->GetSize();
 		std::vector<uint8_t> data(sz);
-		f->Read(data.data(),sz);
-		f = nullptr;
+		fp->Read(data.data(),sz);
+		fp = nullptr;
 		while(sz > 0 && data[sz -1] == '\0')
 			--sz;
 		VTFLib::CVMTFile vmt {};
@@ -250,16 +251,17 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 #ifndef DISABLE_VMAT_SUPPORT
 	if(ustring::compare<std::string>(ext,"vmat_c",false))
 	{
+		fsys::File f {fp};
 		auto resource = source2::load_resource(f);
 		return resource ? LoadVMat(*resource,info) : false;
 	}
 #endif
 
 	if(ext.empty() || ustring::compare<std::string>(ext,Material::FORMAT_MATERIAL_ASCII,false) || ustring::compare<std::string>(ext,Material::FORMAT_MATERIAL_BINARY,false))
-		return LoadUdm(f,info);
+		return LoadUdm(fp,info);
 
-	auto root = ds::System::ReadData(f,ENUM_VARS);
-	f.reset();
+	auto root = ds::System::ReadData(fp,ENUM_VARS);
+	fp.reset();
 	if(root == nullptr)
 		return handleLoadError(matId,&info.material);
 	auto *data = root->GetData();

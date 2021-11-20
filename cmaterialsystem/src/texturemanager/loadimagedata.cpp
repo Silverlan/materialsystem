@@ -5,6 +5,7 @@
 #include "texturemanager/texturemanager.h"
 #include "texturemanager/loadimagedata.h"
 #include <fsys/filesystem.h>
+#include <fsys/ifile.hpp>
 #include "texturemanager/texturequeue.h"
 #include "virtualfile.h"
 #include <util_image.hpp>
@@ -55,7 +56,8 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 		auto *png = dynamic_cast<TextureQueueItemPNG*>(&item);
 		if(png != nullptr)
 		{
-			png->pnginfo = item.file ? uimg::load_image(item.file) : uimg::load_image(png->path.c_str());
+			fsys::File f {item.file};
+			png->pnginfo = item.file ? uimg::load_image(f) : uimg::load_image(png->path.c_str());
 			if(png->cubemap || png->pnginfo == nullptr)
 				png->valid = false;
 			else
@@ -66,7 +68,8 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 			auto *tga = dynamic_cast<TextureQueueItemStbi*>(&item);
 			if(tga != nullptr)
 			{
-				tga->imageBuffer = item.file ? uimg::load_image(item.file) : uimg::load_image(tga->path.c_str());
+				fsys::File f {item.file};
+				tga->imageBuffer = item.file ? uimg::load_image(f) : uimg::load_image(tga->path.c_str());
 				if(tga->cubemap || tga->imageBuffer == nullptr)
 					tga->valid = false;
 				else
@@ -128,7 +131,8 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 						vtex->valid = false;
 					else
 					{
-						auto resource = source2::load_resource(fp);
+						fsys::File f {fp};
+						auto resource = source2::load_resource(f);
 						auto *dataBlock = resource ? resource->FindBlock(source2::BlockType::DATA) : nullptr;
 						if(dataBlock)
 						{

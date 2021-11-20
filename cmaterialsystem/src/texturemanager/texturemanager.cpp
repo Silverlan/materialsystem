@@ -23,7 +23,7 @@
 #endif
 
 decltype(TextureManager::MAX_TEXTURE_COUNT) TextureManager::MAX_TEXTURE_COUNT = 4096;
-
+#pragma optimize("",off)
 #ifndef DISABLE_VTF_SUPPORT
 static vlVoid vtf_read_close() {}
 static vlBool vtf_read_open() {return true;}
@@ -58,6 +58,48 @@ static vlUInt vtf_read_tell(vlVoid *handle)
 }
 #endif
 
+#if 0
+////////////////////////////
+#include "texturemanager/load/texture_loader.hpp"
+#include "texturemanager/load/texture_format_handler.hpp"
+#include "texturemanager/load/handlers/format_handler_gli.hpp"
+#include "texturemanager/load/handlers/format_handler_uimg.hpp"
+#include "texturemanager/load/handlers/format_handler_vtex.hpp"
+#include "texturemanager/load/handlers/format_handler_vtf.hpp"
+#include <fsys/ifile.hpp>
+static void test_texture_loader(prosper::IPrContext &context)
+{
+	msys::TextureLoader loader {};
+	auto gliHandler = []() -> std::shared_ptr<msys::ITextureFormatHandler> {
+		return std::make_shared<msys::TextureFormatHandlerGli>();
+	};
+	loader.RegisterFormatHandler("ktx",gliHandler);
+	loader.RegisterFormatHandler("dds",gliHandler);
+	loader.RegisterFormatHandler("png",gliHandler);
+	loader.RegisterFormatHandler("tga",gliHandler);
+	loader.RegisterFormatHandler("jpg",gliHandler);
+	loader.RegisterFormatHandler("bmp",gliHandler);
+	loader.RegisterFormatHandler("psd",gliHandler);
+	loader.RegisterFormatHandler("gif",gliHandler);
+	loader.RegisterFormatHandler("hdr",gliHandler);
+	loader.RegisterFormatHandler("pic",gliHandler);
+
+	loader.RegisterFormatHandler("vtf",[]() -> std::shared_ptr<msys::ITextureFormatHandler> {
+		return std::make_shared<msys::TextureFormatHandlerVtf>();
+	});
+	loader.RegisterFormatHandler("vtex_c",[]() -> std::shared_ptr<msys::ITextureFormatHandler> {
+		return std::make_shared<msys::TextureFormatHandlerVtex>();
+	});
+
+	auto fp = filemanager::open_system_file("E:/projects/pragma/build_winx64/install/materials/M_MSK004_ARM.png",filemanager::FileMode::Binary | filemanager::FileMode::Read);
+	auto f = std::make_shared<fsys::File>(fp);
+	loader.AddJob(context,"png",f);
+	for(;;)
+		loader.Poll(context);
+}
+////////////////////////////
+#endif
+
 TextureManager::LoadInfo::LoadInfo()
 	: mipmapLoadMode(TextureMipmapMode::Load)
 {}
@@ -66,6 +108,7 @@ TextureManager::TextureManager(prosper::IPrContext &context)
 	: m_wpContext(context.shared_from_this()),m_textureSampler(nullptr),
 	m_textureSamplerNoMipmap(nullptr),m_bThreadActive(false)
 {
+	// test_texture_loader(context);
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
 	TextureManager::SetupSamplerMipmapMode(samplerCreateInfo,TextureMipmapMode::Load);
 	m_textureSampler = context.CreateSampler(samplerCreateInfo);
@@ -337,3 +380,4 @@ std::shared_ptr<Texture> TextureManager::FindTexture(const std::string &imgFile,
 	}
 	return nullptr;
 }
+#pragma optimize("",on)
