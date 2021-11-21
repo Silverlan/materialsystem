@@ -9,6 +9,7 @@
 #include "texturemanager/texturequeue.h"
 #include "virtualfile.h"
 #include <util_image.hpp>
+#include <fsys/ifile.hpp>
 #ifndef DISABLE_VTEX_SUPPORT
 #include <source2/resource.hpp>
 #include <source2/resource_data.hpp>
@@ -22,7 +23,7 @@ VFilePtr TextureManager::OpenTextureFile(const std::string &fpath)
 		if(f != nullptr)
 			return f;
 	}
-	return FileManager::OpenFile(fpath.c_str(),"rb");
+	return filemanager::open_file(fpath.c_str(),filemanager::FileMode::Read | filemanager::FileMode::Binary);
 }
 
 void TextureManager::InitializeTextureData(TextureQueueItem &item)
@@ -88,11 +89,8 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 						vtf->valid = false;
 					else
 					{
-						VirtualFile f{};
-						auto &data = f.GetData();
-						data.resize(fp->GetSize());
-						fp->Read(data.data(),data.size());
-						fp = nullptr;
+						fsys::File f {fp};
+
 						vtf->texture = std::make_unique<VTFLib::CVTFFile>();
 						vtf->valid = vtf->texture->Load(&f,false);
 						if(vtf->valid == true)

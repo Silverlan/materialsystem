@@ -17,9 +17,9 @@
 #include <gli/texture2d.hpp>
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
+#include <sharedutils/util_ifile.hpp>
 #ifndef DISABLE_VTF_SUPPORT
 #include <Proc.h>
-#include "virtualfile.h"
 #endif
 
 decltype(TextureManager::MAX_TEXTURE_COUNT) TextureManager::MAX_TEXTURE_COUNT = 4096;
@@ -31,35 +31,35 @@ static vlUInt vtf_read_read(vlVoid *buf,vlUInt bytes,vlVoid *handle)
 {
 	if(handle == nullptr)
 		return -1;
-	auto &f = *static_cast<VirtualFile*>(handle);
+	auto &f = *static_cast<ufile::IFile*>(handle);
 	return static_cast<vlUInt>(f.Read(buf,bytes));
 }
 static vlUInt vtf_read_seek(vlLong offset,VLSeekMode whence,vlVoid *handle)
 {
 	if(handle == nullptr)
 		return -1;
-	auto &f = *static_cast<VirtualFile*>(handle);
-	f.Seek(offset,static_cast<VirtualFile::SeekMode>(whence));
+	auto &f = *static_cast<ufile::IFile*>(handle);
+	f.Seek(offset,static_cast<ufile::IFile::Whence>(whence));
 	return f.Tell();
 }
 static vlUInt vtf_read_size(vlVoid *handle)
 {
 	if(handle == nullptr)
 		return 0;
-	auto &f = *static_cast<VirtualFile*>(handle);
+	auto &f = *static_cast<ufile::IFile*>(handle);
 	return f.GetSize();
 }
 static vlUInt vtf_read_tell(vlVoid *handle)
 {
 	if(handle == nullptr)
 		return -1;
-	auto &f = *static_cast<VirtualFile*>(handle);
+	auto &f = *static_cast<ufile::IFile*>(handle);
 	return f.Tell();
 }
 #endif
 
-#if 0
 ////////////////////////////
+#if 0
 #include "texturemanager/load/texture_loader.hpp"
 #include "texturemanager/load/texture_format_handler.hpp"
 #include "texturemanager/load/handlers/format_handler_gli.hpp"
@@ -67,6 +67,7 @@ static vlUInt vtf_read_tell(vlVoid *handle)
 #include "texturemanager/load/handlers/format_handler_vtex.hpp"
 #include "texturemanager/load/handlers/format_handler_vtf.hpp"
 #include <fsys/ifile.hpp>
+#undef AddJob
 static void test_texture_loader(prosper::IPrContext &context)
 {
 	msys::TextureLoader loader {};
@@ -75,14 +76,18 @@ static void test_texture_loader(prosper::IPrContext &context)
 	};
 	loader.RegisterFormatHandler("ktx",gliHandler);
 	loader.RegisterFormatHandler("dds",gliHandler);
-	loader.RegisterFormatHandler("png",gliHandler);
-	loader.RegisterFormatHandler("tga",gliHandler);
-	loader.RegisterFormatHandler("jpg",gliHandler);
-	loader.RegisterFormatHandler("bmp",gliHandler);
-	loader.RegisterFormatHandler("psd",gliHandler);
-	loader.RegisterFormatHandler("gif",gliHandler);
-	loader.RegisterFormatHandler("hdr",gliHandler);
-	loader.RegisterFormatHandler("pic",gliHandler);
+
+	auto uimgHandler = []() -> std::shared_ptr<msys::ITextureFormatHandler> {
+		return std::make_shared<msys::TextureFormatHandlerUimg>();
+	};
+	loader.RegisterFormatHandler("png",uimgHandler);
+	loader.RegisterFormatHandler("tga",uimgHandler);
+	loader.RegisterFormatHandler("jpg",uimgHandler);
+	loader.RegisterFormatHandler("bmp",uimgHandler);
+	loader.RegisterFormatHandler("psd",uimgHandler);
+	loader.RegisterFormatHandler("gif",uimgHandler);
+	loader.RegisterFormatHandler("hdr",uimgHandler);
+	loader.RegisterFormatHandler("pic",uimgHandler);
 
 	loader.RegisterFormatHandler("vtf",[]() -> std::shared_ptr<msys::ITextureFormatHandler> {
 		return std::make_shared<msys::TextureFormatHandlerVtf>();
@@ -91,14 +96,40 @@ static void test_texture_loader(prosper::IPrContext &context)
 		return std::make_shared<msys::TextureFormatHandlerVtex>();
 	});
 
-	auto fp = filemanager::open_system_file("E:/projects/pragma/build_winx64/install/materials/M_MSK004_ARM.png",filemanager::FileMode::Binary | filemanager::FileMode::Read);
-	auto f = std::make_shared<fsys::File>(fp);
-	loader.AddJob(context,"png",f);
+	loader.SetAllowMultiThreadedGpuResourceAllocation(true); // TODO: Turn off for OpenGL
+
+	std::string basePath = util::get_program_path() +'/';
+	auto addTexture = [&basePath,&loader,&context](const std::string &texPath,const std::string &identifier) {
+		auto fp = filemanager::open_system_file(basePath +"/" +texPath,filemanager::FileMode::Binary | filemanager::FileMode::Read);
+		auto f = std::make_shared<fsys::File>(fp);
+		std::string ext;
+		ufile::get_extension(texPath,&ext);
+		loader.AddJob(context,identifier,ext,f);
+	};
+	addTexture("materials/error.dds","error");
+
+	uint32_t numComplete = 0;
+	auto t = std::chrono::high_resolution_clock::now();
 	for(;;)
-		loader.Poll(context);
+	{
+		loader.Poll(context,[&numComplete,&t](const msys::TextureLoadJob &job) {
+			auto dtQueue = job.completionTime -job.queueStartTime;
+			auto dtTask = job.completionTime -job.taskStartTime;
+			std::cout<<job.textureIdentifier<<" has been loaded!"<<std::endl;
+			std::cout<<"Time since job has been queued to completion: "<<(dtQueue.count() /1'000'000'000.0)<<std::endl;
+			std::cout<<"Time since task has been started to completion: "<<(dtTask.count() /1'000'000'000.0)<<std::endl;
+			if(++numComplete == 7)
+			{
+				auto dt = std::chrono::high_resolution_clock::now() -t;
+				std::cout<<"Total completion time: "<<(dt.count() /1'000'000'000.0)<<std::endl;
+			}
+		},[](const msys::TextureLoadJob &job) {
+			std::cout<<job.textureIdentifier<<" has failed!"<<std::endl;
+		});
+	}
 }
-////////////////////////////
 #endif
+////////////////////////////
 
 TextureManager::LoadInfo::LoadInfo()
 	: mipmapLoadMode(TextureMipmapMode::Load)
@@ -108,7 +139,6 @@ TextureManager::TextureManager(prosper::IPrContext &context)
 	: m_wpContext(context.shared_from_this()),m_textureSampler(nullptr),
 	m_textureSamplerNoMipmap(nullptr),m_bThreadActive(false)
 {
-	// test_texture_loader(context);
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
 	TextureManager::SetupSamplerMipmapMode(samplerCreateInfo,TextureMipmapMode::Load);
 	m_textureSampler = context.CreateSampler(samplerCreateInfo);
@@ -124,6 +154,7 @@ TextureManager::TextureManager(prosper::IPrContext &context)
 	vlSetProc(PROC_READ_SIZE,reinterpret_cast<void*>(vtf_read_size));
 	vlSetProc(PROC_READ_TELL,reinterpret_cast<void*>(vtf_read_tell));
 #endif
+	// test_texture_loader(context);
 }
 
 TextureManager::~TextureManager()

@@ -22,7 +22,7 @@
 #include <datasystem_vector.h>
 #include <util_texture_info.hpp>
 #include <util_image.hpp>
-#include <virtualfile.h>
+#include <fsys/ifile.hpp>
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include "util_vmt.hpp"
@@ -270,12 +270,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 					auto fptr = FileManager::OpenFile(name.c_str(),"rb");
 					if(fptr)
 					{
-						VirtualFile f{};
-						auto &data = f.GetData();
-						data.resize(fptr->GetSize());
-						fptr->Read(data.data(),data.size());
-						fptr = nullptr;
-
+						fsys::File f {fptr};
 						VTFLib::CVTFFile fVtf{};
 						if(fVtf.Load(&f,false))
 						{

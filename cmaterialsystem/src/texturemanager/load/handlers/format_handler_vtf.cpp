@@ -71,14 +71,8 @@ bool msys::TextureFormatHandlerVtf::GetDataPtr(uint32_t layer,uint32_t mipmapIdx
 
 bool msys::TextureFormatHandlerVtf::LoadData(InputTextureInfo &texInfo)
 {
-	// TODO
-#if 0
-	auto sz = m_file->GetSize();
-	std::vector<uint8_t> data(sz);
-	m_file->Read(data.data(),sz);
-
 	auto texture = std::make_unique<VTFLib::CVTFFile>();
-	auto valid = texture->Load(&f,false);
+	auto valid = texture->Load(m_file.get(),false);
 	if(valid == false)
 		return false;
 	auto format = texture->GetFormat();
@@ -117,7 +111,5 @@ bool msys::TextureFormatHandlerVtf::LoadData(InputTextureInfo &texInfo)
 		texInfo.mipmapCount = 1u;
 	m_texture = std::move(texture);
 	return true;
-#endif
-	return false;
 }
 #endif

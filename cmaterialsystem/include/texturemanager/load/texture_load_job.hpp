@@ -7,10 +7,14 @@
 
 #include "cmatsysdefinitions.h"
 #include <cinttypes>
+#include <string>
 #include <memory>
+#include <chrono>
 
 namespace msys
 {
+	using TextureLoadJobId = uint64_t;
+	using TextureLoadJobPriority = int32_t;
 	class ITextureFormatHandler;
 	class TextureProcessor;
 	struct DLLCMATSYS TextureLoadJob
@@ -26,10 +30,17 @@ namespace msys
 		TextureLoadJob(const TextureLoadJob &other)=default;
 		TextureLoadJob &operator=(const TextureLoadJob&)=default;
 		TextureLoadJob &operator=(TextureLoadJob&&)=default;
+
 		std::shared_ptr<ITextureFormatHandler> handler;
 		std::shared_ptr<TextureProcessor> processor = nullptr;
 		State state = State::Pending;
-		int32_t priority = 0;
+		TextureLoadJobPriority priority = 0;
+		std::string textureIdentifier;
+		TextureLoadJobId jobId = 0;
+
+		std::chrono::high_resolution_clock::time_point queueStartTime;
+		std::chrono::high_resolution_clock::time_point completionTime;
+		std::chrono::high_resolution_clock::time_point taskStartTime;
 	};
 	class CompareTextureLoadJob
 	{
