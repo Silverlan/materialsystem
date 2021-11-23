@@ -6,7 +6,7 @@
 #define __MSYS_TEXTURE_LOADER_HPP__
 
 #include "cmatsysdefinitions.h"
-#include "texturemanager/load/texture_load_job.hpp"
+#include <sharedutils/asset_loader/asset_loader.hpp>
 #include <sharedutils/ctpl_stl.h>
 #include <string>
 #include <memory>
@@ -19,42 +19,23 @@ namespace prosper {class IPrContext;};
 namespace ufile {struct IFile;};
 namespace msys
 {
-	using TextureLoadJobId = uint64_t;
-	using TextureLoadJobPriority = int32_t;
+	class ITextureFormatHandler;
 	class DLLCMATSYS TextureLoader
+		: public util::IAssetLoader
 	{
 	public:
-		TextureLoader();
-		~TextureLoader();
-
-		void Poll(
-			prosper::IPrContext &context,const std::function<void(const TextureLoadJob&)> &onComplete,
-			const std::function<void(const TextureLoadJob&)> &onFailed
+		TextureLoader(prosper::IPrContext &context);
+		void RegisterFormatHandler(const std::string &ext,const std::function<std::unique_ptr<ITextureFormatHandler>()> &factory);
+		bool AddJob(
+			prosper::IPrContext &context,const std::string &identifier,const std::string &ext,const std::shared_ptr<ufile::IFile> &file,util::AssetLoadJobPriority priority=0
 		);
-		bool AddJob(prosper::IPrContext &context,const std::string &identifier,const std::string &ext,const std::shared_ptr<ufile::IFile> &file,TextureLoadJobPriority priority=0);
-
-		void RegisterFormatHandler(const std::string &ext,const std::function<std::shared_ptr<ITextureFormatHandler>()> &factory);
-
 		void SetAllowMultiThreadedGpuResourceAllocation(bool b) {m_allowMultiThreadedGpuResourceAllocation = b;}
+		bool DoesAllowMultiThreadedGpuResourceAllocation() const {return m_allowMultiThreadedGpuResourceAllocation;}
+		prosper::IPrContext &GetContext() {return m_context;}
 	private:
 		bool m_allowMultiThreadedGpuResourceAllocation = true;
-
-		ctpl::thread_pool m_pool;
-		std::mutex m_queueMutex;
-		std::priority_queue<TextureLoadJob,std::vector<TextureLoadJob>,CompareTextureLoadJob> m_jobs;
-
-		std::mutex m_completeQueueMutex;
-		std::queue<TextureLoadJob> m_completeQueue;
-		std::atomic<bool> m_hasCompletedJobs = false;
-		std::unordered_map<std::string,std::function<std::shared_ptr<ITextureFormatHandler>()>> m_formatHandlers;
-
-		struct QueuedJobInfo
-		{
-			TextureLoadJobId jobId;
-			TextureLoadJobPriority priority;
-		};
-		std::unordered_map<std::string,QueuedJobInfo> m_texIdToJobId;
-		TextureLoadJobId m_nextJobId = 0;
+		std::unordered_map<std::string,std::function<std::unique_ptr<ITextureFormatHandler>()>> m_formatHandlers;
+		prosper::IPrContext &m_context;
 	};
 };
 

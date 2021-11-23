@@ -4,6 +4,7 @@
 
 #include "texturemanager/load/texture_processor.hpp"
 #include "texturemanager/load/texture_format_handler.hpp"
+#include "texturemanager/load/texture_loader.hpp"
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
 #include <prosper_command_buffer.hpp>
@@ -24,9 +25,20 @@ bool msys::TextureProcessor::FinalizeImage(prosper::IPrContext &context)
 	return true;
 }
 
+bool msys::TextureProcessor::Load()
+{
+	if(!handler->LoadData())
+		return false;
+	return !m_loader.DoesAllowMultiThreadedGpuResourceAllocation() || PrepareImage(m_loader.GetContext());
+}
+bool msys::TextureProcessor::Finalize()
+{
+	return (m_loader.DoesAllowMultiThreadedGpuResourceAllocation() || PrepareImage(m_loader.GetContext())) && FinalizeImage(m_loader.GetContext());
+}
+
 bool msys::TextureProcessor::InitializeProsperImage(prosper::IPrContext &context)
 {
-	auto &inputTextureInfo = handler.GetInputTextureInfo();
+	auto &inputTextureInfo = handler->GetInputTextureInfo();
 	imageFormat = inputTextureInfo.format;
 	const auto width = inputTextureInfo.width;
 	const auto height = inputTextureInfo.height;
@@ -79,7 +91,7 @@ bool msys::TextureProcessor::InitializeProsperImage(prosper::IPrContext &context
 bool msys::TextureProcessor::InitializeImageBuffers(prosper::IPrContext &context)
 {
 	// Initialize image data as buffers, then copy to output image
-	auto &inputTextureInfo = handler.GetInputTextureInfo();
+	auto &inputTextureInfo = handler->GetInputTextureInfo();
 	auto numLayers = inputTextureInfo.layerCount;
 	auto mipmapCount = inputTextureInfo.mipmapCount;
 	buffers.reserve(numLayers *mipmapCount);
@@ -92,7 +104,7 @@ bool msys::TextureProcessor::InitializeImageBuffers(prosper::IPrContext &context
 			size_t dataSize;
 			void *data;
 
-			if(handler.GetDataPtr(iLayer,iMipmap,&data,dataSize) == false || data == nullptr)
+			if(handler->GetDataPtr(iLayer,iMipmap,&data,dataSize) == false || data == nullptr)
 				continue;
 
 			if(cpuImageConverter)

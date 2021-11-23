@@ -7,6 +7,7 @@
 
 #include "cmatsysdefinitions.h"
 #include "texture_type.h"
+#include <sharedutils/asset_loader/asset_processor.hpp>
 #include <prosper_enums.hpp>
 #include <cinttypes>
 #include <optional>
@@ -18,8 +19,11 @@ namespace uimg {class ImageBuffer;};
 namespace msys
 {
 	class ITextureFormatHandler;
-	struct DLLCMATSYS TextureProcessor
+	class TextureLoader;
+	class DLLCMATSYS TextureProcessor
+		: public util::IAssetProcessor
 	{
+	public:
 		struct BufferInfo
 		{
 			std::shared_ptr<prosper::IBuffer> buffer = nullptr;
@@ -27,9 +31,11 @@ namespace msys
 			uint32_t mipmapIndex = 0u;
 		};
 
-		TextureProcessor(ITextureFormatHandler &handler)
-			: handler{handler}
+		TextureProcessor(TextureLoader &loader,std::unique_ptr<ITextureFormatHandler> &&handler)
+			: handler{std::move(handler)},m_loader{loader}
 		{}
+		virtual bool Load() override;
+		virtual bool Finalize() override;
 		bool InitializeProsperImage(prosper::IPrContext &context);
 		bool InitializeImageBuffers(prosper::IPrContext &context);
 		bool CopyBuffersToImage(prosper::IPrContext &context);
@@ -40,7 +46,7 @@ namespace msys
 		bool FinalizeImage(prosper::IPrContext &context);
 
 		TextureMipmapMode mipmapMode = TextureMipmapMode::LoadOrGenerate;
-		ITextureFormatHandler &handler;
+		std::unique_ptr<ITextureFormatHandler> handler;
 		std::shared_ptr<prosper::IImage> image;
 		prosper::Format imageFormat = prosper::Format::Unknown;
 		uint32_t mipmapCount = 1;
@@ -50,6 +56,7 @@ namespace msys
 	private:
 		bool m_generateMipmaps = false;
 		std::vector<std::shared_ptr<uimg::ImageBuffer>> m_tmpImgBuffers {};
+		TextureLoader &m_loader;
 	};
 };
 

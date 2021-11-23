@@ -59,6 +59,7 @@ static vlUInt vtf_read_tell(vlVoid *handle)
 #endif
 
 ////////////////////////////
+
 #if 0
 #include "texturemanager/load/texture_loader.hpp"
 #include "texturemanager/load/texture_format_handler.hpp"
@@ -70,15 +71,15 @@ static vlUInt vtf_read_tell(vlVoid *handle)
 #undef AddJob
 static void test_texture_loader(prosper::IPrContext &context)
 {
-	msys::TextureLoader loader {};
-	auto gliHandler = []() -> std::shared_ptr<msys::ITextureFormatHandler> {
-		return std::make_shared<msys::TextureFormatHandlerGli>();
+	msys::TextureLoader loader {context};
+	auto gliHandler = []() -> std::unique_ptr<msys::ITextureFormatHandler> {
+		return std::make_unique<msys::TextureFormatHandlerGli>();
 	};
 	loader.RegisterFormatHandler("ktx",gliHandler);
 	loader.RegisterFormatHandler("dds",gliHandler);
 
-	auto uimgHandler = []() -> std::shared_ptr<msys::ITextureFormatHandler> {
-		return std::make_shared<msys::TextureFormatHandlerUimg>();
+	auto uimgHandler = []() -> std::unique_ptr<msys::ITextureFormatHandler> {
+		return std::make_unique<msys::TextureFormatHandlerUimg>();
 	};
 	loader.RegisterFormatHandler("png",uimgHandler);
 	loader.RegisterFormatHandler("tga",uimgHandler);
@@ -89,11 +90,11 @@ static void test_texture_loader(prosper::IPrContext &context)
 	loader.RegisterFormatHandler("hdr",uimgHandler);
 	loader.RegisterFormatHandler("pic",uimgHandler);
 
-	loader.RegisterFormatHandler("vtf",[]() -> std::shared_ptr<msys::ITextureFormatHandler> {
-		return std::make_shared<msys::TextureFormatHandlerVtf>();
+	loader.RegisterFormatHandler("vtf",[]() -> std::unique_ptr<msys::ITextureFormatHandler> {
+		return std::make_unique<msys::TextureFormatHandlerVtf>();
 	});
-	loader.RegisterFormatHandler("vtex_c",[]() -> std::shared_ptr<msys::ITextureFormatHandler> {
-		return std::make_shared<msys::TextureFormatHandlerVtex>();
+	loader.RegisterFormatHandler("vtex_c",[]() -> std::unique_ptr<msys::ITextureFormatHandler> {
+		return std::make_unique<msys::TextureFormatHandlerVtex>();
 	});
 
 	loader.SetAllowMultiThreadedGpuResourceAllocation(true); // TODO: Turn off for OpenGL
@@ -112,10 +113,10 @@ static void test_texture_loader(prosper::IPrContext &context)
 	auto t = std::chrono::high_resolution_clock::now();
 	for(;;)
 	{
-		loader.Poll(context,[&numComplete,&t](const msys::TextureLoadJob &job) {
+		loader.Poll([&numComplete,&t](const util::AssetLoadJob &job) {
 			auto dtQueue = job.completionTime -job.queueStartTime;
 			auto dtTask = job.completionTime -job.taskStartTime;
-			std::cout<<job.textureIdentifier<<" has been loaded!"<<std::endl;
+			std::cout<<job.identifier<<" has been loaded!"<<std::endl;
 			std::cout<<"Time since job has been queued to completion: "<<(dtQueue.count() /1'000'000'000.0)<<std::endl;
 			std::cout<<"Time since task has been started to completion: "<<(dtTask.count() /1'000'000'000.0)<<std::endl;
 			if(++numComplete == 7)
@@ -123,12 +124,13 @@ static void test_texture_loader(prosper::IPrContext &context)
 				auto dt = std::chrono::high_resolution_clock::now() -t;
 				std::cout<<"Total completion time: "<<(dt.count() /1'000'000'000.0)<<std::endl;
 			}
-		},[](const msys::TextureLoadJob &job) {
-			std::cout<<job.textureIdentifier<<" has failed!"<<std::endl;
+		},[](const util::AssetLoadJob &job) {
+			std::cout<<job.identifier<<" has failed!"<<std::endl;
 		});
 	}
 }
 #endif
+
 ////////////////////////////
 
 TextureManager::LoadInfo::LoadInfo()
