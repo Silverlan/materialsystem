@@ -225,9 +225,10 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 		//auto matErr = m_materials.find("error");
 		//if(matErr == m_materials.end())
 		//	return false;
-		auto *nmat = CreateMaterial<Material>();
-		AddMaterial(matId,*nmat);
-		*mat = nmat;
+		//auto *nmat = CreateMaterial<Material>();
+		//AddMaterial(matId,*nmat);
+		//*mat = nmat;
+		*mat = GetErrorMaterial();
 		return true;
 	};
 #ifndef DISABLE_VMT_SUPPORT
