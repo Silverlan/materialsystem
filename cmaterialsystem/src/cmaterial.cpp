@@ -268,7 +268,10 @@ void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &
 
 		if(texInfo.texture)
 		{
-			auto cb = static_cast<Texture*>(texInfo.texture.get())->CallOnVkTextureChanged([this]() {ClearDescriptorSets();});
+			auto cb = static_cast<Texture*>(texInfo.texture.get())->CallOnVkTextureChanged([this]() {
+				ClearDescriptorSets();
+				static_cast<CMaterialManager&>(m_manager).MarkForReload(*this);
+			});
 			m_onVkTexturesChanged.push_back(cb);
 		}
 

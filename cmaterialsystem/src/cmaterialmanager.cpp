@@ -15,6 +15,7 @@
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
 #include <sharedutils/util_path.hpp>
+#include <unordered_set>
 #include <prosper_util.hpp>
 #include <prosper_command_buffer.hpp>
 #include <prosper_descriptor_set_group.hpp>
@@ -49,7 +50,28 @@ TextureManager &CMaterialManager::GetTextureManager() {return m_textureManager;}
 void CMaterialManager::SetShaderHandler(const std::function<void(Material*)> &handler) {m_shaderHandler = handler;}
 std::function<void(Material*)> CMaterialManager::GetShaderHandler() const {return m_shaderHandler;}
 
-void CMaterialManager::Update() {m_textureManager.Update();}
+void CMaterialManager::Update()
+{
+	m_textureManager.Update();
+
+	if(!m_reloadShaderQueue.empty())
+	{
+		std::unordered_set<Material*> traversed;
+		while(!m_reloadShaderQueue.empty())
+		{
+			auto hMat = m_reloadShaderQueue.front();
+			m_reloadShaderQueue.pop();
+
+			if(!hMat.IsValid())
+				continue;
+			auto it = traversed.find(hMat.get());
+			if(it != traversed.end())
+				continue;
+			traversed.insert(hMat.get());
+			m_shaderHandler(hMat.get());
+		}
+	}
+}
 
 Material *CMaterialManager::CreateMaterial(const std::string *identifier,const std::string &shader,std::shared_ptr<ds::Block> root)
 {
@@ -82,6 +104,8 @@ Material *CMaterialManager::CreateMaterial(const std::string *identifier,const s
 }
 Material *CMaterialManager::CreateMaterial(const std::string &identifier,const std::string &shader,const std::shared_ptr<ds::Block> &root) {return CreateMaterial(&identifier,shader,root);}
 Material *CMaterialManager::CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &root) {return CreateMaterial(nullptr,shader,root);}
+
+void CMaterialManager::MarkForReload(CMaterial &mat) {m_reloadShaderQueue.push(mat.GetHandle());}
 
 void CMaterialManager::ReloadMaterialShaders()
 {
