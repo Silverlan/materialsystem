@@ -129,7 +129,28 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 		return false;
 	VTFLib::Nodes::CVMTNode *node = nullptr;
 	auto *vmtRoot = vmt.GetRoot();
-	if(ustring::compare<std::string>(shader,"eyerefract",false))
+	if(ustring::compare<std::string>(shader,"eyes",false))
+	{
+		info.shader = "eye_legacy";
+		if((node = vmtRoot->GetNode("$iris")) != nullptr)
+		{
+			if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+			{
+				auto *irisNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+				rootData.AddData("iris_map",std::make_shared<ds::Texture>(settings,irisNode->GetValue()));
+			}
+		}
+		if((node = vmtRoot->GetNode("$basetexture")) != nullptr)
+		{
+			if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
+			{
+				auto *irisNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
+				rootData.AddData("sclera_map",std::make_shared<ds::Texture>(settings,irisNode->GetValue()));
+			}
+		}
+		rootData.AddValue("float","iris_scale","0.5");
+	}
+	else if(ustring::compare<std::string>(shader,"eyerefract",false))
 	{
 		info.shader = "eye";
 		std::string irisTexture = "";
@@ -141,6 +162,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				irisTexture = irisNode->GetValue();
 			}
 		}
+
 		std::string corneaTexture = "";
 		if((node = vmtRoot->GetNode("$corneatexture")) != nullptr)
 		{
@@ -262,13 +284,13 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				rootData.AddValue("int","subsurface_method","5");
 				rootData.AddValue("vector","subsurface_radius","112 52.8 1.6");
 			}
-		}
 
-		auto ptrRoot = std::static_pointer_cast<ds::Block>(rootData.shared_from_this());
-		if((node = vmtRoot->GetNode("$eyeballradius")) != nullptr)
-			get_vmt_data<ds::Bool,int32_t>(ptrRoot,settings,"eyeball_radius",node);
-		if((node = vmtRoot->GetNode("$dilation")) != nullptr)
-			get_vmt_data<ds::Bool,int32_t>(ptrRoot,settings,"pupil_dilation",node);
+			auto ptrRoot = std::static_pointer_cast<ds::Block>(rootData.shared_from_this());
+			if((node = vmtRoot->GetNode("$eyeballradius")) != nullptr)
+				get_vmt_data<ds::Bool,int32_t>(ptrRoot,settings,"eyeball_radius",node);
+			if((node = vmtRoot->GetNode("$dilation")) != nullptr)
+				get_vmt_data<ds::Bool,int32_t>(ptrRoot,settings,"pupil_dilation",node);
+		}
 	}
 	else if(ustring::compare<std::string>(shader,"spritecard",false))
 	{
