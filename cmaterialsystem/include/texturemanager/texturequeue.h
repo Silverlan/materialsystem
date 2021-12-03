@@ -11,6 +11,7 @@
 #include "texture_type.h"
 #include <png_info.h>
 #include <mathutil/glmutil.h>
+#include <fsys/ifile.hpp>
 #include <gli/gli.hpp>
 #include <gli/texture2d.hpp>
 #ifndef DISABLE_VTF_SUPPORT
@@ -89,6 +90,7 @@ public:
 	TextureQueueItemVTex();
 	virtual ~TextureQueueItemVTex() override;
 	std::shared_ptr<source2::resource::Texture> texture = nullptr;
+	std::unique_ptr<fsys::File> fptr = nullptr;
 };
 #endif
 class DLLCMATSYS TextureQueueItemSurface

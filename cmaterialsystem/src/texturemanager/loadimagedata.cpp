@@ -129,8 +129,8 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 						vtex->valid = false;
 					else
 					{
-						fsys::File f {fp};
-						auto resource = source2::load_resource(f);
+						vtex->fptr = std::make_unique<fsys::File>(fp);
+						auto resource = source2::load_resource(*vtex->fptr);
 						auto *dataBlock = resource ? resource->FindBlock(source2::BlockType::DATA) : nullptr;
 						if(dataBlock)
 						{
