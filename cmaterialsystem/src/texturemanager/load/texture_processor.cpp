@@ -8,13 +8,16 @@
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
 #include <prosper_command_buffer.hpp>
+#include <image/prosper_texture.hpp>
 #include <image/prosper_image.hpp>
+#include <image/prosper_sampler.hpp>
 #include <util_image_buffer.hpp>
 
 bool msys::TextureProcessor::PrepareImage(prosper::IPrContext &context)
 {
 	return InitializeProsperImage(context) && InitializeImageBuffers(context);
 }
+
 bool msys::TextureProcessor::FinalizeImage(prosper::IPrContext &context)
 {
 	if(targetGpuConversionFormat.has_value() && ConvertImageFormat(context,*targetGpuConversionFormat) == false)
@@ -22,8 +25,25 @@ bool msys::TextureProcessor::FinalizeImage(prosper::IPrContext &context)
 
 	if(m_generateMipmaps && GenerateMipmaps(context) == false)
 		return false;
+
+	auto &inputTexInfo = handler->GetInputTextureInfo();
+	auto hasMipmaps = image->GetMipmapCount() > 0;
+	prosper::util::TextureCreateInfo createInfo {};
+	createInfo.sampler = hasMipmaps ? m_loader.GetTextureSampler() : m_loader.GetTextureSamplerNoMipmap();
+	auto &swizzle = inputTexInfo.swizzle;
+	prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
+	imgViewCreateInfo.swizzleRed = swizzle.at(0);
+	imgViewCreateInfo.swizzleGreen = swizzle.at(1);
+	imgViewCreateInfo.swizzleBlue = swizzle.at(2);
+	imgViewCreateInfo.swizzleAlpha = swizzle.at(3);
+	createInfo.flags |= prosper::util::TextureCreateInfo::Flags::CreateImageViewForEachLayer;
+	texture = context.CreateTexture(createInfo,*image,imgViewCreateInfo);
 	return true;
 }
+
+msys::TextureProcessor::TextureProcessor(TextureLoader &loader,std::unique_ptr<ITextureFormatHandler> &&handler)
+	: handler{std::move(handler)},m_loader{loader}
+{}
 
 bool msys::TextureProcessor::Load()
 {

@@ -14,7 +14,7 @@
 #include <functional>
 #include <memory>
 
-namespace prosper {class IBuffer; class IPrContext; class IImage;};
+namespace prosper {class IBuffer; class IPrContext; class IImage; class Texture; class ISampler;};
 namespace uimg {class ImageBuffer;};
 namespace msys
 {
@@ -31,9 +31,7 @@ namespace msys
 			uint32_t mipmapIndex = 0u;
 		};
 
-		TextureProcessor(TextureLoader &loader,std::unique_ptr<ITextureFormatHandler> &&handler)
-			: handler{std::move(handler)},m_loader{loader}
-		{}
+		TextureProcessor(TextureLoader &loader,std::unique_ptr<ITextureFormatHandler> &&handler);
 		virtual bool Load() override;
 		virtual bool Finalize() override;
 		bool InitializeProsperImage(prosper::IPrContext &context);
@@ -48,6 +46,7 @@ namespace msys
 		TextureMipmapMode mipmapMode = TextureMipmapMode::LoadOrGenerate;
 		std::unique_ptr<ITextureFormatHandler> handler;
 		std::shared_ptr<prosper::IImage> image;
+		std::shared_ptr<prosper::Texture> texture;
 		prosper::Format imageFormat = prosper::Format::Unknown;
 		uint32_t mipmapCount = 1;
 		std::optional<prosper::Format> targetGpuConversionFormat {};

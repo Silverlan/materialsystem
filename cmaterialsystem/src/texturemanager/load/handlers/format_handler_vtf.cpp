@@ -6,6 +6,7 @@
 #include "texturemanager/load/handlers/format_handler_vtf.hpp"
 #include <fsys/ifile.hpp>
 #include <VTFFile.h>
+#include <Proc.h>
 
 static msys::detail::VulkanImageData vtf_format_to_vulkan_format(VTFImageFormat format)
 {
@@ -57,6 +58,53 @@ static msys::detail::VulkanImageData vtf_format_to_vulkan_format(VTFImageFormat 
 	}
 	// Note: When adding a new format, make sure to also add it to TextureManager::InitializeTextureData
 	return vkImgData;
+}
+
+static vlVoid vtf_read_close() {}
+static vlBool vtf_read_open() {return true;}
+static vlUInt vtf_read_read(vlVoid *buf,vlUInt bytes,vlVoid *handle)
+{
+	if(handle == nullptr)
+		return -1;
+	auto &f = *static_cast<ufile::IFile*>(handle);
+	return static_cast<vlUInt>(f.Read(buf,bytes));
+}
+static vlUInt vtf_read_seek(vlLong offset,VLSeekMode whence,vlVoid *handle)
+{
+	if(handle == nullptr)
+		return -1;
+	auto &f = *static_cast<ufile::IFile*>(handle);
+	f.Seek(offset,static_cast<ufile::IFile::Whence>(whence));
+	return f.Tell();
+}
+static vlUInt vtf_read_size(vlVoid *handle)
+{
+	if(handle == nullptr)
+		return 0;
+	auto &f = *static_cast<ufile::IFile*>(handle);
+	return f.GetSize();
+}
+static vlUInt vtf_read_tell(vlVoid *handle)
+{
+	if(handle == nullptr)
+		return -1;
+	auto &f = *static_cast<ufile::IFile*>(handle);
+	return f.Tell();
+}
+
+msys::TextureFormatHandlerVtf::TextureFormatHandlerVtf()
+{
+	static auto vtfProcInitialized = false;
+	if(!vtfProcInitialized)
+	{
+		vlSetProc(PROC_READ_CLOSE,reinterpret_cast<void*>(vtf_read_close));
+		vlSetProc(PROC_READ_OPEN,reinterpret_cast<void*>(vtf_read_open));
+		vlSetProc(PROC_READ_READ,reinterpret_cast<void*>(vtf_read_read));
+		vlSetProc(PROC_READ_SEEK,reinterpret_cast<void*>(vtf_read_seek));
+		vlSetProc(PROC_READ_SIZE,reinterpret_cast<void*>(vtf_read_size));
+		vlSetProc(PROC_READ_TELL,reinterpret_cast<void*>(vtf_read_tell));
+		vtfProcInitialized = true;
+	}
 }
 
 bool msys::TextureFormatHandlerVtf::GetDataPtr(uint32_t layer,uint32_t mipmapIdx,void **outPtr,size_t &outSize)

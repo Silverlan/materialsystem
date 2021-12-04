@@ -15,7 +15,7 @@
 
 #undef AddJob
 
-namespace prosper {class IPrContext;};
+namespace prosper {class IPrContext; class ISampler;};
 namespace ufile {struct IFile;};
 namespace msys
 {
@@ -26,16 +26,22 @@ namespace msys
 	public:
 		TextureLoader(prosper::IPrContext &context);
 		void RegisterFormatHandler(const std::string &ext,const std::function<std::unique_ptr<ITextureFormatHandler>()> &factory);
-		bool AddJob(
-			prosper::IPrContext &context,const std::string &identifier,const std::string &ext,const std::shared_ptr<ufile::IFile> &file,util::AssetLoadJobPriority priority=0
+		std::optional<util::AssetLoadJobId> AddJob(
+			const std::string &identifier,const std::string &ext,const std::shared_ptr<ufile::IFile> &file,util::AssetLoadJobPriority priority=0
 		);
 		void SetAllowMultiThreadedGpuResourceAllocation(bool b) {m_allowMultiThreadedGpuResourceAllocation = b;}
 		bool DoesAllowMultiThreadedGpuResourceAllocation() const {return m_allowMultiThreadedGpuResourceAllocation;}
 		prosper::IPrContext &GetContext() {return m_context;}
+
+		const std::shared_ptr<prosper::ISampler> &GetTextureSampler() const {return m_textureSampler;}
+		const std::shared_ptr<prosper::ISampler> &GetTextureSamplerNoMipmap() const {return m_textureSamplerNoMipmap;}
 	private:
 		bool m_allowMultiThreadedGpuResourceAllocation = true;
 		std::unordered_map<std::string,std::function<std::unique_ptr<ITextureFormatHandler>()>> m_formatHandlers;
 		prosper::IPrContext &m_context;
+
+		std::shared_ptr<prosper::ISampler> m_textureSampler;
+		std::shared_ptr<prosper::ISampler> m_textureSamplerNoMipmap;
 	};
 };
 

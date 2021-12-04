@@ -32,7 +32,7 @@ namespace msys
 		: public ITextureFormatHandler
 	{
 	public:
-		TextureFormatHandlerVtf() {}
+		TextureFormatHandlerVtf();
 		virtual bool GetDataPtr(uint32_t layer,uint32_t mipmapIdx,void **outPtr,size_t &outSize) override;
 	protected:
 		virtual bool LoadData(InputTextureInfo &texInfo) override;
