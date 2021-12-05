@@ -80,6 +80,7 @@ namespace msys
 
 		void Test();
 	protected:
+		msys::TextureAsset *Poll(std::optional<util::AssetLoadJobId> untilJob);
 		PreloadResult PreloadTexture(const std::string &path,util::AssetLoadJobPriority priority,const TextureLoadInfo &loadInfo);
 		PreloadResult PreloadTexture(
 			const std::string &cacheName,const std::shared_ptr<ufile::IFile> &file,const std::string &ext,util::AssetLoadJobPriority priority,

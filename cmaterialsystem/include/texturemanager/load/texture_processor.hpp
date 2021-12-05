@@ -44,8 +44,9 @@ namespace msys
 		bool PrepareImage(prosper::IPrContext &context);
 		bool FinalizeImage(prosper::IPrContext &context);
 
+		std::shared_ptr<void> userData = nullptr;
 		TextureMipmapMode mipmapMode = TextureMipmapMode::LoadOrGenerate;
-		std::function<void(TextureAsset&,bool)> onLoaded = nullptr;
+		std::function<void(TextureAsset*)> onLoaded = nullptr;
 		std::unique_ptr<ITextureFormatHandler> handler;
 		std::shared_ptr<prosper::IImage> image;
 		std::shared_ptr<prosper::Texture> texture;

@@ -286,7 +286,7 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 	info.root = matData;
 	return true;
 }
-Material *MaterialManager::Load(const std::string &path,bool bReload,bool *bFirstTimeError)
+Material *MaterialManager::Load(const std::string &path,bool bReload,bool loadInstantly,bool *bFirstTimeError)
 {
 	if(bFirstTimeError != nullptr)
 		*bFirstTimeError = false;

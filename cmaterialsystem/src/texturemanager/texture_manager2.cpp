@@ -90,7 +90,18 @@ msys::TextureManager::PreloadResult msys::TextureManager::PreloadTexture(
 )
 {
 	auto jobId = m_loader->AddJob(ToCacheIdentifier(cacheName),ext,file,priority,[&loadInfo](TextureProcessor &processor) {
+		processor.userData = std::make_shared<TextureLoadInfo>(loadInfo);
 		processor.mipmapMode = loadInfo.mipmapMode;
+		processor.onLoaded = [&processor](msys::TextureAsset *asset) {
+			auto &loadInfo = *static_cast<TextureLoadInfo*>(processor.userData.get());
+			if(asset)
+			{
+				if(loadInfo.onLoaded)
+					loadInfo.onLoaded(*asset);
+			}
+			else if(loadInfo.onFailure)
+				loadInfo.onFailure();
+		};
 	});
 	if(!jobId.has_value())
 		return PreloadResult{{},false};
@@ -152,48 +163,62 @@ std::shared_ptr<Texture> msys::TextureManager::LoadTexture(const std::string &pa
 		return asset->texture;
 	}
 	auto identifier = ToCacheIdentifier(path);
-	std::optional<bool> loadSuccess {};
 	std::shared_ptr<prosper::Texture> texture = nullptr;
 	auto jobId = *r.jobId;
-	while(!loadSuccess.has_value())
-	{
-		// Wait until texture has been loaded
-		m_loader->Poll([&loadSuccess,jobId,&texture](const util::AssetLoadJob &job) {
-			if(job.jobId == jobId)
-			{
-				loadSuccess = true;
-				auto &texProcessor = *static_cast<TextureProcessor*>(job.processor.get());
-				texture = texProcessor.texture;
-			}
-		},[&loadSuccess,jobId](const util::AssetLoadJob &job) {
-			if(job.jobId == jobId)
-				loadSuccess = false;
-		},true);
-	}
-	if(!*loadSuccess)
-	{
-		if(loadInfo.onFailure)
-			loadInfo.onFailure();
+
+	auto *asset = Poll(jobId);
+	if(!asset)
 		return nullptr;
-	}
-
-	auto texWrapper = std::make_shared<Texture>(m_context,texture);
-	
-	auto &img = texture->GetImage();
-	auto flags = texWrapper->GetFlags();
-	umath::set_flag(flags,Texture::Flags::SRGB,img.IsSrgb());
-	flags |= Texture::Flags::Indexed | Texture::Flags::Loaded;
-	flags &= ~Texture::Flags::Error;
-	texWrapper->SetFlags(flags);
-	texWrapper->SetName(identifier);
-
-	auto asset = std::make_shared<TextureAsset>(texWrapper);
-	if(!umath::is_flag_set(loadInfo.flags,TextureLoadFlags::DontCache))
-		AddToCache(identifier,asset);
-	if(loadInfo.onLoaded)
-		loadInfo.onLoaded(*asset);
 	return asset->texture;
 }
+
+void msys::TextureManager::Poll() {Poll({});}
+
+msys::TextureAsset *msys::TextureManager::Poll(std::optional<util::AssetLoadJobId> untilJob)
+{
+	TextureAsset *targetAsset = nullptr;
+	do
+	{
+		m_loader->Poll([this,&untilJob,&targetAsset](const util::AssetLoadJob &job) {
+			auto &texProcessor = *static_cast<TextureProcessor*>(job.processor.get());
+			auto texture = texProcessor.texture;
+
+			auto texWrapper = std::make_shared<Texture>(m_context,texture);
+	
+			auto &img = texture->GetImage();
+			auto flags = texWrapper->GetFlags();
+			umath::set_flag(flags,Texture::Flags::SRGB,img.IsSrgb());
+			flags |= Texture::Flags::Indexed | Texture::Flags::Loaded;
+			flags &= ~Texture::Flags::Error;
+			texWrapper->SetFlags(flags);
+			texWrapper->SetName(job.identifier);
+
+			auto asset = std::make_shared<TextureAsset>(texWrapper);
+			auto &loadInfo = *static_cast<TextureLoadInfo*>(texProcessor.userData.get());
+			if(!umath::is_flag_set(loadInfo.flags,TextureLoadFlags::DontCache))
+				AddToCache(job.identifier,asset);
+			if(untilJob.has_value() && job.jobId == *untilJob)
+			{
+				targetAsset = asset.get();
+				untilJob = {};
+			}
+			if(texProcessor.onLoaded)
+				texProcessor.onLoaded(asset.get());
+		},[&untilJob,&targetAsset](const util::AssetLoadJob &job) {
+			auto &texProcessor = *static_cast<TextureProcessor*>(job.processor.get());
+			if(untilJob.has_value() && job.jobId == *untilJob)
+			{
+				targetAsset = nullptr;
+				untilJob = {};
+			}
+			if(texProcessor.onLoaded)
+				texProcessor.onLoaded(nullptr);
+		});
+	}
+	while(untilJob.has_value());
+	return targetAsset;
+}
+
 std::shared_ptr<Texture> msys::TextureManager::LoadTexture(
 	const std::string &cacheName,const std::shared_ptr<ufile::IFile> &file,const std::string &ext,const TextureLoadInfo &loadInfo
 )
@@ -221,15 +246,6 @@ void msys::TextureManager::SetErrorTexture(const std::shared_ptr<Texture> &tex)
 	m_error = tex;
 	if(tex)
 		tex->AddFlags(Texture::Flags::Error);
-}
-
-void msys::TextureManager::Poll()
-{
-	m_loader->Poll([](const util::AssetLoadJob &job) {
-		// Succeeded
-	},[](const util::AssetLoadJob &job) {
-		// Failed
-	});
 }
 
 void msys::TextureManager::Test()

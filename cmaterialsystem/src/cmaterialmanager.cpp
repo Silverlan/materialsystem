@@ -551,7 +551,25 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 	{
 		info.material->SetErrorFlag(false);
 		if(bReload == false || !info.material->IsLoaded()) // Can't reload if material hasn't even been fully loaded yet
+		{
+			if(!static_cast<CMaterial*>(info.material)->HaveTexturesBeenLoaded())
+			{
+				auto *mat = info.material;
+				auto texLoadFlags = TextureLoadFlags::None;
+				umath::set_flag(texLoadFlags,TextureLoadFlags::LoadInstantly,true);
+				static_cast<CMaterial*>(info.material)->InitializeTextures(info.material->GetDataBlock(),[this,onMaterialLoaded,mat]() {
+					mat->SetLoaded(true);
+					if(onMaterialLoaded != nullptr)
+						onMaterialLoaded(mat);
+					if(m_shaderHandler != nullptr)
+						m_shaderHandler(mat);
+				},[onTextureLoaded](std::shared_ptr<Texture> texture) {
+					if(onTextureLoaded != nullptr)
+						onTextureLoaded(texture);
+				},texLoadFlags);
+			}
 			return info.material;
+		}
 		info.material->Initialize(shaderManager.PreRegisterShader(info.shader),info.root);
 		bInitializeTextures = true;
 	}
@@ -595,8 +613,8 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 	return info.material;
 }
 
-Material *CMaterialManager::Load(const std::string &path,bool bReload,bool *bFirstTimeError)
+Material *CMaterialManager::Load(const std::string &path,bool bReload,bool loadInstantly,bool *bFirstTimeError)
 {
-	return Load(path,nullptr,nullptr,bReload,bFirstTimeError);
+	return Load(path,nullptr,nullptr,bReload,bFirstTimeError,loadInstantly);
 }
 #pragma optimize("",on)

@@ -47,7 +47,7 @@ public:
 	void SetShaderHandler(const std::function<void(Material*)> &handler);
 	std::function<void(Material*)> GetShaderHandler() const;
 	Material *Load(const std::string &path,const std::function<void(Material*)> &onMaterialLoaded,const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded=nullptr,bool bReload=false,bool *bFirstTimeError=nullptr,bool bLoadInstantly=false);
-	virtual Material *Load(const std::string &path,bool bReload=false,bool *bFirstTimeError=nullptr) override;
+	virtual Material *Load(const std::string &path,bool bReload=false,bool loadInstantly=true,bool *bFirstTimeError=nullptr) override;
 	void ReloadMaterialShaders();
 	void MarkForReload(CMaterial &mat);
 

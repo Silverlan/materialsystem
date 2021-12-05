@@ -53,7 +53,7 @@ public:
 	Material *FindMaterial(const std::string &identifier) const;
 	Material *GetMaterial(MaterialIndex index);
 	const Material *GetMaterial(MaterialIndex index) const;
-	virtual Material *Load(const std::string &path,bool bReload=false,bool *bFirstTimeError=nullptr);
+	virtual Material *Load(const std::string &path,bool bReload=false,bool loadInstantly=true,bool *bFirstTimeError=nullptr);
 	virtual void SetErrorMaterial(Material *mat);
 	Material *GetErrorMaterial() const;
 	const std::vector<MaterialHandle> &GetMaterials() const;

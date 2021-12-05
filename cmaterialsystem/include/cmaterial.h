@@ -70,6 +70,8 @@ protected:
 	void InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::function<void(void)> &onAllTexturesLoaded=nullptr,const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded=nullptr,TextureLoadFlags loadFlags=TextureLoadFlags::None);
 	friend CMaterialManager;
 	msys::TextureManager &GetTextureManager();
+
+	bool HaveTexturesBeenLoaded() const {return m_texturesLoaded;}
 private:
 	void UpdatePrimaryShader();
 	struct ShaderHash
@@ -90,6 +92,7 @@ private:
 	std::shared_ptr<prosper::IBuffer> m_settingsBuffer = nullptr;
 	std::shared_ptr<CallbackInfo> m_callbackInfo;
 	std::optional<SpriteSheetAnimation> m_spriteSheetAnimation {};
+	bool m_texturesLoaded = false;
 	std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>,ShaderHash,ShaderEqualFn>::iterator FindShaderDescriptorSetGroup(prosper::Shader &shader);
 	std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>,ShaderHash,ShaderEqualFn>::const_iterator FindShaderDescriptorSetGroup(prosper::Shader &shader) const;
 	std::shared_ptr<CallbackInfo> InitializeCallbackInfo(const std::function<void(void)> &onAllTexturesLoaded,const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded);
