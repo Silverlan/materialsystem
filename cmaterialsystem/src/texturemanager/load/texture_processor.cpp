@@ -20,6 +20,9 @@ bool msys::TextureProcessor::PrepareImage(prosper::IPrContext &context)
 
 bool msys::TextureProcessor::FinalizeImage(prosper::IPrContext &context)
 {
+	if(CopyBuffersToImage(context) == false)
+		return false;
+
 	if(targetGpuConversionFormat.has_value() && ConvertImageFormat(context,*targetGpuConversionFormat) == false)
 		return false;
 

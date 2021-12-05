@@ -16,14 +16,24 @@
 #include <sharedutils/util_file.h>
 #include <fsys/filesystem.h>
 #include <fsys/ifile.hpp>
-
+#pragma optimize("",off)
 bool msys::TextureAsset::IsInUse() const {return texture.use_count() > 1;}
 
 /////////////
 
+msys::TextureLoadInfo::TextureLoadInfo(TextureLoadFlags flags)
+	: flags{flags},mipmapMode{TextureMipmapMode::LoadOrGenerate}
+{}
 msys::TextureManager::TextureManager(prosper::IPrContext &context)
 	: m_context{context}
 {
+	SetFileHandler([](const std::string &fileName) -> std::shared_ptr<ufile::IFile> {
+		auto fp = filemanager::open_file(fileName,filemanager::FileMode::Binary | filemanager::FileMode::Read);
+		if(!fp)
+			return nullptr;
+		return std::make_shared<fsys::File>(fp);
+	});
+
 	m_loader = std::make_unique<msys::TextureLoader>(context);
 	auto gliHandler = []() -> std::unique_ptr<msys::ITextureFormatHandler> {
 		return std::make_unique<msys::TextureFormatHandlerGli>();
@@ -66,14 +76,34 @@ void msys::TextureManager::RegisterFormatHandler(const std::string &ext,const st
 void msys::TextureManager::SetRootDirectory(const std::string &dir) {m_rootDir = util::Path::CreatePath(dir);}
 const util::Path &msys::TextureManager::GetRootDirectory() const {return m_rootDir;}
 
-void msys::TextureManager::RemoveFromCache(const std::string &path) {IAssetManager::RemoveFromCache(path);}
-msys::TextureManager::PreloadResult msys::TextureManager::PreloadTexture(const std::string &strPath) {return PreloadTexture(strPath,0);}
-msys::TextureManager::PreloadResult msys::TextureManager::PreloadTexture(const std::string &strPath,util::AssetLoadJobPriority priority)
+void msys::TextureManager::SetFileHandler(const std::function<std::shared_ptr<ufile::IFile>(const std::string&)> &fileHandler) {m_fileHandler = fileHandler;}
+
+void msys::TextureManager::RemoveFromCache(const std::string &path)
+{
+	IAssetManager::RemoveFromCache(path);
+	m_loader->InvalidateLoadJob(path);
+}
+msys::TextureManager::PreloadResult msys::TextureManager::PreloadTexture(const std::string &strPath,const TextureLoadInfo &loadInfo) {return PreloadTexture(strPath,DEFAULT_PRIORITY,loadInfo);}
+msys::TextureManager::PreloadResult msys::TextureManager::PreloadTexture(
+	const std::string &cacheName,const std::shared_ptr<ufile::IFile> &file,const std::string &ext,util::AssetLoadJobPriority priority,
+	const TextureLoadInfo &loadInfo
+)
+{
+	auto jobId = m_loader->AddJob(ToCacheIdentifier(cacheName),ext,file,priority,[&loadInfo](TextureProcessor &processor) {
+		processor.mipmapMode = loadInfo.mipmapMode;
+	});
+	if(!jobId.has_value())
+		return PreloadResult{{},false};
+	return PreloadResult{jobId,true};
+}
+msys::TextureManager::PreloadResult msys::TextureManager::PreloadTexture(const std::string &strPath,util::AssetLoadJobPriority priority,const TextureLoadInfo &loadInfo)
 {
 	auto *asset = FindCachedAsset(strPath);
 	if(asset)
 		return PreloadResult{{},true};
-	auto path = m_rootDir +util::Path::CreateFile(strPath);
+	auto path = util::Path::CreateFile(strPath);
+	if(!umath::is_flag_set(loadInfo.flags,TextureLoadFlags::AbsolutePath))
+		path = m_rootDir +path;
 	auto ext = path.GetFileExtension();
 	if(ext.has_value())
 	{
@@ -100,24 +130,26 @@ msys::TextureManager::PreloadResult msys::TextureManager::PreloadTexture(const s
 	}
 	if(!ext.has_value())
 		return PreloadResult{{},false};
-	auto fp = filemanager::open_file(path.GetString(),filemanager::FileMode::Binary | filemanager::FileMode::Read);
-	if(!fp)
+	auto f = m_fileHandler(path.GetString());
+	if(!f)
 		return PreloadResult{{},false};
-	auto f = std::make_shared<fsys::File>(fp);
-	auto jobId = m_loader->AddJob(ToCacheIdentifier(strPath),*ext,f,priority);
-	if(!jobId.has_value())
-		return PreloadResult{{},false};
-	return PreloadResult{jobId,true};
+	return PreloadTexture(strPath,f,*ext,priority,loadInfo);
 }
-Texture *msys::TextureManager::LoadTexture(const std::string &path)
+std::shared_ptr<Texture> msys::TextureManager::LoadTexture(const std::string &path,const PreloadResult &r,const TextureLoadInfo &loadInfo)
 {
-	auto r = PreloadTexture(path,10);
 	if(r.success == false)
+	{
+		if(loadInfo.onFailure)
+			loadInfo.onFailure();
 		return nullptr;
+	}
 	if(!r.jobId.has_value())
 	{
 		// Already fully loaded
-		return static_cast<TextureAsset*>(FindCachedAsset(path))->texture.get();
+		auto *asset = static_cast<TextureAsset*>(FindCachedAsset(path));
+		if(loadInfo.onLoaded)
+			loadInfo.onLoaded(*asset);
+		return asset->texture;
 	}
 	auto identifier = ToCacheIdentifier(path);
 	std::optional<bool> loadSuccess {};
@@ -139,7 +171,11 @@ Texture *msys::TextureManager::LoadTexture(const std::string &path)
 		},true);
 	}
 	if(!*loadSuccess)
+	{
+		if(loadInfo.onFailure)
+			loadInfo.onFailure();
 		return nullptr;
+	}
 
 	auto texWrapper = std::make_shared<Texture>(m_context,texture);
 	
@@ -147,11 +183,29 @@ Texture *msys::TextureManager::LoadTexture(const std::string &path)
 	auto flags = texWrapper->GetFlags();
 	umath::set_flag(flags,Texture::Flags::SRGB,img.IsSrgb());
 	flags |= Texture::Flags::Indexed | Texture::Flags::Loaded;
+	flags &= ~Texture::Flags::Error;
 	texWrapper->SetFlags(flags);
+	texWrapper->SetName(identifier);
 
 	auto asset = std::make_shared<TextureAsset>(texWrapper);
-	AddToCache(identifier,asset);
-	return asset->texture.get();
+	if(!umath::is_flag_set(loadInfo.flags,TextureLoadFlags::DontCache))
+		AddToCache(identifier,asset);
+	if(loadInfo.onLoaded)
+		loadInfo.onLoaded(*asset);
+	return asset->texture;
+}
+std::shared_ptr<Texture> msys::TextureManager::LoadTexture(
+	const std::string &cacheName,const std::shared_ptr<ufile::IFile> &file,const std::string &ext,const TextureLoadInfo &loadInfo
+)
+{
+	auto r = PreloadTexture(cacheName,file,ext,IMMEDIATE_PRIORITY,loadInfo);
+	if(r.success == false)
+		return nullptr;
+	return LoadTexture(cacheName,r,loadInfo);
+}
+std::shared_ptr<Texture> msys::TextureManager::LoadTexture(const std::string &path,const TextureLoadInfo &loadInfo)
+{
+	return LoadTexture(path,PreloadTexture(path,IMMEDIATE_PRIORITY,loadInfo),loadInfo);
 }
 
 std::shared_ptr<Texture> msys::TextureManager::GetErrorTexture() {return m_error;}
@@ -210,3 +264,4 @@ void msys::TextureManager::Test()
 		});
 	}
 }
+#pragma optimize("",on)

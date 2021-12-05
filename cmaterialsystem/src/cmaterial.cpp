@@ -8,9 +8,11 @@
 #include "cmaterialmanager.h"
 #include "cmaterial.h"
 #include "texture_type.h"
+#include "texturemanager/load/texture_loader.hpp"
 #include "sprite_sheet_animation.hpp"
 #include <prosper_util.hpp>
 #include <buffers/prosper_buffer.hpp>
+#include <fsys/filesystem.h>
 #include <image/prosper_sampler.hpp>
 #include <sharedutils/util_string.h>
 
@@ -154,7 +156,7 @@ void CMaterial::InitializeSampler()
 	if(bUseCustomSampler == true)
 	{
 		auto mipmapMode = static_cast<TextureMipmapMode>(GetMipmapMode(m_data));
-		TextureManager::SetupSamplerMipmapMode(samplerInfo,mipmapMode);
+		msys::setup_sampler_mipmap_mode(samplerInfo,mipmapMode);
 		m_sampler = GetContext().CreateSampler(samplerInfo);
 	}
 }
@@ -165,7 +167,7 @@ prosper::IBuffer *CMaterial::GetSettingsBuffer() {return m_settingsBuffer.get();
 void CMaterial::SetSettingsBuffer(prosper::IBuffer &buffer) {m_settingsBuffer = buffer.shared_from_this();}
 
 prosper::IPrContext &CMaterial::GetContext() {return static_cast<CMaterialManager&>(m_manager).GetContext();}
-TextureManager &CMaterial::GetTextureManager() {return static_cast<CMaterialManager&>(m_manager).GetTextureManager();}
+msys::TextureManager &CMaterial::GetTextureManager() {return static_cast<CMaterialManager&>(m_manager).GetTextureManager();}
 std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>,CMaterial::ShaderHash,CMaterial::ShaderEqualFn>::iterator CMaterial::FindShaderDescriptorSetGroup(prosper::Shader &shader)
 {
 	return std::find_if(m_descriptorSetGroups.begin(),m_descriptorSetGroups.end(),[&shader](const std::pair<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>> &pair) {
@@ -242,7 +244,7 @@ SpriteSheetAnimation *CMaterial::GetSpriteSheetAnimation()
 			if(anim && typeid(*anim) == typeid(ds::String))
 			{
 				auto animFilePath = static_cast<ds::String&>(*anim).GetString();
-				auto f = FileManager::OpenFile(("materials/" +animFilePath +".psd").c_str(),"rb");
+				auto f = filemanager::open_file("materials/" +animFilePath +".psd",filemanager::FileMode::Read | filemanager::FileMode::Binary);
 				m_spriteSheetAnimation = SpriteSheetAnimation{};
 				if(f == nullptr || m_spriteSheetAnimation->Load(f) == false)
 					m_spriteSheetAnimation = {};
@@ -258,13 +260,25 @@ void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &
 		auto mipmapMode = static_cast<TextureMipmapMode>(GetMipmapMode(data));
 		auto &textureManager = GetTextureManager();
 		auto &context = GetContext();
-		TextureManager::LoadInfo loadInfo {};
-		loadInfo.flags |= loadFlags;
-		loadInfo.mipmapLoadMode = mipmapMode;
-		loadInfo.sampler = m_sampler;
-		if(callbackInfo != nullptr)
-			loadInfo.onLoadCallback = callbackInfo->onload;
-		textureManager.Load(context,texInfo.name,loadInfo,&texInfo.texture);
+
+		texInfo.texture = nullptr;
+		msys::TextureLoadInfo loadInfo {};
+		loadInfo.mipmapMode = mipmapMode;
+		if(callbackInfo && callbackInfo->onload.IsValid())
+		{
+			loadInfo.onLoaded = [callbackInfo](msys::TextureAsset &asset) {
+				if(callbackInfo->onload.IsValid())
+					asset.texture->CallOnLoaded(callbackInfo->onload);
+			};
+		}
+		auto tex = textureManager.LoadTexture(texInfo.name,loadInfo);
+		if(tex)
+		{
+			auto &vkTex = tex->GetVkTexture();
+			if(vkTex && m_sampler)
+				vkTex->SetSampler(*m_sampler);
+			texInfo.texture = tex;
+		}
 
 		if(texInfo.texture)
 		{

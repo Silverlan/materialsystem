@@ -7,7 +7,7 @@
 #include "texturemanager/load/texture_processor.hpp"
 #include <prosper_context.hpp>
 #pragma optimize("",off)
-static void setup_sampler_mipmap_mode(prosper::util::SamplerCreateInfo &createInfo,TextureMipmapMode mode)
+void msys::setup_sampler_mipmap_mode(prosper::util::SamplerCreateInfo &createInfo,TextureMipmapMode mode)
 {
 	switch(mode)
 	{
@@ -47,7 +47,8 @@ void msys::TextureLoader::RegisterFormatHandler(const std::string &ext,const std
 }
 
 std::optional<util::AssetLoadJobId> msys::TextureLoader::AddJob(
-	const std::string &identifier,const std::string &ext,const std::shared_ptr<ufile::IFile> &file,util::AssetLoadJobPriority priority
+	const std::string &identifier,const std::string &ext,const std::shared_ptr<ufile::IFile> &file,util::AssetLoadJobPriority priority,
+	const std::function<void(TextureProcessor&)> &initProcessor
 )
 {
 	auto it = m_formatHandlers.find(ext);
@@ -58,6 +59,8 @@ std::optional<util::AssetLoadJobId> msys::TextureLoader::AddJob(
 		return {};
 	handler->SetFile(file);
 	auto processor = std::make_unique<TextureProcessor>(*this,std::move(handler));
+	if(initProcessor)
+		initProcessor(*processor);
 	return IAssetLoader::AddJob(identifier,std::move(processor),priority);
 }
 #pragma optimize("",on)

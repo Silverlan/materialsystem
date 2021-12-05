@@ -20,6 +20,7 @@ namespace msys
 {
 	class ITextureFormatHandler;
 	class TextureLoader;
+	struct TextureAsset;
 	class DLLCMATSYS TextureProcessor
 		: public util::IAssetProcessor
 	{
@@ -44,6 +45,7 @@ namespace msys
 		bool FinalizeImage(prosper::IPrContext &context);
 
 		TextureMipmapMode mipmapMode = TextureMipmapMode::LoadOrGenerate;
+		std::function<void(TextureAsset&,bool)> onLoaded = nullptr;
 		std::unique_ptr<ITextureFormatHandler> handler;
 		std::shared_ptr<prosper::IImage> image;
 		std::shared_ptr<prosper::Texture> texture;

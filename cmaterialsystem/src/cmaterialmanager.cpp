@@ -28,10 +28,13 @@
 #include <VMTFile.h>
 #include "util_vmt.hpp"
 #endif
-
+#pragma optimize("",off)
 CMaterialManager::CMaterialManager(prosper::IPrContext &context)
-	: MaterialManager{},prosper::ContextObject(context),m_textureManager(context)
+	: MaterialManager{},prosper::ContextObject(context)
 {
+	m_textureManager = std::make_unique<msys::TextureManager>(context);
+	m_textureManager->SetRootDirectory("materials");
+
 	context.GetShaderManager().RegisterShader("decompose_cornea",[](prosper::IPrContext &context,const std::string &identifier) {return new msys::ShaderDecomposeCornea(context,identifier);});
 	context.GetShaderManager().RegisterShader("ssbumpmap_to_normalmap",[](prosper::IPrContext &context,const std::string &identifier) {return new msys::ShaderSSBumpMapToNormalMap(context,identifier);});
 	context.GetShaderManager().RegisterShader("source2_generate_tangent_space_normal_map",[](prosper::IPrContext &context,const std::string &identifier) {return new msys::source2::ShaderGenerateTangentSpaceNormalMap(context,identifier);});
@@ -45,14 +48,14 @@ CMaterialManager::CMaterialManager(prosper::IPrContext &context)
 CMaterialManager::~CMaterialManager()
 {}
 
-TextureManager &CMaterialManager::GetTextureManager() {return m_textureManager;}
+msys::TextureManager &CMaterialManager::GetTextureManager() {return *m_textureManager;}
 
 void CMaterialManager::SetShaderHandler(const std::function<void(Material*)> &handler) {m_shaderHandler = handler;}
 std::function<void(Material*)> CMaterialManager::GetShaderHandler() const {return m_shaderHandler;}
 
 void CMaterialManager::Update()
 {
-	m_textureManager.Update();
+	m_textureManager->Poll();
 
 	if(!m_reloadShaderQueue.empty())
 	{
@@ -179,20 +182,16 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 		if(shaderDecomposeCornea)
 		{
 			auto &textureManager = GetTextureManager();
-			TextureManager::LoadInfo loadInfo {};
-			loadInfo.flags = TextureLoadFlags::LoadInstantly;
 
-			std::shared_ptr<void> irisMap = nullptr;
-			if(textureManager.Load(context,irisTexture,loadInfo,&irisMap) == false)
+			auto irisMap = textureManager.LoadTexture(irisTexture);
+			if(irisMap == nullptr)
 				irisMap = textureManager.GetErrorTexture();
 
-			std::shared_ptr<void> corneaMap = nullptr;
-			if(textureManager.Load(context,corneaTexture,loadInfo,&corneaMap) == false)
+			auto corneaMap = textureManager.LoadTexture(corneaTexture);
+			if(corneaMap == nullptr)
 				corneaMap = textureManager.GetErrorTexture();
 
-			auto *pIrisMap = static_cast<Texture*>(irisMap.get());
-			auto *pCorneaMap = static_cast<Texture*>(corneaMap.get());
-			if(pIrisMap && pIrisMap->HasValidVkTexture() && pCorneaMap && pCorneaMap->HasValidVkTexture())
+			if(irisMap && irisMap->HasValidVkTexture() && corneaMap && corneaMap->HasValidVkTexture())
 			{
 				// Prepare output textures (albedo, normal, parallax)
 				prosper::util::ImageCreateInfo imgCreateInfo {};
@@ -203,8 +202,8 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				imgCreateInfo.tiling = prosper::ImageTiling::Optimal;
 				imgCreateInfo.usage = prosper::ImageUsageFlags::ColorAttachmentBit | prosper::ImageUsageFlags::TransferSrcBit;
 
-				imgCreateInfo.width = umath::max(pIrisMap->GetWidth(),pCorneaMap->GetWidth());
-				imgCreateInfo.height = umath::max(pIrisMap->GetHeight(),pCorneaMap->GetHeight());
+				imgCreateInfo.width = umath::max(irisMap->GetWidth(),corneaMap->GetWidth());
+				imgCreateInfo.height = umath::max(irisMap->GetHeight(),corneaMap->GetHeight());
 				auto imgAlbedo = context.CreateImage(imgCreateInfo);
 
 				imgCreateInfo.format = prosper::Format::R32G32B32A32_SFloat;
@@ -221,8 +220,8 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 
 				auto dsg = shaderDecomposeCornea->CreateDescriptorSetGroup(msys::ShaderDecomposeCornea::DESCRIPTOR_SET_TEXTURE.setIndex);
 				auto &ds = *dsg->GetDescriptorSet();
-				auto &vkIrisTex = pIrisMap->GetVkTexture();
-				auto &vkCorneaTex = pCorneaMap->GetVkTexture();
+				auto &vkIrisTex = irisMap->GetVkTexture();
+				auto &vkCorneaTex = corneaMap->GetVkTexture();
 				ds.SetBindingTexture(*vkIrisTex,umath::to_integral(msys::ShaderDecomposeCornea::TextureBinding::IrisMap));
 				ds.SetBindingTexture(*vkCorneaTex,umath::to_integral(msys::ShaderDecomposeCornea::TextureBinding::CorneaMap));
 				auto &setupCmd = context.GetSetupCommandBuffer();
@@ -304,14 +303,12 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 			{
 				auto *baseTexture = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
 				auto &textureManager = GetTextureManager();
-				TextureManager::LoadInfo loadInfo {};
-				loadInfo.flags = TextureLoadFlags::LoadInstantly;
 
-				std::shared_ptr<void> baseTexMap = nullptr;
 				auto &context = GetContext();
-				if(textureManager.Load(context,baseTexture->GetValue(),loadInfo,&baseTexMap))
+				auto baseTexMap = textureManager.LoadTexture(baseTexture->GetValue());
+				if(baseTexMap != nullptr)
 				{
-					auto baseTexName = std::static_pointer_cast<Texture>(baseTexMap)->GetName();
+					auto &baseTexName = baseTexMap->GetName();
 					auto name = MaterialManager::GetRootMaterialLocation() +'/' +baseTexName +".vtf";
 					auto fptr = FileManager::OpenFile(name.c_str(),"rb");
 					if(fptr)
@@ -446,14 +443,9 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 		if(shaderSSBumpMapToNormalMap)
 		{
 			auto &textureManager = GetTextureManager();
-			TextureManager::LoadInfo loadInfo {};
-			loadInfo.flags = TextureLoadFlags::LoadInstantly;
 
-			std::shared_ptr<void> bumpMap = nullptr;
-			textureManager.Load(context,bumpMapTexture,loadInfo,&bumpMap);
-
-			auto *pBumpMap = static_cast<Texture*>(bumpMap.get());
-			if(pBumpMap && pBumpMap->HasValidVkTexture())
+			auto bumpMap = textureManager.LoadTexture(bumpMapTexture);
+			if(bumpMap && bumpMap->HasValidVkTexture())
 			{
 				// Prepare output texture (normal map)
 				prosper::util::ImageCreateInfo imgCreateInfo {};
@@ -464,8 +456,8 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				imgCreateInfo.tiling = prosper::ImageTiling::Optimal;
 				imgCreateInfo.usage = prosper::ImageUsageFlags::ColorAttachmentBit | prosper::ImageUsageFlags::TransferSrcBit;
 
-				imgCreateInfo.width = pBumpMap->GetWidth();
-				imgCreateInfo.height = pBumpMap->GetHeight();
+				imgCreateInfo.width = bumpMap->GetWidth();
+				imgCreateInfo.height = bumpMap->GetHeight();
 				auto imgNormal = context.CreateImage(imgCreateInfo);
 
 				prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
@@ -474,7 +466,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 
 				auto dsg = shaderSSBumpMapToNormalMap->CreateDescriptorSetGroup(msys::ShaderSSBumpMapToNormalMap::DESCRIPTOR_SET_TEXTURE.setIndex);
 				auto &ds = *dsg->GetDescriptorSet();
-				auto &vkBumpMapTex = pBumpMap->GetVkTexture();
+				auto &vkBumpMapTex = bumpMap->GetVkTexture();
 				ds.SetBindingTexture(*vkBumpMapTex,umath::to_integral(msys::ShaderSSBumpMapToNormalMap::TextureBinding::SSBumpMap));
 				auto &setupCmd = context.GetSetupCommandBuffer();
 				if(setupCmd->RecordBeginRenderPass(*rt))
@@ -526,11 +518,11 @@ void CMaterialManager::SetErrorMaterial(Material *mat)
 		auto *diffuse = mat->GetDiffuseMap();
 		if(diffuse != nullptr)
 		{
-			m_textureManager.SetErrorTexture(std::static_pointer_cast<Texture>(diffuse->texture));
+			m_textureManager->SetErrorTexture(std::static_pointer_cast<Texture>(diffuse->texture));
 			return;
 		}
 	}
-	m_textureManager.SetErrorTexture(nullptr);
+	m_textureManager->SetErrorTexture(nullptr);
 }
 
 Material *CMaterialManager::Load(const std::string &path,const std::function<void(Material*)> &onMaterialLoaded,const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded,bool bReload,bool *bFirstTimeError,bool bLoadInstantly)
@@ -607,3 +599,4 @@ Material *CMaterialManager::Load(const std::string &path,bool bReload,bool *bFir
 {
 	return Load(path,nullptr,nullptr,bReload,bFirstTimeError);
 }
+#pragma optimize("",on)

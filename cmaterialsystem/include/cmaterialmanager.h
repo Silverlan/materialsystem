@@ -7,14 +7,16 @@
 
 #include "cmatsysdefinitions.h"
 #include <materialmanager.h>
-#include "texturemanager/texturemanager.h"
+#include "texturemanager/texture_manager2.hpp"
 #include <functional>
+#include <queue>
 #include <prosper_context_object.hpp>
 
 class Texture;
 #pragma warning(push)
 #pragma warning(disable : 4251)
 class CMaterial;
+namespace msys {class TextureManager;};
 class DLLCMATSYS CMaterialManager
 	: public MaterialManager,
 	public prosper::ContextObject
@@ -22,7 +24,7 @@ class DLLCMATSYS CMaterialManager
 private:
 	std::function<void(Material*)> m_shaderHandler;
 	using MaterialManager::CreateMaterial;
-	TextureManager m_textureManager;
+	std::unique_ptr<msys::TextureManager> m_textureManager = nullptr;
 	std::queue<MaterialHandle> m_reloadShaderQueue;
 	virtual Material *CreateMaterial(const std::string *identifier,const std::string &shader,std::shared_ptr<ds::Block> root=nullptr) override;
 #ifndef DISABLE_VMT_SUPPORT
@@ -39,7 +41,7 @@ public:
 	virtual ~CMaterialManager() override;
 	Material *CreateMaterial(const std::string &identifier,const std::string &shader,const std::shared_ptr<ds::Block> &root=nullptr);
 	Material *CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &root=nullptr);
-	TextureManager &GetTextureManager();
+	msys::TextureManager &GetTextureManager();
 	void Update();
 	virtual void SetErrorMaterial(Material *mat) override;
 	void SetShaderHandler(const std::function<void(Material*)> &handler);

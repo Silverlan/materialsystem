@@ -25,6 +25,7 @@ namespace ds
 #pragma warning(push)
 #pragma warning(disable : 4251)
 struct SpriteSheetAnimation;
+namespace msys {class TextureManager;};
 class DLLCMATSYS CMaterial
 	: public Material
 {
@@ -68,7 +69,7 @@ protected:
 	void ClearDescriptorSets();
 	void InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::function<void(void)> &onAllTexturesLoaded=nullptr,const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded=nullptr,TextureLoadFlags loadFlags=TextureLoadFlags::None);
 	friend CMaterialManager;
-	TextureManager &GetTextureManager();
+	msys::TextureManager &GetTextureManager();
 private:
 	void UpdatePrimaryShader();
 	struct ShaderHash
