@@ -17,6 +17,8 @@
 #include <fsys/filesystem.h>
 #include <fsys/ifile.hpp>
 #pragma optimize("",off)
+// #define ENABLE_VERBOSE_OUTPUT
+
 bool msys::TextureAsset::IsInUse() const {return texture.use_count() > 1;}
 
 /////////////
@@ -180,6 +182,13 @@ msys::TextureAsset *msys::TextureManager::Poll(std::optional<util::AssetLoadJobI
 	do
 	{
 		m_loader->Poll([this,&untilJob,&targetAsset](const util::AssetLoadJob &job) {
+#ifdef ENABLE_VERBOSE_OUTPUT
+			auto dtQueue = job.completionTime -job.queueStartTime;
+			auto dtTask = job.completionTime -job.taskStartTime;
+			std::cout<<job.identifier<<" has been loaded!"<<std::endl;
+			std::cout<<"Time since job has been queued to completion: "<<(dtQueue.count() /1'000'000'000.0)<<std::endl;
+			std::cout<<"Time since task has been started to completion: "<<(dtTask.count() /1'000'000'000.0)<<std::endl;
+#endif
 			auto &texProcessor = *static_cast<TextureProcessor*>(job.processor.get());
 			auto texture = texProcessor.texture;
 
@@ -205,6 +214,10 @@ msys::TextureAsset *msys::TextureManager::Poll(std::optional<util::AssetLoadJobI
 			if(texProcessor.onLoaded)
 				texProcessor.onLoaded(asset.get());
 		},[&untilJob,&targetAsset](const util::AssetLoadJob &job) {
+#ifdef ENABLE_VERBOSE_OUTPUT
+			std::cout<<job.identifier<<" has failed!"<<std::endl;
+#endif
+
 			auto &texProcessor = *static_cast<TextureProcessor*>(job.processor.get());
 			if(untilJob.has_value() && job.jobId == *untilJob)
 			{

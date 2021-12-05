@@ -15,20 +15,11 @@
 
 bool msys::TextureProcessor::PrepareImage(prosper::IPrContext &context)
 {
-	return InitializeProsperImage(context) && InitializeImageBuffers(context);
+	return InitializeProsperImage(context) && InitializeImageBuffers(context) && InitializeTexture(context);
 }
 
-bool msys::TextureProcessor::FinalizeImage(prosper::IPrContext &context)
+bool msys::TextureProcessor::InitializeTexture(prosper::IPrContext &context)
 {
-	if(CopyBuffersToImage(context) == false)
-		return false;
-
-	if(targetGpuConversionFormat.has_value() && ConvertImageFormat(context,*targetGpuConversionFormat) == false)
-		return false;
-
-	if(m_generateMipmaps && GenerateMipmaps(context) == false)
-		return false;
-
 	auto &inputTexInfo = handler->GetInputTextureInfo();
 	auto hasMipmaps = image->GetMipmapCount() > 0;
 	prosper::util::TextureCreateInfo createInfo {};
@@ -41,6 +32,21 @@ bool msys::TextureProcessor::FinalizeImage(prosper::IPrContext &context)
 	imgViewCreateInfo.swizzleAlpha = swizzle.at(3);
 	createInfo.flags |= prosper::util::TextureCreateInfo::Flags::CreateImageViewForEachLayer;
 	texture = context.CreateTexture(createInfo,*image,imgViewCreateInfo);
+}
+
+bool msys::TextureProcessor::FinalizeImage(prosper::IPrContext &context)
+{
+	// These have to be executed from the main thread due to the use of a
+	// primary command buffer
+	if(CopyBuffersToImage(context) == false)
+		return false;
+
+	if(targetGpuConversionFormat.has_value() && ConvertImageFormat(context,*targetGpuConversionFormat) == false)
+		return false;
+
+	if(m_generateMipmaps && GenerateMipmaps(context) == false)
+		return false;
+
 	return true;
 }
 
@@ -108,6 +114,18 @@ bool msys::TextureProcessor::InitializeProsperImage(prosper::IPrContext &context
 		return false;
 	img->SetDebugName("texture_asset_img");
 	image = img;
+
+	if(targetGpuConversionFormat.has_value())
+	{
+		// Image needs to be converted
+		auto createInfo = image->GetCreateInfo();
+		createInfo.format = *targetGpuConversionFormat;
+		createInfo.tiling = prosper::ImageTiling::Optimal;
+		createInfo.postCreateLayout = prosper::ImageLayout::TransferDstOptimal;
+		createInfo.usage |= prosper::ImageUsageFlags::TransferDstBit;
+		convertedImage = context.CreateImage(createInfo);
+	}
+
 	return true;
 }
 
@@ -181,19 +199,14 @@ bool msys::TextureProcessor::ConvertImageFormat(prosper::IPrContext &context,pro
 {
 	auto &setupCmd = context.GetSetupCommandBuffer();
 
-	// Image needs to be converted
-	auto createInfo = image->GetCreateInfo();
-	createInfo.format = targetFormat;
-	createInfo.tiling = prosper::ImageTiling::Optimal;
-	createInfo.postCreateLayout = prosper::ImageLayout::TransferDstOptimal;
-
-	auto convertedImage = image->Copy(*setupCmd,createInfo);
 	setupCmd->RecordImageBarrier(*image,prosper::ImageLayout::ShaderReadOnlyOptimal,prosper::ImageLayout::TransferSrcOptimal);
 	setupCmd->RecordBlitImage({},*image,*convertedImage);
 	setupCmd->RecordImageBarrier(*convertedImage,prosper::ImageLayout::TransferDstOptimal,prosper::ImageLayout::ShaderReadOnlyOptimal);
 
 	context.FlushSetupCommandBuffer();
+
 	image = convertedImage;
+	convertedImage = nullptr;
 	return true;
 }
 bool msys::TextureProcessor::GenerateMipmaps(prosper::IPrContext &context)

@@ -37,6 +37,7 @@ namespace msys
 		virtual bool Finalize() override;
 		bool InitializeProsperImage(prosper::IPrContext &context);
 		bool InitializeImageBuffers(prosper::IPrContext &context);
+		bool InitializeTexture(prosper::IPrContext &context);
 		bool CopyBuffersToImage(prosper::IPrContext &context);
 		bool ConvertImageFormat(prosper::IPrContext &context,prosper::Format targetFormat);
 		bool GenerateMipmaps(prosper::IPrContext &context);
@@ -49,6 +50,7 @@ namespace msys
 		std::function<void(TextureAsset*)> onLoaded = nullptr;
 		std::unique_ptr<ITextureFormatHandler> handler;
 		std::shared_ptr<prosper::IImage> image;
+		std::shared_ptr<prosper::IImage> convertedImage;
 		std::shared_ptr<prosper::Texture> texture;
 		prosper::Format imageFormat = prosper::Format::Unknown;
 		uint32_t mipmapCount = 1;
