@@ -20,10 +20,12 @@ bool msys::TextureProcessor::PrepareImage(prosper::IPrContext &context)
 
 bool msys::TextureProcessor::InitializeTexture(prosper::IPrContext &context)
 {
-	auto &inputTexInfo = handler->GetInputTextureInfo();
+	auto &handler = GetHandler();
+	auto &loader = GetLoader();
+	auto &inputTexInfo = handler.GetInputTextureInfo();
 	auto hasMipmaps = image->GetMipmapCount() > 0;
 	prosper::util::TextureCreateInfo createInfo {};
-	createInfo.sampler = hasMipmaps ? m_loader.GetTextureSampler() : m_loader.GetTextureSamplerNoMipmap();
+	createInfo.sampler = hasMipmaps ? loader.GetTextureSampler() : loader.GetTextureSamplerNoMipmap();
 	auto &swizzle = inputTexInfo.swizzle;
 	prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
 	imgViewCreateInfo.swizzleRed = swizzle.at(0);
@@ -33,6 +35,9 @@ bool msys::TextureProcessor::InitializeTexture(prosper::IPrContext &context)
 	createInfo.flags |= prosper::util::TextureCreateInfo::Flags::CreateImageViewForEachLayer;
 	texture = context.CreateTexture(createInfo,*image,imgViewCreateInfo);
 }
+
+msys::TextureLoader &msys::TextureProcessor::GetLoader() {return static_cast<TextureLoader&>(m_loader);}
+msys::ITextureFormatHandler &msys::TextureProcessor::GetHandler() {return static_cast<ITextureFormatHandler&>(*handler);}
 
 bool msys::TextureProcessor::FinalizeImage(prosper::IPrContext &context)
 {
@@ -50,24 +55,27 @@ bool msys::TextureProcessor::FinalizeImage(prosper::IPrContext &context)
 	return true;
 }
 
-msys::TextureProcessor::TextureProcessor(TextureLoader &loader,std::unique_ptr<ITextureFormatHandler> &&handler)
-	: handler{std::move(handler)},m_loader{loader}
+msys::TextureProcessor::TextureProcessor(util::AssetFormatLoader &loader,std::unique_ptr<util::IAssetFormatHandler> &&handler)
+	: util::FileAssetProcessor{loader,std::move(handler)}
 {}
 
 bool msys::TextureProcessor::Load()
 {
-	if(!handler->LoadData())
+	if(!static_cast<msys::ITextureFormatHandler&>(*handler).LoadData())
 		return false;
-	return !m_loader.DoesAllowMultiThreadedGpuResourceAllocation() || PrepareImage(m_loader.GetContext());
+	auto &loader = GetLoader();
+	return !loader.DoesAllowMultiThreadedGpuResourceAllocation() || PrepareImage(loader.GetContext());
 }
 bool msys::TextureProcessor::Finalize()
 {
-	return (m_loader.DoesAllowMultiThreadedGpuResourceAllocation() || PrepareImage(m_loader.GetContext())) && FinalizeImage(m_loader.GetContext());
+	auto &loader = GetLoader();
+	return (loader.DoesAllowMultiThreadedGpuResourceAllocation() || PrepareImage(loader.GetContext())) && FinalizeImage(loader.GetContext());
 }
 
 bool msys::TextureProcessor::InitializeProsperImage(prosper::IPrContext &context)
 {
-	auto &inputTextureInfo = handler->GetInputTextureInfo();
+	auto &handler = GetHandler();
+	auto &inputTextureInfo = handler.GetInputTextureInfo();
 	imageFormat = inputTextureInfo.format;
 	const auto width = inputTextureInfo.width;
 	const auto height = inputTextureInfo.height;
@@ -132,7 +140,8 @@ bool msys::TextureProcessor::InitializeProsperImage(prosper::IPrContext &context
 bool msys::TextureProcessor::InitializeImageBuffers(prosper::IPrContext &context)
 {
 	// Initialize image data as buffers, then copy to output image
-	auto &inputTextureInfo = handler->GetInputTextureInfo();
+	auto &handler = GetHandler();
+	auto &inputTextureInfo = handler.GetInputTextureInfo();
 	auto numLayers = inputTextureInfo.layerCount;
 	auto mipmapCount = inputTextureInfo.mipmapCount;
 	buffers.reserve(numLayers *mipmapCount);
@@ -145,7 +154,7 @@ bool msys::TextureProcessor::InitializeImageBuffers(prosper::IPrContext &context
 			size_t dataSize;
 			void *data;
 
-			if(handler->GetDataPtr(iLayer,iMipmap,&data,dataSize) == false || data == nullptr)
+			if(handler.GetDataPtr(iLayer,iMipmap,&data,dataSize) == false || data == nullptr)
 				continue;
 
 			if(cpuImageConverter)

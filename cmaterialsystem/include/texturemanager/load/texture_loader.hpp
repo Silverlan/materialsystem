@@ -6,7 +6,8 @@
 #define __MSYS_TEXTURE_LOADER_HPP__
 
 #include "cmatsysdefinitions.h"
-#include <sharedutils/asset_loader/asset_loader.hpp>
+#include "texturemanager/load/texture_processor.hpp"
+#include <sharedutils/asset_loader/asset_format_loader.hpp>
 #include <sharedutils/ctpl_stl.h>
 #include <string>
 #include <memory>
@@ -15,24 +16,17 @@
 
 #undef AddJob
 
-namespace prosper {class IPrContext; class ISampler; namespace util {struct SamplerCreateInfo;};};
+namespace prosper {class IPrContext; class ISampler; namespace util {struct SamplerCreateInfo;}; class IAssetProcessor;};
 namespace ufile {struct IFile;};
 enum class TextureMipmapMode : int32_t;
 namespace msys
 {
 	DLLCMATSYS void setup_sampler_mipmap_mode(prosper::util::SamplerCreateInfo &createInfo,TextureMipmapMode mode);
-	class ITextureFormatHandler;
-	class TextureProcessor;
 	class DLLCMATSYS TextureLoader
-		: public util::IAssetLoader
+		: public util::TAssetFormatLoader<TextureProcessor>
 	{
 	public:
-		TextureLoader(prosper::IPrContext &context);
-		void RegisterFormatHandler(const std::string &ext,const std::function<std::unique_ptr<ITextureFormatHandler>()> &factory);
-		std::optional<util::AssetLoadJobId> AddJob(
-			const std::string &identifier,const std::string &ext,const std::shared_ptr<ufile::IFile> &file,util::AssetLoadJobPriority priority=0,
-			const std::function<void(TextureProcessor&)> &initProcessor=nullptr
-		);
+		TextureLoader(util::IAssetManager &assetManager,prosper::IPrContext &context);
 		void SetAllowMultiThreadedGpuResourceAllocation(bool b) {m_allowMultiThreadedGpuResourceAllocation = b;}
 		bool DoesAllowMultiThreadedGpuResourceAllocation() const {return m_allowMultiThreadedGpuResourceAllocation;}
 		prosper::IPrContext &GetContext() {return m_context;}
@@ -41,7 +35,6 @@ namespace msys
 		const std::shared_ptr<prosper::ISampler> &GetTextureSamplerNoMipmap() const {return m_textureSamplerNoMipmap;}
 	private:
 		bool m_allowMultiThreadedGpuResourceAllocation = true;
-		std::unordered_map<std::string,std::function<std::unique_ptr<ITextureFormatHandler>()>> m_formatHandlers;
 		prosper::IPrContext &m_context;
 
 		std::shared_ptr<prosper::ISampler> m_textureSampler;

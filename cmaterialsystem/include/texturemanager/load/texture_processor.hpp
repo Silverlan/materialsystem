@@ -7,7 +7,8 @@
 
 #include "cmatsysdefinitions.h"
 #include "texture_type.h"
-#include <sharedutils/asset_loader/asset_processor.hpp>
+#include "texturemanager/load/texture_format_handler.hpp"
+#include <sharedutils/asset_loader/file_asset_processor.hpp>
 #include <prosper_enums.hpp>
 #include <cinttypes>
 #include <optional>
@@ -16,13 +17,14 @@
 
 namespace prosper {class IBuffer; class IPrContext; class IImage; class Texture; class ISampler;};
 namespace uimg {class ImageBuffer;};
+namespace util {struct Asset; class AssetFormatLoader; class IAssetFormatHandler;};
 namespace msys
 {
-	class ITextureFormatHandler;
 	class TextureLoader;
 	struct TextureAsset;
+
 	class DLLCMATSYS TextureProcessor
-		: public util::IAssetProcessor
+		: public util::FileAssetProcessor
 	{
 	public:
 		struct BufferInfo
@@ -32,7 +34,7 @@ namespace msys
 			uint32_t mipmapIndex = 0u;
 		};
 
-		TextureProcessor(TextureLoader &loader,std::unique_ptr<ITextureFormatHandler> &&handler);
+		TextureProcessor(util::AssetFormatLoader &loader,std::unique_ptr<util::IAssetFormatHandler> &&handler);
 		virtual bool Load() override;
 		virtual bool Finalize() override;
 		bool InitializeProsperImage(prosper::IPrContext &context);
@@ -45,10 +47,7 @@ namespace msys
 		bool PrepareImage(prosper::IPrContext &context);
 		bool FinalizeImage(prosper::IPrContext &context);
 
-		std::shared_ptr<void> userData = nullptr;
 		TextureMipmapMode mipmapMode = TextureMipmapMode::LoadOrGenerate;
-		std::function<void(TextureAsset*)> onLoaded = nullptr;
-		std::unique_ptr<ITextureFormatHandler> handler;
 		std::shared_ptr<prosper::IImage> image;
 		std::shared_ptr<prosper::IImage> convertedImage;
 		std::shared_ptr<prosper::Texture> texture;
@@ -58,9 +57,11 @@ namespace msys
 		std::function<void(const void*,std::shared_ptr<uimg::ImageBuffer>&,uint32_t,uint32_t)> cpuImageConverter = nullptr;
 		std::vector<BufferInfo> buffers {};
 	private:
+		TextureLoader &GetLoader();
+		ITextureFormatHandler &GetHandler();
+
 		bool m_generateMipmaps = false;
 		std::vector<std::shared_ptr<uimg::ImageBuffer>> m_tmpImgBuffers {};
-		TextureLoader &m_loader;
 	};
 };
 

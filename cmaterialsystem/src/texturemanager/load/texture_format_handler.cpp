@@ -4,7 +4,8 @@
 
 #include "texturemanager/load/texture_format_handler.hpp"
 
-msys::ITextureFormatHandler::ITextureFormatHandler()
+msys::ITextureFormatHandler::ITextureFormatHandler(util::IAssetManager &assetManager)
+	: util::IAssetFormatHandler{assetManager}
 {}
 
 bool msys::ITextureFormatHandler::LoadData() {return LoadData(m_inputTextureInfo);}

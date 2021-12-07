@@ -92,7 +92,8 @@ static vlUInt vtf_read_tell(vlVoid *handle)
 	return f.Tell();
 }
 
-msys::TextureFormatHandlerVtf::TextureFormatHandlerVtf()
+msys::TextureFormatHandlerVtf::TextureFormatHandlerVtf(util::IAssetManager &assetManager)
+	: ITextureFormatHandler{assetManager}
 {
 	static auto vtfProcInitialized = false;
 	if(!vtfProcInitialized)

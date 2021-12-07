@@ -6,15 +6,17 @@
 #define __MSYS_TEXTURE_FORMAT_HANDLER_HPP__
 
 #include "cmatsysdefinitions.h"
+#include <sharedutils/asset_loader/asset_format_handler.hpp>
 #include <cinttypes>
 #include <prosper_structs.hpp>
+#include <fsys/ifile.hpp>
 
 #undef AddJob
 
-namespace ufile {struct IFile;};
 namespace msys
 {
 	class DLLCMATSYS ITextureFormatHandler
+		: public util::IAssetFormatHandler
 	{
 	public:
 		struct InputTextureInfo
@@ -42,11 +44,9 @@ namespace msys
 		bool LoadData();
 		virtual bool GetDataPtr(uint32_t layer,uint32_t mipmapIdx,void **outPtr,size_t &outSize)=0;
 		const InputTextureInfo &GetInputTextureInfo() const {return m_inputTextureInfo;}
-		void SetFile(const std::shared_ptr<ufile::IFile> &file) {m_file = file;}
 	protected:
-		ITextureFormatHandler();
+		ITextureFormatHandler(util::IAssetManager &assetManager);
 		virtual bool LoadData(InputTextureInfo &texInfo)=0;
-		std::shared_ptr<ufile::IFile> m_file = nullptr;
 		InputTextureInfo m_inputTextureInfo;
 	};
 };

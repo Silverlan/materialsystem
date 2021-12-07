@@ -183,11 +183,11 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 		{
 			auto &textureManager = GetTextureManager();
 
-			auto irisMap = textureManager.LoadTexture(irisTexture);
+			auto irisMap = textureManager.LoadAsset(irisTexture);
 			if(irisMap == nullptr)
 				irisMap = textureManager.GetErrorTexture();
 
-			auto corneaMap = textureManager.LoadTexture(corneaTexture);
+			auto corneaMap = textureManager.LoadAsset(corneaTexture);
 			if(corneaMap == nullptr)
 				corneaMap = textureManager.GetErrorTexture();
 
@@ -305,7 +305,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				auto &textureManager = GetTextureManager();
 
 				auto &context = GetContext();
-				auto baseTexMap = textureManager.LoadTexture(baseTexture->GetValue());
+				auto baseTexMap = textureManager.LoadAsset(baseTexture->GetValue());
 				if(baseTexMap != nullptr)
 				{
 					auto &baseTexName = baseTexMap->GetName();
@@ -444,7 +444,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 		{
 			auto &textureManager = GetTextureManager();
 
-			auto bumpMap = textureManager.LoadTexture(bumpMapTexture);
+			auto bumpMap = textureManager.LoadAsset(bumpMapTexture);
 			if(bumpMap && bumpMap->HasValidVkTexture())
 			{
 				// Prepare output texture (normal map)

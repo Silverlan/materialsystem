@@ -262,21 +262,21 @@ void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &
 		auto &context = GetContext();
 
 		texInfo.texture = nullptr;
-		msys::TextureLoadInfo loadInfo {};
-		loadInfo.mipmapMode = mipmapMode;
+		auto loadInfo = std::make_unique<msys::TextureLoadInfo>();
+		loadInfo->mipmapMode = mipmapMode;
 		if(!umath::is_flag_set(loadFlags,TextureLoadFlags::LoadInstantly))
 		{
-			textureManager.PreloadTexture(texInfo.name,loadInfo);
+			textureManager.PreloadAsset(texInfo.name,std::move(loadInfo));
 			return;
 		}
 		if(callbackInfo && callbackInfo->onload.IsValid())
 		{
-			loadInfo.onLoaded = [callbackInfo](msys::TextureAsset &asset) {
+			loadInfo->onLoaded = [callbackInfo](util::Asset &asset) {
 				if(callbackInfo->onload.IsValid())
-					asset.texture->CallOnLoaded(callbackInfo->onload);
+					msys::TextureManager::GetAssetObject(asset)->CallOnLoaded(callbackInfo->onload);
 			};
 		}
-		auto tex = textureManager.LoadTexture(texInfo.name,loadInfo);
+		auto tex = textureManager.LoadAsset(texInfo.name,std::move(loadInfo));
 		if(tex)
 		{
 			auto &vkTex = tex->GetVkTexture();

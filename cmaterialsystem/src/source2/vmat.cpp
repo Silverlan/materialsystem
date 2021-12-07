@@ -32,7 +32,7 @@ static std::shared_ptr<prosper::Texture> load_texture(CMaterialManager &matManag
 	auto &context = matManager.GetContext();
 	if(reload)
 		textureManager.RemoveFromCache(texPath);
-	auto map = textureManager.LoadTexture(texPath);
+	auto map = textureManager.LoadAsset(texPath);
 	if(map == nullptr || map->HasValidVkTexture() == false)
 		return nullptr;
 	return map->GetVkTexture();
@@ -84,7 +84,7 @@ bool CMaterialManager::InitializeVMatData(
 
 				std::shared_ptr<void> normalMap = nullptr;
 				auto metalnessReflectancePath = vmat::get_vmat_texture_path(*metalnessMap).GetString();
-				auto pMetalnessReflectanceMap = textureManager.LoadTexture(metalnessReflectancePath);
+				auto pMetalnessReflectanceMap = textureManager.LoadAsset(metalnessReflectancePath);
 				if(pMetalnessReflectanceMap && pMetalnessReflectanceMap->HasValidVkTexture())
 				{
 					prosper::util::ImageCreateInfo imgCreateInfo {};
@@ -345,7 +345,7 @@ bool CMaterialManager::InitializeVMatData(
 				{
 					auto &textureManager = GetTextureManager();
 
-					auto pNormalMap = textureManager.LoadTexture(normalMapPath);
+					auto pNormalMap = textureManager.LoadAsset(normalMapPath);
 					if(pNormalMap && pNormalMap->HasValidVkTexture())
 					{
 						prosper::util::ImageCreateInfo imgCreateInfo {};

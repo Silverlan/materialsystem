@@ -30,8 +30,8 @@ void msys::setup_sampler_mipmap_mode(prosper::util::SamplerCreateInfo &createInf
 	}
 }
 
-msys::TextureLoader::TextureLoader(prosper::IPrContext &context)
-	: m_context{context}
+msys::TextureLoader::TextureLoader(util::IAssetManager &assetManager,prosper::IPrContext &context)
+	: util::TAssetFormatLoader<TextureProcessor>{assetManager},m_context{context}
 {
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
 	setup_sampler_mipmap_mode(samplerCreateInfo,TextureMipmapMode::Load);
@@ -40,27 +40,5 @@ msys::TextureLoader::TextureLoader(prosper::IPrContext &context)
 	samplerCreateInfo = {};
 	setup_sampler_mipmap_mode(samplerCreateInfo,TextureMipmapMode::Ignore);
 	m_textureSamplerNoMipmap = context.CreateSampler(samplerCreateInfo);
-}
-void msys::TextureLoader::RegisterFormatHandler(const std::string &ext,const std::function<std::unique_ptr<ITextureFormatHandler>()> &factory)
-{
-	m_formatHandlers[ext] = factory;
-}
-
-std::optional<util::AssetLoadJobId> msys::TextureLoader::AddJob(
-	const std::string &identifier,const std::string &ext,const std::shared_ptr<ufile::IFile> &file,util::AssetLoadJobPriority priority,
-	const std::function<void(TextureProcessor&)> &initProcessor
-)
-{
-	auto it = m_formatHandlers.find(ext);
-	if(it == m_formatHandlers.end())
-		return {};
-	auto handler = it->second();
-	if(!handler)
-		return {};
-	handler->SetFile(file);
-	auto processor = std::make_unique<TextureProcessor>(*this,std::move(handler));
-	if(initProcessor)
-		initProcessor(*processor);
-	return IAssetLoader::AddJob(identifier,std::move(processor),priority);
 }
 #pragma optimize("",on)
