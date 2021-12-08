@@ -5,6 +5,7 @@
 #include "material.h"
 #include "material_copy.hpp"
 #include "materialmanager.h"
+#include "material_manager2.hpp"
 #include <sharedutils/alpha_mode.hpp>
 #include <sharedutils/util_shaderinfo.hpp>
 #include <sstream>
@@ -15,8 +16,6 @@
 #include <sharedutils/util_path.hpp>
 #include <datasystem_color.h>
 #include <udm.hpp>
-
-DEFINE_BASE_HANDLE(DLLMATSYS,Material,Material);
 
 #undef CreateFile
 
@@ -35,38 +34,35 @@ decltype(Material::WRINKLE_STRETCH_MAP_IDENTIFIER) Material::WRINKLE_STRETCH_MAP
 decltype(Material::WRINKLE_COMPRESS_MAP_IDENTIFIER) Material::WRINKLE_COMPRESS_MAP_IDENTIFIER = "wrinkle_compress_map";
 decltype(Material::EXPONENT_MAP_IDENTIFIER) Material::EXPONENT_MAP_IDENTIFIER = "exponent_map";
 
-Material *Material::Create(MaterialManager &manager)
+std::shared_ptr<Material> Material::Create(msys::MaterialManager &manager)
 {
-	auto *mat = new Material{manager};
+	auto mat = std::shared_ptr<Material>{new Material{manager}};
 	mat->Reset();
 	return mat;
 }
-Material *Material::Create(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data)
+std::shared_ptr<Material> Material::Create(msys::MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data)
 {
-	auto *mat = new Material{manager,shaderInfo,data};
+	auto mat = std::shared_ptr<Material>{new Material{manager,shaderInfo,data}};
 	mat->Initialize(shaderInfo,data);
 	return mat;
 }
-Material *Material::Create(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
+std::shared_ptr<Material> Material::Create(msys::MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
 {
-	auto *mat = new Material{manager,shader,data};
+	auto mat = std::shared_ptr<Material>{new Material{manager,shader,data}};
 	mat->Initialize(shader,data);
 	return mat;
 }
-Material::Material(MaterialManager &manager)
-	: m_handle(new PtrMaterial(this)),m_data(nullptr),m_shader(nullptr),m_manager(manager)
+Material::Material(msys::MaterialManager &manager)
+	: m_data(nullptr),m_shader(nullptr),m_manager(manager)
 {}
 
-Material::Material(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data)
+Material::Material(msys::MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data)
 	: Material(manager)
 {}
 
-Material::Material(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
+Material::Material(msys::MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
 	: Material(manager)
 {}
-MaterialHandle Material::GetHandle() {return m_handle;}
-
-void Material::Remove() {delete this;}
 
 void Material::Reset()
 {
@@ -138,7 +134,6 @@ void Material::SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInf
 
 Material::~Material()
 {
-	m_handle.Invalidate();
 	for(auto &hCb : m_callOnLoaded)
 	{
 		if(hCb.IsValid() == true)
@@ -146,10 +141,8 @@ Material::~Material()
 	}
 }
 
-Material *Material::Copy() const {return Copy<Material>();}
-
 bool Material::IsValid() const {return (m_data != nullptr) ? true : false;}
-MaterialManager &Material::GetManager() const {return m_manager;}
+msys::MaterialManager &Material::GetManager() const {return m_manager;}
 void Material::SetLoaded(bool b)
 {
 	if(umath::is_flag_set(m_stateFlags,StateFlags::ExecutingOnLoadCallbacks))
@@ -300,7 +293,7 @@ std::optional<std::string> Material::GetAbsolutePath() const
 	auto name = const_cast<Material*>(this)->GetName();
 	if(name.empty())
 		return {};
-	std::string absPath = GetManager().GetRootMaterialLocation() +"\\";
+	std::string absPath = GetManager().GetRootDirectory().GetString() +"\\";
 	absPath += name;
 	ufile::remove_extension_from_filename(absPath,g_knownMaterialFormats);
 	absPath += ".wmi";
@@ -313,7 +306,7 @@ bool Material::SaveLegacy() const
 	auto name = const_cast<Material*>(this)->GetName();
 	if(name.empty())
 		return false;
-	std::string absPath = GetManager().GetRootMaterialLocation() +"\\";
+	std::string absPath = GetManager().GetRootDirectory().GetString() +"\\";
 	absPath += name;
 	ufile::remove_extension_from_filename(absPath,g_knownMaterialFormats);
 	absPath += ".wmi";
@@ -443,6 +436,23 @@ const std::shared_ptr<ds::Block> &Material::GetDataBlock() const
 {
 	static std::shared_ptr<ds::Block> nptr = nullptr;
 	return (m_data != nullptr) ? m_data : nptr;
+}
+
+msys::MaterialHandle Material::GetHandle() {return shared_from_this();}
+
+std::shared_ptr<Material> Material::Copy() const
+{
+	std::shared_ptr<Material> r = nullptr;
+	if(!IsValid())
+		r = GetManager().CreateMaterial("pbr",nullptr);
+	else if(m_shaderInfo.expired() == false)
+		r = GetManager().CreateMaterial(m_shaderInfo->GetIdentifier(),std::shared_ptr<ds::Block>(m_data->Copy()));
+	else
+		r = GetManager().CreateMaterial(*m_shader,std::shared_ptr<ds::Block>(m_data->Copy()));
+	if(IsLoaded())
+		r->SetLoaded(true);
+	r->m_stateFlags = m_stateFlags;
+	return r;
 }
 
 std::ostream &operator<<(std::ostream &out,const Material &o)

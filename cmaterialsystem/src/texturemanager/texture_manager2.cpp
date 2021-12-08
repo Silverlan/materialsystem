@@ -29,8 +29,11 @@ msys::TextureManager::TextureManager(prosper::IPrContext &context)
 	: m_context{context}
 {
 	auto fileHandler = std::make_unique<util::AssetFileHandler>();
-	fileHandler->open = [](const std::string &path) -> std::unique_ptr<ufile::IFile> {
-		auto fp = filemanager::open_file(path,filemanager::FileMode::Binary | filemanager::FileMode::Read);
+	fileHandler->open = [](const std::string &path,util::AssetFormatType formatType) -> std::unique_ptr<ufile::IFile> {
+		auto openMode = filemanager::FileMode::Read;
+		if(formatType == util::AssetFormatType::Binary)
+			openMode |= filemanager::FileMode::Binary;
+		auto fp = filemanager::open_file(path,openMode);
 		if(!fp)
 			return nullptr;
 		return std::make_unique<fsys::File>(fp);
@@ -128,10 +131,10 @@ void msys::TextureManager::Test()
 	auto t = std::chrono::high_resolution_clock::now();
 	for(;;)
 	{
-		GetLoader().Poll([&numComplete,&t](const util::AssetLoadJob &job,util::IAssetLoader::AssetLoadResult result) {
+		GetLoader().Poll([&numComplete,&t](const util::AssetLoadJob &job,util::AssetLoadResult result) {
 			switch(result)
 			{
-			case util::IAssetLoader::AssetLoadResult::Succeeded:
+			case util::AssetLoadResult::Succeeded:
 			{
 				auto dtQueue = job.completionTime -job.queueStartTime;
 				auto dtTask = job.completionTime -job.taskStartTime;

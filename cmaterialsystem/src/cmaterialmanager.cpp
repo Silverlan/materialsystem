@@ -99,7 +99,7 @@ Material *CMaterialManager::CreateMaterial(const std::string *identifier,const s
 		auto dataSettings = CreateDataSettings();
 		root = std::make_shared<ds::Block>(*dataSettings);
 	}
-	auto *mat = CreateMaterial<CMaterial>(shaderManager.PreRegisterShader(shader),root); // Claims ownership of 'root' and frees the memory at destruction
+	CMaterial *mat = nullptr; // auto *mat = CreateMaterial<CMaterial>(shaderManager.PreRegisterShader(shader),root); // Claims ownership of 'root' and frees the memory at destruction
 	mat->SetLoaded(true);
 	mat->SetName(matId);
 	AddMaterial(matId,*mat);
@@ -108,7 +108,10 @@ Material *CMaterialManager::CreateMaterial(const std::string *identifier,const s
 Material *CMaterialManager::CreateMaterial(const std::string &identifier,const std::string &shader,const std::shared_ptr<ds::Block> &root) {return CreateMaterial(&identifier,shader,root);}
 Material *CMaterialManager::CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &root) {return CreateMaterial(nullptr,shader,root);}
 
-void CMaterialManager::MarkForReload(CMaterial &mat) {m_reloadShaderQueue.push(mat.GetHandle());}
+void CMaterialManager::MarkForReload(CMaterial &mat)
+{
+	//m_reloadShaderQueue.push(mat.GetHandle());
+}
 
 void CMaterialManager::ReloadMaterialShaders()
 {
@@ -543,7 +546,7 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 			return nullptr;
 		if(bFirstTimeError != nullptr)
 			*bFirstTimeError = true;
-		info.material = info.material->Copy(); // Copy error material
+		//info.material = info.material->Copy(); // Copy error material
 		bCopied = true;
 		//bInitializeTextures = true; // TODO: Do we need to do this? (Error material should already be initialized); Callbacks will still have to be called!
 	}
@@ -552,7 +555,7 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 		info.material->SetErrorFlag(false);
 		if(bReload == false || !info.material->IsLoaded()) // Can't reload if material hasn't even been fully loaded yet
 		{
-			if(!static_cast<CMaterial*>(info.material)->HaveTexturesBeenLoaded())
+			/*if(!static_cast<CMaterial*>(info.material)->HaveTexturesBeenLoaded())
 			{
 				auto *mat = info.material;
 				auto texLoadFlags = TextureLoadFlags::None;
@@ -567,7 +570,7 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 					if(onTextureLoaded != nullptr)
 						onTextureLoaded(texture);
 				},texLoadFlags);
-			}
+			}*/
 			return info.material;
 		}
 		info.material->Initialize(shaderManager.PreRegisterShader(info.shader),info.root);
@@ -575,7 +578,7 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 	}
 	else // Failed to load material
 	{
-		info.material = CreateMaterial<CMaterial>(shaderManager.PreRegisterShader(info.shader),info.root);
+		//info.material = CreateMaterial<CMaterial>(shaderManager.PreRegisterShader(info.shader),info.root);
 		bInitializeTextures = true;
 	}
 	info.material->SetName(info.identifier);
@@ -587,7 +590,7 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 		auto texLoadFlags = TextureLoadFlags::None;
 		umath::set_flag(texLoadFlags,TextureLoadFlags::LoadInstantly,bLoadInstantly);
 		umath::set_flag(texLoadFlags,TextureLoadFlags::Reload,bReload);
-		static_cast<CMaterial*>(info.material)->InitializeTextures(info.material->GetDataBlock(),[this,onMaterialLoaded,mat]() {
+		/*static_cast<CMaterial*>(info.material)->InitializeTextures(info.material->GetDataBlock(),[this,onMaterialLoaded,mat]() {
 			mat->SetLoaded(true);
 			if(onMaterialLoaded != nullptr)
 				onMaterialLoaded(mat);
@@ -596,7 +599,7 @@ Material *CMaterialManager::Load(const std::string &path,const std::function<voi
 		},[onTextureLoaded](std::shared_ptr<Texture> texture) {
 			if(onTextureLoaded != nullptr)
 				onTextureLoaded(texture);
-		},texLoadFlags);
+		},texLoadFlags);*/
 	}
 	else if(bCopied == true) // Material has been copied; Callbacks will have to be called anyway (To make sure descriptor set is initialized properly!)
 	{

@@ -17,18 +17,21 @@
 #include <mathutil/uvec.h>
 
 class Material;
-DECLARE_BASE_HANDLE(DLLMATSYS,Material,Material);
+namespace msys
+{
+	using MaterialHandle = std::shared_ptr<Material>;
+	class MaterialManager;
+};
 
 using MaterialIndex = uint32_t;
 namespace util {class ShaderInfo;};
-class MaterialManager;
-class MaterialHandle;
 class VFilePtrInternalReal;
 namespace ds {class Block;};
 namespace udm {struct AssetData;};
 #pragma warning(push)
 #pragma warning(disable : 4251)
 class DLLMATSYS Material
+	: public std::enable_shared_from_this<Material>
 {
 public:
 	static constexpr auto PMAT_IDENTIFIER = "PMAT";
@@ -63,17 +66,16 @@ public:
 		Error = ExecutingOnLoadCallbacks<<1u
 	};
 	
-	static Material *Create(MaterialManager &manager);
-	static Material *Create(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
-	static Material *Create(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
+	static std::shared_ptr<Material> Create(msys::MaterialManager &manager);
+	static std::shared_ptr<Material> Create(msys::MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
+	static std::shared_ptr<Material> Create(msys::MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
 	Material(const Material&)=delete;
-	void Remove();
-	MaterialHandle GetHandle();
+	virtual ~Material();
+	msys::MaterialHandle GetHandle();
 	virtual void SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo);
 	const util::ShaderInfo *GetShaderInfo() const;
 	void UpdateTextures();
 	const std::string &GetShaderIdentifier() const;
-	virtual Material *Copy() const;
 	void SetName(const std::string &name);
 	const std::string &GetName();
 	bool IsTranslucent() const;
@@ -115,7 +117,7 @@ public:
 	virtual void SetLoaded(bool b);
 	CallbackHandle CallOnLoaded(const std::function<void(void)> &f) const;
 	bool IsValid() const;
-	MaterialManager &GetManager() const;
+	msys::MaterialManager &GetManager() const;
 	std::optional<std::string> GetAbsolutePath() const;
 
 	bool Save(udm::AssetData outData,std::string &outErr);
@@ -127,6 +129,8 @@ public:
 	bool SaveLegacy() const;
 
 	MaterialIndex GetIndex() const {return m_index;}
+	
+	virtual std::shared_ptr<Material> Copy() const;
 
 	// Returns true if all textures associated with this material have been fully loaded
 	bool IsLoaded() const;
@@ -138,21 +142,19 @@ public:
 	void Initialize(const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
 	void Initialize(const std::string &shader,const std::shared_ptr<ds::Block> &data);
 protected:
-	friend MaterialManager;
-	Material(MaterialManager &manager);
-	Material(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
-	Material(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
-	virtual ~Material();
+	friend msys::MaterialManager;
+	Material(msys::MaterialManager &manager);
+	Material(msys::MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
+	Material(msys::MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
 	virtual void OnTexturesUpdated();
 	void SetIndex(MaterialIndex index) {m_index = index;}
-	MaterialHandle m_handle;
 	util::WeakHandle<util::ShaderInfo> m_shaderInfo = {};
 	std::unique_ptr<std::string> m_shader;
 	std::string m_name;
 	std::shared_ptr<ds::Block> m_data;
 	StateFlags m_stateFlags = StateFlags::None;
 	mutable std::vector<CallbackHandle> m_callOnLoaded;
-	MaterialManager &m_manager;
+	msys::MaterialManager &m_manager;
 	TextureInfo *m_texDiffuse = nullptr;
 	TextureInfo *m_texNormal = nullptr;
 	TextureInfo *m_texGlow = nullptr;
@@ -163,8 +165,6 @@ protected:
 	void *m_userData2 = nullptr;
 	AlphaMode m_alphaMode = AlphaMode::Opaque;
 	MaterialIndex m_index = std::numeric_limits<MaterialIndex>::max();
-	template<class TMaterial>
-	TMaterial *Copy() const;
 };
 REGISTER_BASIC_ARITHMETIC_OPERATORS(Material::StateFlags)
 #pragma warning(pop)

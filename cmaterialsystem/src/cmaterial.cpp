@@ -10,6 +10,7 @@
 #include "texture_type.h"
 #include "texturemanager/load/texture_loader.hpp"
 #include "sprite_sheet_animation.hpp"
+#include "cmaterial_manager2.hpp"
 #include <prosper_util.hpp>
 #include <buffers/prosper_buffer.hpp>
 #include <fsys/filesystem.h>
@@ -42,33 +43,33 @@ bool CMaterial::ShaderEqualFn::operator()(const util::WeakHandle<prosper::Shader
 
 ////////////////////////////////
 
-CMaterial *CMaterial::Create(MaterialManager &manager)
+std::shared_ptr<CMaterial> CMaterial::Create(msys::MaterialManager &manager)
 {
-	auto *mat = new CMaterial{manager};
+	auto mat = std::shared_ptr<CMaterial>{new CMaterial{manager}};
 	mat->Reset();
 	return mat;
 }
-CMaterial *CMaterial::Create(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data)
+std::shared_ptr<CMaterial> CMaterial::Create(msys::MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data)
 {
-	auto *mat = new CMaterial{manager,shader,data};
+	auto mat = std::shared_ptr<CMaterial>{new CMaterial{manager,shader,data}};
 	mat->Initialize(shader,data);
 	return mat;
 }
-CMaterial *CMaterial::Create(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
+std::shared_ptr<CMaterial> CMaterial::Create(msys::MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
 {
-	auto *mat = new CMaterial{manager,shader,data};
+	auto mat = std::shared_ptr<CMaterial>{new CMaterial{manager,shader,data}};
 	mat->Initialize(shader,data);
 	return mat;
 }
-CMaterial::CMaterial(MaterialManager &manager)
+CMaterial::CMaterial(msys::MaterialManager &manager)
 	: Material(manager)
 {}
-CMaterial::CMaterial(MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data)
+CMaterial::CMaterial(msys::MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data)
 	: Material(manager,shader,data)
 {
 	// UpdatePrimaryShader();
 }
-CMaterial::CMaterial(MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
+CMaterial::CMaterial(msys::MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data)
 	: Material(manager,shader,data)
 {
 	// UpdatePrimaryShader();
@@ -84,8 +85,6 @@ CMaterial::~CMaterial()
 			cb.Remove();
 	}
 }
-
-Material *CMaterial::Copy() const {return Material::Copy<CMaterial>();}
 
 void CMaterial::InitializeSampler()
 {
@@ -166,8 +165,8 @@ std::shared_ptr<prosper::ISampler> CMaterial::GetSampler() {return m_sampler;}
 prosper::IBuffer *CMaterial::GetSettingsBuffer() {return m_settingsBuffer.get();}
 void CMaterial::SetSettingsBuffer(prosper::IBuffer &buffer) {m_settingsBuffer = buffer.shared_from_this();}
 
-prosper::IPrContext &CMaterial::GetContext() {return static_cast<CMaterialManager&>(m_manager).GetContext();}
-msys::TextureManager &CMaterial::GetTextureManager() {return static_cast<CMaterialManager&>(m_manager).GetTextureManager();}
+prosper::IPrContext &CMaterial::GetContext() {return static_cast<msys::CMaterialManager&>(m_manager).GetContext();}
+msys::TextureManager &CMaterial::GetTextureManager() {return static_cast<msys::CMaterialManager&>(m_manager).GetTextureManager();}
 std::unordered_map<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>,CMaterial::ShaderHash,CMaterial::ShaderEqualFn>::iterator CMaterial::FindShaderDescriptorSetGroup(prosper::Shader &shader)
 {
 	return std::find_if(m_descriptorSetGroups.begin(),m_descriptorSetGroups.end(),[&shader](const std::pair<util::WeakHandle<prosper::Shader>,std::shared_ptr<prosper::IDescriptorSetGroup>> &pair) {
@@ -289,7 +288,7 @@ void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &
 		{
 			auto cb = static_cast<Texture*>(texInfo.texture.get())->CallOnVkTextureChanged([this]() {
 				ClearDescriptorSets();
-				static_cast<CMaterialManager&>(m_manager).MarkForReload(*this);
+				static_cast<msys::CMaterialManager&>(m_manager).MarkForReload(*this);
 			});
 			m_onVkTexturesChanged.push_back(cb);
 		}
@@ -325,7 +324,7 @@ void CMaterial::SetTexture(const std::string &identifier,Texture *texture)
 	m_data->AddData(identifier,dataTex);
 
 	UpdateTextures();
-	auto shaderHandler = static_cast<CMaterialManager&>(GetManager()).GetShaderHandler();
+	auto &shaderHandler = static_cast<msys::CMaterialManager&>(GetManager()).GetShaderHandler();
 	if(shaderHandler != nullptr)
 		shaderHandler(this);
 }
@@ -371,7 +370,7 @@ void CMaterial::SetTexture(const std::string &identifier,const std::string &text
 		SetLoaded(true);
 		if(m_fOnLoaded != nullptr)
 			m_fOnLoaded();
-		auto shaderHandler = static_cast<CMaterialManager&>(GetManager()).GetShaderHandler();
+		auto shaderHandler = static_cast<msys::CMaterialManager&>(GetManager()).GetShaderHandler();
 		if(shaderHandler != nullptr)
 			shaderHandler(this);
 	},nullptr);
@@ -388,6 +387,58 @@ void CMaterial::SetTexture(const std::string &identifier,prosper::Texture &textu
 	auto ptrProsperTex = texture.shared_from_this();
 	auto tex = std::make_shared<Texture>(GetContext(),ptrProsperTex);
 	SetTexture(identifier,tex.get());
+}
+
+bool CMaterial::HaveTexturesBeenInitialized() const {return umath::is_flag_set(m_stateFlags,StateFlags::TexturesInitialized);}
+
+void CMaterial::LoadTexture(TextureInfo &texInfo)
+{
+	auto mipmapMode = static_cast<TextureMipmapMode>(GetMipmapMode(GetDataBlock()));
+	auto &textureManager = GetTextureManager();
+	auto loadInfo = std::make_unique<msys::TextureLoadInfo>();
+	loadInfo->mipmapMode = mipmapMode;
+	texInfo.texture = textureManager.LoadAsset(texInfo.name,std::move(loadInfo));
+}
+
+TextureInfo *CMaterial::GetTextureInfo(const std::string &key)
+{
+	LoadTextures();
+	return Material::GetTextureInfo(key);
+}
+
+void CMaterial::LoadTextures()
+{
+	if(umath::is_flag_set(m_stateFlags,StateFlags::TexturesLoaded))
+		return;
+	LoadTextures(*GetDataBlock());
+	auto &shaderHandler = static_cast<msys::CMaterialManager&>(m_manager).GetShaderHandler();
+	if(shaderHandler)
+		shaderHandler(this);
+}
+void CMaterial::LoadTextures(ds::Block &data)
+{
+	if(umath::is_flag_set(m_stateFlags,StateFlags::TexturesLoaded))
+		return;
+	umath::set_flag(m_stateFlags,StateFlags::TexturesLoaded);
+	auto *values = data.GetData();
+	const auto &typeTexture = typeid(ds::Texture);
+	for(auto &it : *values)
+	{
+		auto &value = it.second;
+		if(!value->IsBlock())
+		{
+			auto &type = typeid(*value);
+			if(type == typeTexture)
+				LoadTexture(std::static_pointer_cast<ds::Texture>(value)->GetValue());
+			else
+				continue;
+		}
+		else
+		{
+			auto dataBlock = std::static_pointer_cast<ds::Block>(value);
+			LoadTextures(*dataBlock);
+		}
+	}
 }
 
 void CMaterial::InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::shared_ptr<CallbackInfo> &info,TextureLoadFlags loadFlags)
@@ -444,16 +495,17 @@ void CMaterial::InitializeTextures(
 	TextureLoadFlags loadFlags
 )
 {
-	if(!umath::is_flag_set(loadFlags,TextureLoadFlags::LoadInstantly))
+	/*if(!umath::is_flag_set(loadFlags,TextureLoadFlags::LoadInstantly))
 	{
 		// Precache only
 		auto tmp = std::make_shared<CallbackInfo>();
 		InitializeTextures(data,tmp,loadFlags);
 		return;
 	}
-	m_texturesLoaded = true;
+	umath::set_flag(m_stateFlags,StateFlags::TexturesInitialized);
 	auto callbackInfo = InitializeCallbackInfo(onAllTexturesLoaded,onTextureLoaded);
 	++callbackInfo->count; // Dummy, in case all textures are loaded immediately (In which case the final callback would be triggered multiple times.).
 	InitializeTextures(data,callbackInfo,loadFlags);
 	callbackInfo->onload(std::shared_ptr<Texture>{nullptr}); // Clear dummy
+	*/
 }

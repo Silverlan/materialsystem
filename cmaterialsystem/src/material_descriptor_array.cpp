@@ -5,6 +5,7 @@
 #include <prosper_context.hpp>
 #include <prosper_util.hpp>
 #include "material_descriptor_array.hpp"
+#include "cmaterial_manager2.hpp"
 #include "textureinfo.h"
 #include "texturemanager/texture.h"
 #include "cmaterial.h"

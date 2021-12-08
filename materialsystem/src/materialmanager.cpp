@@ -96,7 +96,7 @@ Material *MaterialManager::CreateMaterial(const std::string *identifier,const st
 		auto dataSettings = ds::create_data_settings(ENUM_VARS);
 		root = std::make_shared<ds::Block>(*dataSettings);
 	}
-	auto *mat = CreateMaterial<Material>(shader,root); // Claims ownership of 'root' and frees the memory at destruction
+	Material *mat;//auto *mat = CreateMaterial<Material>(shader,root); // Claims ownership of 'root' and frees the memory at destruction
 	mat->SetName(matId);
 	AddMaterial(matId,*mat);
 	return mat;
@@ -108,14 +108,14 @@ void MaterialManager::AddMaterial(const std::string &identifier,Material &mat)
 	auto it = m_nameToMaterialIndex.find(nidentifier);
 	if(it != m_nameToMaterialIndex.end())
 	{
-		m_materials[it->second] = mat.GetHandle();
-		mat.SetIndex(it->second);
+		///m_materials[it->second] = mat.GetHandle();
+		//mat.SetIndex(it->second);
 		return;
 	}
-	mat.SetIndex(m_materials.size());
+	//mat.SetIndex(m_materials.size());
 	if(m_materials.size() == m_materials.capacity())
 		m_materials.reserve(m_materials.size() *1.1 +100);
-	m_materials.push_back(mat.GetHandle());
+	//m_materials.push_back(mat.GetHandle());
 	m_nameToMaterialIndex[nidentifier] = mat.GetIndex();
 }
 
@@ -300,7 +300,7 @@ Material *MaterialManager::Load(const std::string &path,bool bReload,bool loadIn
 			return nullptr;
 		if(bFirstTimeError != nullptr)
 			*bFirstTimeError = true;
-		info.material = info.material->Copy(); // Copy error material
+		//info.material = info.material->Copy(); // Copy error material
 	}
 	else if(info.material != nullptr)
 	{
@@ -311,7 +311,7 @@ Material *MaterialManager::Load(const std::string &path,bool bReload,bool loadIn
 	}
 	else
 	{
-		info.material = new Material{*this,info.shader,info.root};
+		//info.material = new Material{*this,info.shader,info.root};
 		info.material->SetLoaded(true);
 	}
 	info.material->SetName(info.identifier);
@@ -422,7 +422,7 @@ void MaterialManager::SetErrorMaterial(Material *mat)
 	else
 	{
 		mat->SetErrorFlag(true);
-		m_error = mat->GetHandle();
+		//m_error = mat->GetHandle();
 	}
 }
 Material *MaterialManager::GetErrorMaterial() const {return m_error.get();}
@@ -431,8 +431,8 @@ uint32_t MaterialManager::Clear()
 {
 	for(auto &hMaterial : m_materials)
 	{
-		if(hMaterial.IsValid())
-			hMaterial->Remove();
+		//if(hMaterial.IsValid())
+		//	hMaterial->Remove();
 	}
 	auto n = m_materials.size();
 	m_materials.clear();
@@ -459,7 +459,7 @@ uint32_t MaterialManager::ClearUnused()
 				m_nameToMaterialIndex.erase(it);
 				break;
 			}*/
-			hMaterial->Remove();
+		//	hMaterial->Remove();
 			//it = m_materials.erase(it);
 			*it = {};
 			++it;
@@ -470,3 +470,5 @@ uint32_t MaterialManager::ClearUnused()
 	}
 	return n;
 }
+
+DEFINE_BASE_HANDLE(DLLMATSYS,Material,Material);

@@ -28,6 +28,10 @@ namespace source2::resource
 };
 #endif
 
+class Material;
+DECLARE_BASE_HANDLE(DLLMATSYS,Material,Material);
+
+
 class VFilePtrInternal;
 class DLLMATSYS MaterialManager
 {
@@ -113,7 +117,7 @@ protected:
 };
 #pragma warning(pop)
 
-template<class TMaterial,typename... TARGS>
-	TMaterial *MaterialManager::CreateMaterial(TARGS ...args) {return TMaterial::Create(*this,std::forward<TARGS>(args)...);}
+//template<class TMaterial,typename... TARGS>
+//	TMaterial *MaterialManager::CreateMaterial(TARGS ...args) {return TMaterial::Create(*this,std::forward<TARGS>(args)...);}
 
 #endif
