@@ -137,6 +137,7 @@ bool msys::MaterialProcessor::Load()
 		return false;
 	auto mat = static_cast<MaterialManager&>(mdlHandler.GetAssetManager()).CreateMaterial(mdlHandler.shader,mdlHandler.data);
 	mat->SetLoaded(true);
+	mat->SetName(identifier);
 	material = mat;
 	return true;
 }
@@ -184,9 +185,10 @@ void msys::MaterialManager::SetErrorMaterial(Material *mat)
 }
 Material *msys::MaterialManager::GetErrorMaterial() const {return m_error.get();}
 void msys::MaterialManager::InitializeProcessor(util::IAssetProcessor &processor) {}
-util::AssetObject msys::MaterialManager::InitializeAsset(const util::AssetLoadJob &job)
+util::AssetObject msys::MaterialManager::InitializeAsset(const util::Asset &asset,const util::AssetLoadJob &job)
 {
 	auto &matProcessor = *static_cast<MaterialProcessor*>(job.processor.get());
+	matProcessor.material->SetIndex(asset.index);
 	return matProcessor.material;
 }
 std::shared_ptr<ds::Settings> msys::MaterialManager::CreateDataSettings() const {return ds::create_data_settings({});}

@@ -44,7 +44,8 @@ public:
 	{
 		None = 0,
 		TexturesInitialized = 1u,
-		TexturesLoaded = TexturesInitialized<<1u
+		TexturesLoaded = TexturesInitialized<<1u,
+		TexturesPrecached = TexturesLoaded<<1u
 	};
 	static std::shared_ptr<CMaterial> Create(msys::MaterialManager &manager);
 	static std::shared_ptr<CMaterial> Create(msys::MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data);
@@ -65,6 +66,7 @@ public:
 	virtual void SetLoaded(bool b) override;
 	virtual void SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo) override;
 	virtual void Reset() override;
+	using Material::Initialize;
 
 	void SetSpriteSheetAnimation(const SpriteSheetAnimation &animInfo);
 	void ClearSpriteSheetAnimation();
@@ -74,6 +76,7 @@ protected:
 	CMaterial(msys::MaterialManager &manager);
 	CMaterial(msys::MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shader,const std::shared_ptr<ds::Block> &data);
 	CMaterial(msys::MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
+	virtual void Initialize(const std::shared_ptr<ds::Block> &data) override;
 	virtual void OnTexturesUpdated() override;
 	void LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &texInfo,TextureLoadFlags flags=TextureLoadFlags::None,const std::shared_ptr<CallbackInfo> &callbackInfo=nullptr);
 	void ClearDescriptorSets();
@@ -81,9 +84,9 @@ protected:
 	friend msys::CMaterialManager;
 	msys::TextureManager &GetTextureManager();
 
-	void LoadTextures();
-	void LoadTextures(ds::Block &data);
-	void LoadTexture(TextureInfo &texInfo);
+	void LoadTextures(bool precache);
+	void LoadTextures(ds::Block &data,bool precache);
+	void LoadTexture(TextureInfo &texInfo,bool precache);
 
 	bool HaveTexturesBeenInitialized() const;
 private:

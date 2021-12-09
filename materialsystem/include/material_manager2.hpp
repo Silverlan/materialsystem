@@ -67,7 +67,7 @@ namespace msys
 		std::shared_ptr<Material> CreateMaterial(const std::string &identifier,const std::string &shader,const std::shared_ptr<ds::Block> &data);
 	protected:
 		virtual void InitializeProcessor(util::IAssetProcessor &processor) override;
-		virtual util::AssetObject InitializeAsset(const util::AssetLoadJob &job) override;
+		virtual util::AssetObject InitializeAsset(const util::Asset &asset,const util::AssetLoadJob &job) override;
 		msys::MaterialHandle m_error;
 	};
 };

@@ -84,7 +84,7 @@ void Material::Initialize(const util::WeakHandle<util::ShaderInfo> &shaderInfo,c
 	Reset();
 	SetShaderInfo(shaderInfo);
 	m_data = data;
-	UpdateTextures();
+	Initialize(m_data);
 }
 
 void Material::Initialize(const std::string &shader,const std::shared_ptr<ds::Block> &data)
@@ -92,8 +92,10 @@ void Material::Initialize(const std::string &shader,const std::shared_ptr<ds::Bl
 	Reset();
 	m_shader = std::make_unique<std::string>(shader);
 	m_data = data;
-	UpdateTextures();
+	Initialize(m_data);
 }
+
+void Material::Initialize(const std::shared_ptr<ds::Block> &data) {}
 
 void *Material::GetUserData() {return m_userData;}
 void Material::SetUserData(void *data) {m_userData = data;}
@@ -102,6 +104,9 @@ bool Material::IsTranslucent() const {return m_alphaMode == AlphaMode::Blend;}
 
 void Material::UpdateTextures()
 {
+	if(umath::is_flag_set(m_stateFlags,StateFlags::TexturesUpdated))
+		return;
+	umath::set_flag(m_stateFlags,StateFlags::TexturesUpdated);
 	m_texDiffuse = GetTextureInfo(DIFFUSE_MAP_IDENTIFIER);
 	if(!m_texDiffuse)
 		m_texDiffuse = GetTextureInfo(ALBEDO_MAP_IDENTIFIER);
@@ -348,25 +353,25 @@ CallbackHandle Material::CallOnLoaded(const std::function<void(void)> &f) const
 bool Material::IsLoaded() const {return umath::is_flag_set(m_stateFlags,StateFlags::Loaded);}
 
 const TextureInfo *Material::GetDiffuseMap() const {return const_cast<Material*>(this)->GetDiffuseMap();}
-TextureInfo *Material::GetDiffuseMap() {return m_texDiffuse;}
+TextureInfo *Material::GetDiffuseMap() {UpdateTextures(); return m_texDiffuse;}
 
 const TextureInfo *Material::GetAlbedoMap() const {return GetDiffuseMap();}
 TextureInfo *Material::GetAlbedoMap() {return GetDiffuseMap();}
 
 const TextureInfo *Material::GetNormalMap() const {return const_cast<Material*>(this)->GetNormalMap();}
-TextureInfo *Material::GetNormalMap() {return m_texNormal;}
+TextureInfo *Material::GetNormalMap() {UpdateTextures(); return m_texNormal;}
 
 const TextureInfo *Material::GetGlowMap() const {return const_cast<Material*>(this)->GetGlowMap();}
-TextureInfo *Material::GetGlowMap() {return m_texGlow;}
+TextureInfo *Material::GetGlowMap() {UpdateTextures(); return m_texGlow;}
 
 const TextureInfo *Material::GetAlphaMap() const {return const_cast<Material*>(this)->GetAlphaMap();}
-TextureInfo *Material::GetAlphaMap() {return m_texAlpha;}
+TextureInfo *Material::GetAlphaMap() {UpdateTextures(); return m_texAlpha;}
 
 const TextureInfo *Material::GetParallaxMap() const {return const_cast<Material*>(this)->GetParallaxMap();}
-TextureInfo *Material::GetParallaxMap() {return m_texParallax;}
+TextureInfo *Material::GetParallaxMap() {UpdateTextures(); return m_texParallax;}
 
 const TextureInfo *Material::GetRMAMap() const {return const_cast<Material*>(this)->GetRMAMap();}
-TextureInfo *Material::GetRMAMap() {return m_texRma;}
+TextureInfo *Material::GetRMAMap() {UpdateTextures(); return m_texRma;}
 
 AlphaMode Material::GetAlphaMode() const {return m_alphaMode;}
 float Material::GetAlphaCutoff() const

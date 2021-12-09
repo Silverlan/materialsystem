@@ -223,9 +223,6 @@ uint32_t CMaterial::GetMipmapMode(const std::shared_ptr<ds::Block> &data) const
 }
 void CMaterial::SetLoaded(bool b)
 {
-	auto *texNormalMap = GetNormalMap();
-	if(texNormalMap && texNormalMap->texture)
-		std::static_pointer_cast<Texture>(texNormalMap->texture)->AddFlags(Texture::Flags::NormalMap);
 	Material::SetLoaded(b);
 }
 void CMaterial::SetSpriteSheetAnimation(const SpriteSheetAnimation &animInfo) {m_spriteSheetAnimation = animInfo;}
@@ -391,35 +388,54 @@ void CMaterial::SetTexture(const std::string &identifier,prosper::Texture &textu
 
 bool CMaterial::HaveTexturesBeenInitialized() const {return umath::is_flag_set(m_stateFlags,StateFlags::TexturesInitialized);}
 
-void CMaterial::LoadTexture(TextureInfo &texInfo)
+void CMaterial::LoadTexture(TextureInfo &texInfo,bool precache)
 {
 	auto mipmapMode = static_cast<TextureMipmapMode>(GetMipmapMode(GetDataBlock()));
 	auto &textureManager = GetTextureManager();
 	auto loadInfo = std::make_unique<msys::TextureLoadInfo>();
 	loadInfo->mipmapMode = mipmapMode;
-	texInfo.texture = textureManager.LoadAsset(texInfo.name,std::move(loadInfo));
+	if(!precache)
+		texInfo.texture = textureManager.LoadAsset(texInfo.name,std::move(loadInfo));
+	else
+		textureManager.PreloadAsset(texInfo.name);
 }
 
 TextureInfo *CMaterial::GetTextureInfo(const std::string &key)
 {
-	LoadTextures();
+	LoadTextures(false);
 	return Material::GetTextureInfo(key);
 }
 
-void CMaterial::LoadTextures()
+void CMaterial::LoadTextures(bool precache)
 {
+	if(precache)
+	{
+		if(umath::is_flag_set(m_stateFlags,StateFlags::TexturesLoaded) || umath::is_flag_set(m_stateFlags,StateFlags::TexturesPrecached))
+			return;
+		LoadTextures(*GetDataBlock(),precache);
+		return;
+	}
 	if(umath::is_flag_set(m_stateFlags,StateFlags::TexturesLoaded))
 		return;
-	LoadTextures(*GetDataBlock());
+	LoadTextures(*GetDataBlock(),precache);
 	auto &shaderHandler = static_cast<msys::CMaterialManager&>(m_manager).GetShaderHandler();
 	if(shaderHandler)
 		shaderHandler(this);
 }
-void CMaterial::LoadTextures(ds::Block &data)
+void CMaterial::LoadTextures(ds::Block &data,bool precache)
 {
-	if(umath::is_flag_set(m_stateFlags,StateFlags::TexturesLoaded))
-		return;
-	umath::set_flag(m_stateFlags,StateFlags::TexturesLoaded);
+	if(precache)
+	{
+		if(umath::is_flag_set(m_stateFlags,StateFlags::TexturesLoaded) || umath::is_flag_set(m_stateFlags,StateFlags::TexturesPrecached))
+			return;
+		umath::set_flag(m_stateFlags,StateFlags::TexturesPrecached);
+	}
+	else
+	{
+		if(umath::is_flag_set(m_stateFlags,StateFlags::TexturesLoaded))
+			return;
+		umath::set_flag(m_stateFlags,StateFlags::TexturesLoaded);
+	}
 	auto *values = data.GetData();
 	const auto &typeTexture = typeid(ds::Texture);
 	for(auto &it : *values)
@@ -429,16 +445,28 @@ void CMaterial::LoadTextures(ds::Block &data)
 		{
 			auto &type = typeid(*value);
 			if(type == typeTexture)
-				LoadTexture(std::static_pointer_cast<ds::Texture>(value)->GetValue());
+				LoadTexture(std::static_pointer_cast<ds::Texture>(value)->GetValue(),precache);
 			else
 				continue;
 		}
 		else
 		{
 			auto dataBlock = std::static_pointer_cast<ds::Block>(value);
-			LoadTextures(*dataBlock);
+			LoadTextures(*dataBlock,precache);
 		}
 	}
+
+	if(precache)
+		return;
+	auto *texNormalMap = GetNormalMap();
+	if(texNormalMap && texNormalMap->texture)
+		std::static_pointer_cast<Texture>(texNormalMap->texture)->AddFlags(Texture::Flags::NormalMap);
+}
+
+void CMaterial::Initialize(const std::shared_ptr<ds::Block> &data)
+{
+	Material::Initialize(data);
+	LoadTextures(true);
 }
 
 void CMaterial::InitializeTextures(const std::shared_ptr<ds::Block> &data,const std::shared_ptr<CallbackInfo> &info,TextureLoadFlags loadFlags)

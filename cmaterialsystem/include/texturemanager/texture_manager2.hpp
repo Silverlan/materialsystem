@@ -44,7 +44,7 @@ namespace msys
 		void Test();
 	protected:
 		virtual void InitializeProcessor(util::IAssetProcessor &processor) override;
-		virtual util::AssetObject InitializeAsset(const util::AssetLoadJob &job) override;
+		virtual util::AssetObject InitializeAsset(const util::Asset &asset,const util::AssetLoadJob &job) override;
 
 		prosper::IPrContext &m_context;
 		std::shared_ptr<Texture> m_error;

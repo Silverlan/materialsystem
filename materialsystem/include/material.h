@@ -63,7 +63,8 @@ public:
 		None = 0u,
 		Loaded = 1u,
 		ExecutingOnLoadCallbacks = Loaded<<1u,
-		Error = ExecutingOnLoadCallbacks<<1u
+		Error = ExecutingOnLoadCallbacks<<1u,
+		TexturesUpdated = Error<<1u
 	};
 	
 	static std::shared_ptr<Material> Create(msys::MaterialManager &manager);
@@ -146,6 +147,7 @@ protected:
 	Material(msys::MaterialManager &manager);
 	Material(msys::MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
 	Material(msys::MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
+	virtual void Initialize(const std::shared_ptr<ds::Block> &data);
 	virtual void OnTexturesUpdated();
 	void SetIndex(MaterialIndex index) {m_index = index;}
 	util::WeakHandle<util::ShaderInfo> m_shaderInfo = {};

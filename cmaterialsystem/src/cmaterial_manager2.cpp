@@ -60,6 +60,7 @@ void msys::CMaterialManager::MarkForReload(CMaterial &mat) {m_reloadShaderQueue.
 void msys::CMaterialManager::Poll()
 {
 	MaterialManager::Poll();
+	m_textureManager->Poll();
 	if(!m_reloadShaderQueue.empty())
 	{
 		std::unordered_set<Material*> traversed;
