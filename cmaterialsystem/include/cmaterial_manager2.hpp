@@ -17,7 +17,7 @@ namespace msys
 		: public MaterialManager
 	{
 	public:
-		CMaterialManager(prosper::IPrContext &context);
+		static std::shared_ptr<CMaterialManager> Create(prosper::IPrContext &context);
 		virtual ~CMaterialManager() override;
 		
 		virtual std::shared_ptr<Material> CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &data) override;
@@ -31,6 +31,8 @@ namespace msys
 		msys::TextureManager &GetTextureManager() {return *m_textureManager;}
 		virtual void Poll() override;
 	private:
+		CMaterialManager(prosper::IPrContext &context);
+		virtual void InitializeImportHandlers() override;
 		std::function<void(Material*)> m_shaderHandler;
 		prosper::IPrContext &m_context;
 		std::unique_ptr<msys::TextureManager> m_textureManager = nullptr;

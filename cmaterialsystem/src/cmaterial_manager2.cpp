@@ -9,6 +9,7 @@
 #include "cmaterial_manager2.hpp"
 #include "cmaterial.h"
 #include "texturemanager/texture_manager2.hpp"
+#include "c_source_vmt_format_handler.hpp"
 
 #include <shader/prosper_shader_manager.hpp>
 #include "shaders/c_shader_decompose_cornea.hpp"
@@ -19,6 +20,12 @@
 #include "shaders/source2/c_shader_decompose_pbr.hpp"
 
 #pragma optimize("",off)
+std::shared_ptr<msys::CMaterialManager> msys::CMaterialManager::Create(prosper::IPrContext &context)
+{
+	auto matManager = std::shared_ptr<CMaterialManager>{new CMaterialManager{context}};
+	matManager->Initialize();
+	return matManager;
+}
 msys::CMaterialManager::CMaterialManager(prosper::IPrContext &context)
 	: m_context{context}
 {
@@ -40,6 +47,13 @@ msys::CMaterialManager::~CMaterialManager()
 std::shared_ptr<Material> msys::CMaterialManager::CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &data)
 {
 	return std::shared_ptr<CMaterial>{CMaterial::Create(*this,shader,data)};
+}
+void msys::CMaterialManager::InitializeImportHandlers()
+{
+#ifndef DISABLE_VMT_SUPPORT
+	RegisterImportHandler<CSourceVmtFormatHandler>("vmt");
+#endif
+	// TODO: vmat_c
 }
 void msys::CMaterialManager::SetShaderHandler(const std::function<void(Material*)> &handler) {m_shaderHandler = handler;}
 void msys::CMaterialManager::ReloadMaterialShaders()

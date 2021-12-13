@@ -56,7 +56,7 @@ namespace msys
 		: public util::TFileAssetManager<Material,MaterialLoadInfo>
 	{
 	public:
-		MaterialManager();
+		static std::shared_ptr<MaterialManager> Create();
 		virtual ~MaterialManager()=default;
 
 		void SetErrorMaterial(Material *mat);
@@ -66,6 +66,9 @@ namespace msys
 		virtual std::shared_ptr<Material> CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &data);
 		std::shared_ptr<Material> CreateMaterial(const std::string &identifier,const std::string &shader,const std::shared_ptr<ds::Block> &data);
 	protected:
+		MaterialManager();
+		virtual void Initialize();
+		virtual void InitializeImportHandlers();
 		virtual void InitializeProcessor(util::IAssetProcessor &processor) override;
 		virtual util::AssetObject InitializeAsset(const util::Asset &asset,const util::AssetLoadJob &job) override;
 		msys::MaterialHandle m_error;

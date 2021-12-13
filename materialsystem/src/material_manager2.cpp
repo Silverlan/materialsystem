@@ -7,6 +7,7 @@
 
 #include "impl_texture_formats.h"
 #include "material_manager2.hpp"
+#include "source_vmt_format_handler.hpp"
 #include <fsys/filesystem.h>
 #include <fsys/ifile.hpp>
 
@@ -143,6 +144,12 @@ bool msys::MaterialProcessor::Load()
 }
 bool msys::MaterialProcessor::Finalize() {return true;}
 
+std::shared_ptr<msys::MaterialManager> msys::MaterialManager::Create()
+{
+	auto matManager = std::shared_ptr<MaterialManager>{new MaterialManager{}};
+	matManager->Initialize();
+	return matManager;
+}
 msys::MaterialManager::MaterialManager()
 {
 	auto fileHandler = std::make_unique<util::AssetFileHandler>();
@@ -165,13 +172,19 @@ msys::MaterialManager::MaterialManager()
 	// TODO: New extensions might be added after the model manager has been created
 	//for(auto &ext : get_model_extensions())
 	//	RegisterFileExtension(ext);
-
-	RegisterFormatHandler("pmat_b",[](util::IAssetManager &assetManager) -> std::unique_ptr<util::IAssetFormatHandler> {
-		return std::make_unique<MaterialFormatHandler>(assetManager);
-	});
-	RegisterFormatHandler("pmat",[](util::IAssetManager &assetManager) -> std::unique_ptr<util::IAssetFormatHandler> {
-		return std::make_unique<MaterialFormatHandler>(assetManager);
-	},util::AssetFormatType::Text);
+}
+void msys::MaterialManager::Initialize()
+{
+	RegisterFormatHandler<MaterialFormatHandler>("pmat_b");
+	RegisterFormatHandler<MaterialFormatHandler>("pmat");
+	InitializeImportHandlers();
+}
+void msys::MaterialManager::InitializeImportHandlers()
+{
+#ifndef DISABLE_VMT_SUPPORT
+	RegisterImportHandler<SourceVmtFormatHandler>("vmt");
+#endif
+	// TODO: vmat_c
 }
 void msys::MaterialManager::SetErrorMaterial(Material *mat)
 {
