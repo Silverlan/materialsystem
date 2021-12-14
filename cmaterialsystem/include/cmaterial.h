@@ -66,6 +66,7 @@ public:
 	virtual void SetLoaded(bool b) override;
 	virtual void SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo) override;
 	virtual void Reset() override;
+	virtual void Assign(const Material &other) override;
 	using Material::Initialize;
 
 	void SetSpriteSheetAnimation(const SpriteSheetAnimation &animInfo);

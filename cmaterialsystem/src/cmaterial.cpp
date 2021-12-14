@@ -186,7 +186,14 @@ void CMaterial::Reset()
 {
 	Material::Reset();
 	m_primaryShader = nullptr;
+	m_descriptorSetGroups.clear();
+	m_stateFlags = StateFlags::None;
 	// UpdatePrimaryShader();
+}
+void CMaterial::Assign(const Material &other)
+{
+	Material::Assign(other);
+	UpdatePrimaryShader();
 }
 void CMaterial::UpdatePrimaryShader()
 {

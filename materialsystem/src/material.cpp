@@ -64,6 +64,19 @@ Material::Material(msys::MaterialManager &manager,const std::string &shader,cons
 	: Material(manager)
 {}
 
+void Material::Assign(const Material &other)
+{
+	Reset();
+
+	m_stateFlags |= StateFlags::Loaded;
+	m_data = other.m_data;
+	m_shaderInfo = other.m_shaderInfo;
+	m_shader = other.m_shader ? std::make_unique<std::string>(*other.m_shader) : nullptr;
+	m_index = other.m_index;
+
+	UpdateTextures();
+}
+
 void Material::Reset()
 {
 	umath::set_flag(m_stateFlags,StateFlags::Loaded,false);

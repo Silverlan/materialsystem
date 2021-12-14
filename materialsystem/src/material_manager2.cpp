@@ -8,6 +8,7 @@
 #include "impl_texture_formats.h"
 #include "material_manager2.hpp"
 #include "source_vmt_format_handler.hpp"
+#include "source2_vmat_format_handler.hpp"
 #include <fsys/filesystem.h>
 #include <fsys/ifile.hpp>
 
@@ -179,12 +180,31 @@ void msys::MaterialManager::Initialize()
 	RegisterFormatHandler<MaterialFormatHandler>("pmat");
 	InitializeImportHandlers();
 }
+util::AssetObject msys::MaterialManager::ReloadAsset(const std::string &path,std::unique_ptr<MaterialLoadInfo> &&loadInfo)
+{
+	auto *asset = FindCachedAsset(path);
+	if(!asset)
+		return LoadAsset(path,std::move(loadInfo));
+	auto matNew = LoadAsset(path,util::AssetLoadFlags::IgnoreCache | util::AssetLoadFlags::DontCache);
+	if(!matNew)
+		return nullptr;
+	auto matOld = GetAssetObject(*asset);
+	matOld->Assign(*matNew);
+	OnAssetReloaded(path);
+	return matOld;
+}
+util::AssetObject msys::MaterialManager::ReloadAsset(const std::string &path,std::unique_ptr<util::AssetLoadInfo> &&loadInfo)
+{
+	return ReloadAsset(path,util::static_unique_pointer_cast<util::AssetLoadInfo,MaterialLoadInfo>(std::move(loadInfo)));
+}
 void msys::MaterialManager::InitializeImportHandlers()
 {
 #ifndef DISABLE_VMT_SUPPORT
 	RegisterImportHandler<SourceVmtFormatHandler>("vmt");
 #endif
-	// TODO: vmat_c
+#ifndef DISABLE_VMAT_SUPPORT
+	RegisterImportHandler<Source2VmatFormatHandler>("vmat_c");
+#endif
 }
 void msys::MaterialManager::SetErrorMaterial(Material *mat)
 {

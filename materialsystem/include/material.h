@@ -130,6 +130,8 @@ public:
 	bool SaveLegacy() const;
 
 	MaterialIndex GetIndex() const {return m_index;}
+
+	virtual void Assign(const Material &other);
 	
 	virtual std::shared_ptr<Material> Copy() const;
 

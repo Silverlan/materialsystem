@@ -10,6 +10,7 @@
 #include "cmaterial.h"
 #include "texturemanager/texture_manager2.hpp"
 #include "c_source_vmt_format_handler.hpp"
+#include "c_source2_vmat_format_handler.hpp"
 
 #include <shader/prosper_shader_manager.hpp>
 #include "shaders/c_shader_decompose_cornea.hpp"
@@ -53,7 +54,9 @@ void msys::CMaterialManager::InitializeImportHandlers()
 #ifndef DISABLE_VMT_SUPPORT
 	RegisterImportHandler<CSourceVmtFormatHandler>("vmt");
 #endif
-	// TODO: vmat_c
+#ifndef DISABLE_VMAT_SUPPORT
+	RegisterImportHandler<CSource2VmatFormatHandler>("vmat_c");
+#endif
 }
 void msys::CMaterialManager::SetShaderHandler(const std::function<void(Material*)> &handler) {m_shaderHandler = handler;}
 void msys::CMaterialManager::ReloadMaterialShaders()
