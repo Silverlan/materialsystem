@@ -38,9 +38,7 @@ static std::shared_ptr<prosper::Texture> load_texture(msys::CMaterialManager &ma
 {
 	auto &textureManager = matManager.GetTextureManager();
 	auto &context = matManager.GetContext();
-	if(reload)
-		textureManager.RemoveFromCache(texPath);
-	auto map = textureManager.LoadAsset(texPath);
+	auto map = reload ? textureManager.ReloadAsset(texPath) : textureManager.LoadAsset(texPath);
 	if(map == nullptr || map->HasValidVkTexture() == false)
 		return nullptr;
 	return map->GetVkTexture();

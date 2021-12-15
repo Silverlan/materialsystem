@@ -216,7 +216,7 @@ void msys::MaterialManager::Initialize()
 	RegisterFormatHandler<WmiFormatHandler>("wmi");
 	InitializeImportHandlers();
 }
-util::AssetObject msys::MaterialManager::ReloadAsset(const std::string &path,std::unique_ptr<MaterialLoadInfo> &&loadInfo)
+std::shared_ptr<Material> msys::MaterialManager::ReloadAsset(const std::string &path,std::unique_ptr<MaterialLoadInfo> &&loadInfo)
 {
 	auto *asset = FindCachedAsset(path);
 	if(!asset)
