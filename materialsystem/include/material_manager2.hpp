@@ -47,10 +47,24 @@ namespace msys
 	{
 	public:
 		MaterialFormatHandler(util::IAssetManager &assetManager);
-		bool LoadData(MaterialProcessor &processor,MaterialLoadInfo &info);
+		virtual bool LoadData(MaterialProcessor &processor,MaterialLoadInfo &info)=0;
 
 		std::shared_ptr<ds::Block> data;
 		std::string shader;
+	};
+	class DLLMATSYS PmatFormatHandler
+		: public MaterialFormatHandler
+	{
+	public:
+		PmatFormatHandler(util::IAssetManager &assetManager);
+		virtual bool LoadData(MaterialProcessor &processor,MaterialLoadInfo &info) override;
+	};
+	class DLLMATSYS WmiFormatHandler
+		: public MaterialFormatHandler
+	{
+	public:
+		WmiFormatHandler(util::IAssetManager &assetManager);
+		virtual bool LoadData(MaterialProcessor &processor,MaterialLoadInfo &info) override;
 	};
 	class DLLMATSYS MaterialManager
 		: public util::TFileAssetManager<Material,MaterialLoadInfo>

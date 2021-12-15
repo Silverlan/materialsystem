@@ -261,7 +261,8 @@ bool MaterialManager::Load(const std::string &path,LoadInfo &info,bool bReload)
 	if(ext.empty() || ustring::compare<std::string>(ext,Material::FORMAT_MATERIAL_ASCII,false) || ustring::compare<std::string>(ext,Material::FORMAT_MATERIAL_BINARY,false))
 		return LoadUdm(fp,info);
 
-	auto root = ds::System::ReadData(fp,ENUM_VARS);
+	fsys::File f {fp};
+	auto root = ds::System::ReadData(f,ENUM_VARS);
 	fp.reset();
 	if(root == nullptr)
 		return handleLoadError(matId,&info.material);

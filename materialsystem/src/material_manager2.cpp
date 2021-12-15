@@ -14,7 +14,10 @@
 
 #pragma optimize("",off)
 #include <udm.hpp>
-bool msys::MaterialFormatHandler::LoadData(MaterialProcessor &processor,MaterialLoadInfo &info)
+msys::MaterialFormatHandler::MaterialFormatHandler(util::IAssetManager &assetManager)
+	: util::IAssetFormatHandler{assetManager}
+{}
+bool msys::PmatFormatHandler::LoadData(MaterialProcessor &processor,MaterialLoadInfo &info)
 {
 	std::shared_ptr<udm::Data> udmData = nullptr;
 	try
@@ -106,9 +109,41 @@ bool msys::MaterialFormatHandler::LoadData(MaterialProcessor &processor,Material
 	shader = firstEl.key;
 	return true;
 }
-msys::MaterialFormatHandler::MaterialFormatHandler(util::IAssetManager &assetManager)
-	: util::IAssetFormatHandler{assetManager}
+msys::PmatFormatHandler::PmatFormatHandler(util::IAssetManager &assetManager)
+	: MaterialFormatHandler{assetManager}
 {}
+
+///////////
+
+msys::WmiFormatHandler::WmiFormatHandler(util::IAssetManager &assetManager)
+	: MaterialFormatHandler{assetManager}
+{}
+bool msys::WmiFormatHandler::LoadData(MaterialProcessor &processor,MaterialLoadInfo &info)
+{
+	auto root = ds::System::ReadData(*m_file,{});
+	if(root == nullptr)
+		return false;
+	auto *data = root->GetData();
+	std::string shader;
+	std::shared_ptr<ds::Block> matData = nullptr;
+	for(auto it=data->begin();it!=data->end();it++)
+	{
+		auto &val = it->second;
+		if(val->IsBlock()) // Shader has to be first block
+		{
+			matData = std::static_pointer_cast<ds::Block>(val);
+			shader = it->first;
+			break;
+		}
+	}
+	if(matData == nullptr)
+		return false;
+	root->DetachData(*matData);
+
+	this->data = matData;
+	this->shader = shader;
+	return true;
+}
 		
 ///////////
 
@@ -176,8 +211,9 @@ msys::MaterialManager::MaterialManager()
 }
 void msys::MaterialManager::Initialize()
 {
-	RegisterFormatHandler<MaterialFormatHandler>("pmat_b");
-	RegisterFormatHandler<MaterialFormatHandler>("pmat");
+	RegisterFormatHandler<PmatFormatHandler>("pmat_b");
+	RegisterFormatHandler<PmatFormatHandler>("pmat");
+	RegisterFormatHandler<WmiFormatHandler>("wmi");
 	InitializeImportHandlers();
 }
 util::AssetObject msys::MaterialManager::ReloadAsset(const std::string &path,std::unique_ptr<MaterialLoadInfo> &&loadInfo)
