@@ -168,11 +168,11 @@ msys::MaterialProcessor::MaterialProcessor(util::AssetFormatLoader &loader,std::
 {}
 bool msys::MaterialProcessor::Load()
 {
-	auto &mdlHandler = static_cast<MaterialFormatHandler&>(*handler);
-	auto r = mdlHandler.LoadData(*this,static_cast<MaterialLoadInfo&>(*loadInfo));
+	auto &matHandler = static_cast<MaterialFormatHandler&>(*handler);
+	auto r = matHandler.LoadData(*this,static_cast<MaterialLoadInfo&>(*loadInfo));
 	if(!r)
 		return false;
-	auto mat = static_cast<MaterialManager&>(mdlHandler.GetAssetManager()).CreateMaterial(mdlHandler.shader,mdlHandler.data);
+	auto mat = static_cast<MaterialManager&>(matHandler.GetAssetManager()).CreateMaterial(matHandler.shader,matHandler.data);
 	mat->SetLoaded(true);
 	mat->SetName(identifier);
 	material = mat;
@@ -212,8 +212,8 @@ msys::MaterialManager::MaterialManager()
 void msys::MaterialManager::Initialize()
 {
 	RegisterFormatHandler<PmatFormatHandler>("pmat_b");
-	RegisterFormatHandler<PmatFormatHandler>("pmat");
-	RegisterFormatHandler<WmiFormatHandler>("wmi");
+	RegisterFormatHandler<PmatFormatHandler>("pmat",util::AssetFormatType::Text);
+	RegisterFormatHandler<WmiFormatHandler>("wmi",util::AssetFormatType::Text);
 	InitializeImportHandlers();
 }
 std::shared_ptr<Material> msys::MaterialManager::ReloadAsset(const std::string &path,std::unique_ptr<MaterialLoadInfo> &&loadInfo)

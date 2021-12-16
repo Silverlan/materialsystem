@@ -68,7 +68,9 @@ void Material::Assign(const Material &other)
 {
 	Reset();
 
-	m_stateFlags |= StateFlags::Loaded;
+	m_stateFlags = StateFlags::Loaded;
+	if(umath::is_flag_set(other.m_stateFlags,StateFlags::Error))
+		m_stateFlags |= StateFlags::Error;
 	m_data = other.m_data;
 	m_shaderInfo = other.m_shaderInfo;
 	m_shader = other.m_shader ? std::make_unique<std::string>(*other.m_shader) : nullptr;
