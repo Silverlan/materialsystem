@@ -74,7 +74,7 @@ void Material::Assign(const Material &other)
 	m_data = other.m_data;
 	m_shaderInfo = other.m_shaderInfo;
 	m_shader = other.m_shader ? std::make_unique<std::string>(*other.m_shader) : nullptr;
-	m_index = other.m_index;
+	// m_index = other.m_index;
 
 	UpdateTextures();
 }
@@ -121,7 +121,14 @@ void Material::UpdateTextures()
 {
 	if(umath::is_flag_set(m_stateFlags,StateFlags::TexturesUpdated))
 		return;
+	GetTextureInfo(DIFFUSE_MAP_IDENTIFIER);
+
+	// The call above may have already invoked UpdateTextures(), so we
+	// need to re-check
+	if(umath::is_flag_set(m_stateFlags,StateFlags::TexturesUpdated))
+		return;
 	umath::set_flag(m_stateFlags,StateFlags::TexturesUpdated);
+
 	m_texDiffuse = GetTextureInfo(DIFFUSE_MAP_IDENTIFIER);
 	if(!m_texDiffuse)
 		m_texDiffuse = GetTextureInfo(ALBEDO_MAP_IDENTIFIER);

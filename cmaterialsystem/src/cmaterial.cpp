@@ -425,6 +425,7 @@ void CMaterial::LoadTextures(bool precache)
 	if(umath::is_flag_set(m_stateFlags,StateFlags::TexturesLoaded))
 		return;
 	LoadTextures(*GetDataBlock(),precache);
+	UpdateTextures();
 	auto &shaderHandler = static_cast<msys::CMaterialManager&>(m_manager).GetShaderHandler();
 	if(shaderHandler)
 		shaderHandler(this);
