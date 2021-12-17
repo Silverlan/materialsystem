@@ -74,7 +74,7 @@ msys::TextureManager::TextureManager(prosper::IPrContext &context)
 	static_cast<TextureLoader&>(GetLoader()).SetAllowMultiThreadedGpuResourceAllocation(context.SupportsMultiThreadedResourceAllocation());
 }
 
-msys::TextureManager::~TextureManager() {}
+msys::TextureManager::~TextureManager() {m_error = nullptr;}
 
 void msys::TextureManager::InitializeProcessor(util::IAssetProcessor &processor)
 {
