@@ -82,10 +82,13 @@ namespace msys
 		virtual std::shared_ptr<Material> CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &data);
 		std::shared_ptr<Material> CreateMaterial(const std::string &identifier,const std::string &shader,const std::shared_ptr<ds::Block> &data);
 	protected:
+		friend MaterialProcessor;
 		MaterialManager();
+		virtual void Reset() override;
 		virtual void Initialize();
 		virtual void InitializeImportHandlers();
 		virtual void InitializeProcessor(util::IAssetProcessor &processor) override;
+		virtual std::shared_ptr<Material> CreateMaterialObject(const std::string &shader,const std::shared_ptr<ds::Block> &data);
 		virtual util::AssetObject InitializeAsset(const util::Asset &asset,const util::AssetLoadJob &job) override;
 		virtual util::AssetObject ReloadAsset(const std::string &path,std::unique_ptr<util::AssetLoadInfo> &&loadInfo) override;
 		msys::MaterialHandle m_error;

@@ -172,7 +172,7 @@ bool msys::MaterialProcessor::Load()
 	auto r = matHandler.LoadData(*this,static_cast<MaterialLoadInfo&>(*loadInfo));
 	if(!r)
 		return false;
-	auto mat = static_cast<MaterialManager&>(matHandler.GetAssetManager()).CreateMaterial(matHandler.shader,matHandler.data);
+	auto mat = static_cast<MaterialManager&>(matHandler.GetAssetManager()).CreateMaterialObject(matHandler.shader,matHandler.data);
 	mat->SetLoaded(true);
 	mat->SetName(identifier);
 	material = mat;
@@ -215,6 +215,11 @@ void msys::MaterialManager::Initialize()
 	RegisterFormatHandler<PmatFormatHandler>("pmat",util::AssetFormatType::Text);
 	RegisterFormatHandler<WmiFormatHandler>("wmi",util::AssetFormatType::Text);
 	InitializeImportHandlers();
+}
+void msys::MaterialManager::Reset()
+{
+	m_error = nullptr;
+	util::TFileAssetManager<Material,MaterialLoadInfo>::Reset();
 }
 std::shared_ptr<Material> msys::MaterialManager::ReloadAsset(const std::string &path,std::unique_ptr<MaterialLoadInfo> &&loadInfo)
 {
@@ -261,13 +266,23 @@ util::AssetObject msys::MaterialManager::InitializeAsset(const util::Asset &asse
 	return matProcessor.material;
 }
 std::shared_ptr<ds::Settings> msys::MaterialManager::CreateDataSettings() const {return ds::create_data_settings({});}
-std::shared_ptr<Material> msys::MaterialManager::CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &data)
+std::shared_ptr<Material> msys::MaterialManager::CreateMaterialObject(const std::string &shader,const std::shared_ptr<ds::Block> &data)
 {
 	return Material::Create(*this,shader,data);
 }
+std::shared_ptr<Material> msys::MaterialManager::CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &data)
+{
+	auto mat = CreateMaterialObject(shader,data);
+	auto asset = std::make_shared<util::Asset>();
+	asset->assetObject = mat;
+	auto index = AddToIndex(asset);
+	mat->SetIndex(index);
+	mat->SetLoaded(true);
+	return mat;
+}
 std::shared_ptr<Material> msys::MaterialManager::CreateMaterial(const std::string &identifier,const std::string &shader,const std::shared_ptr<ds::Block> &data)
 {
-	auto mat = CreateMaterial(shader,data);
+	auto mat = CreateMaterialObject(shader,data);
 	auto asset = std::make_shared<util::Asset>();
 	asset->assetObject = mat;
 	AddToCache(identifier,asset);

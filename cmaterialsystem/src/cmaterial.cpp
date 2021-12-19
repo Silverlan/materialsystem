@@ -397,6 +397,8 @@ bool CMaterial::HaveTexturesBeenInitialized() const {return umath::is_flag_set(m
 
 void CMaterial::LoadTexture(TextureInfo &texInfo,bool precache)
 {
+	if(texInfo.name.empty() || texInfo.texture != nullptr)
+		return;
 	auto mipmapMode = static_cast<TextureMipmapMode>(GetMipmapMode(GetDataBlock()));
 	auto &textureManager = GetTextureManager();
 	auto loadInfo = std::make_unique<msys::TextureLoadInfo>();

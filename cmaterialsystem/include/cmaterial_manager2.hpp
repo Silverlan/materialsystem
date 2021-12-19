@@ -20,7 +20,7 @@ namespace msys
 		static std::shared_ptr<CMaterialManager> Create(prosper::IPrContext &context);
 		virtual ~CMaterialManager() override;
 		
-		virtual std::shared_ptr<Material> CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &data) override;
+		virtual std::shared_ptr<Material> CreateMaterialObject(const std::string &shader,const std::shared_ptr<ds::Block> &data) override;
 		void MarkForReload(CMaterial &mat);
 		
 		void SetShaderHandler(const std::function<void(Material*)> &handler);

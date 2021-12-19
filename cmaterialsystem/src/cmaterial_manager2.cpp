@@ -44,8 +44,11 @@ msys::CMaterialManager::CMaterialManager(prosper::IPrContext &context)
 	context.GetShaderManager().GetShader("copy_image"); // Make sure copy_image shader has been initialized
 }
 msys::CMaterialManager::~CMaterialManager()
-{}
-std::shared_ptr<Material> msys::CMaterialManager::CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &data)
+{
+	MaterialManager::Reset();
+	m_textureManager = nullptr;
+}
+std::shared_ptr<Material> msys::CMaterialManager::CreateMaterialObject(const std::string &shader,const std::shared_ptr<ds::Block> &data)
 {
 	return std::shared_ptr<CMaterial>{CMaterial::Create(*this,shader,data)};
 }
