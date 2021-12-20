@@ -110,6 +110,7 @@ bool msys::TextureFormatHandlerVtex::LoadData(InputTextureInfo &texInfo)
 	texInfo.format = vkFormat.format;
 	texInfo.swizzle = vkFormat.swizzle;
 	texInfo.conversionFormat = vkFormat.conversionFormat;
+	m_texture = texture;
 	return true;
 }
 
