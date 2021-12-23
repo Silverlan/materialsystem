@@ -463,6 +463,10 @@ bool msys::SourceVmtFormatHandler::LoadVMT(VTFLib::CVMTFile &vmt,const std::stri
 	if(((node = vmtRoot->GetNode("$translucent")) && vmt_parameter_to_numeric_type<bool>(node,translucent)))
 		root->AddValue("int","alpha_mode",std::to_string(umath::to_integral(AlphaMode::Blend)));
 
+	float alphaFactor = 1.f;
+	if(((node = vmtRoot->GetNode("$alpha")) && vmt_parameter_to_numeric_type<float>(node,alphaFactor)))
+		root->AddValue("float","alpha_factor",std::to_string(alphaFactor));
+
 	auto alphaTest = false;
 	if(((node = vmtRoot->GetNode("$alphatest")) && vmt_parameter_to_numeric_type<bool>(node,alphaTest)))
 	{
