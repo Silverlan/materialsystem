@@ -295,10 +295,10 @@ void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data,TextureInfo &
 				static_cast<msys::CMaterialManager&>(m_manager).MarkForReload(*this);
 			});
 			m_onVkTexturesChanged.push_back(cb);
-		}
 
-		auto info = callbackInfo;
-		std::static_pointer_cast<Texture>(texInfo.texture)->CallOnLoaded([info](std::shared_ptr<Texture>) {info.use_count();}); // Keep it alive until the texture is loaded ('use_count' to make sure the compiler doesn't get the idea of optimzing anything here.).
+			auto info = callbackInfo;
+			std::static_pointer_cast<Texture>(texInfo.texture)->CallOnLoaded([info](std::shared_ptr<Texture>) {info.use_count();}); // Keep it alive until the texture is loaded ('use_count' to make sure the compiler doesn't get the idea of optimzing anything here.).
+		}
 	}
 	else if(callbackInfo != nullptr && umath::is_flag_set(loadFlags,TextureLoadFlags::LoadInstantly))
 		callbackInfo->onload(nullptr);
