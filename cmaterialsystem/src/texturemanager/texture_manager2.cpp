@@ -16,7 +16,7 @@
 #include <sharedutils/util_file.h>
 #include <fsys/filesystem.h>
 #include <fsys/ifile.hpp>
-#pragma optimize("",off)
+
 // #define ENABLE_VERBOSE_OUTPUT
 
 msys::TextureLoadInfo::TextureLoadInfo(util::AssetLoadFlags flags)
@@ -157,4 +157,3 @@ void msys::TextureManager::Test()
 		});
 	}
 }
-#pragma optimize("",on)

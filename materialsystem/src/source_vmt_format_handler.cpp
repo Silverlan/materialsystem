@@ -14,7 +14,6 @@
 #include <sharedutils/util_string.h>
 #include <datasystem.h>
 
-#pragma optimize("",off)
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include <VTFLib.h>
@@ -584,4 +583,3 @@ bool msys::SourceVmtFormatHandler::LoadVMT(VTFLib::CVMTFile &vmt,const std::stri
 }
 bool msys::SourceVmtFormatHandler::LoadVMTData(VTFLib::CVMTFile &vmt,const std::string &vmtShader,ds::Block &rootData,std::string &matShader) {return true;}
 #endif
-#pragma optimize("",on)

@@ -12,7 +12,6 @@
 #include <fsys/filesystem.h>
 #include <fsys/ifile.hpp>
 
-#pragma optimize("",off)
 #include <udm.hpp>
 msys::MaterialFormatHandler::MaterialFormatHandler(util::IAssetManager &assetManager)
 	: util::IAssetFormatHandler{assetManager}
@@ -288,4 +287,3 @@ std::shared_ptr<Material> msys::MaterialManager::CreateMaterial(const std::strin
 	AddToCache(identifier,asset);
 	return mat;
 }
-#pragma optimize("",on)

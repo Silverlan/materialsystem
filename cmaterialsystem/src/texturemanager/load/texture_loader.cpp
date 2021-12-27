@@ -6,7 +6,7 @@
 #include "texturemanager/load/texture_format_handler.hpp"
 #include "texturemanager/load/texture_processor.hpp"
 #include <prosper_context.hpp>
-#pragma optimize("",off)
+
 void msys::setup_sampler_mipmap_mode(prosper::util::SamplerCreateInfo &createInfo,TextureMipmapMode mode)
 {
 	switch(mode)
@@ -41,4 +41,3 @@ msys::TextureLoader::TextureLoader(util::IAssetManager &assetManager,prosper::IP
 	setup_sampler_mipmap_mode(samplerCreateInfo,TextureMipmapMode::Ignore);
 	m_textureSamplerNoMipmap = context.CreateSampler(samplerCreateInfo);
 }
-#pragma optimize("",on)

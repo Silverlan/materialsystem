@@ -11,7 +11,6 @@
 #include "material.h"
 #include <fsys/ifile.hpp>
 
-#pragma optimize("",off)
 #ifndef DISABLE_VMAT_SUPPORT
 #include "util_vmat.hpp"
 #include <datasystem.h>
@@ -169,4 +168,3 @@ bool msys::Source2VmatFormatHandler::InitializeVMatData(
 	return true;
 }
 #endif
-#pragma optimize("",on)

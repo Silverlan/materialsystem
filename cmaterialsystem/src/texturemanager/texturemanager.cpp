@@ -20,7 +20,7 @@
 #include <sharedutils/util_ifile.hpp>
 
 decltype(TextureManager::MAX_TEXTURE_COUNT) TextureManager::MAX_TEXTURE_COUNT = 4096;
-#pragma optimize("",off)
+
 TextureManager::LoadInfo::LoadInfo()
 	: mipmapLoadMode(TextureMipmapMode::Load)
 {}
@@ -292,4 +292,3 @@ std::shared_ptr<Texture> TextureManager::FindTexture(const std::string &imgFile,
 	}
 	return nullptr;
 }
-#pragma optimize("",on)

@@ -8,7 +8,7 @@
 #include <util_source2.hpp>
 #include <source2/resource.hpp>
 #include <source2/resource_data.hpp>
-#pragma optimize("",off)
+
 static msys::detail::VulkanImageData vtex_format_to_vulkan_format(source2::VTexFormat format)
 {
 	msys::detail::VulkanImageData vkImgData {};
@@ -115,4 +115,3 @@ bool msys::TextureFormatHandlerVtex::LoadData(InputTextureInfo &texInfo)
 }
 
 #endif
-#pragma optimize("",on)

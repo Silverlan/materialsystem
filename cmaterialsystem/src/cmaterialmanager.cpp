@@ -28,7 +28,7 @@
 #include <VMTFile.h>
 #include "util_vmt.hpp"
 #endif
-#pragma optimize("",off)
+
 CMaterialManager::CMaterialManager(prosper::IPrContext &context)
 	: MaterialManager{},prosper::ContextObject(context)
 {
@@ -620,4 +620,3 @@ Material *CMaterialManager::Load(const std::string &path,bool bReload,bool loadI
 {
 	return Load(path,nullptr,nullptr,bReload,bFirstTimeError,loadInstantly);
 }
-#pragma optimize("",on)

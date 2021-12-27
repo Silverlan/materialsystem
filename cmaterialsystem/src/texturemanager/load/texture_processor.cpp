@@ -12,7 +12,7 @@
 #include <image/prosper_image.hpp>
 #include <image/prosper_sampler.hpp>
 #include <util_image_buffer.hpp>
-#pragma optimize("",off)
+
 bool msys::TextureProcessor::PrepareImage(prosper::IPrContext &context)
 {
 	return InitializeProsperImage(context) && InitializeImageBuffers(context) && InitializeTexture(context);
@@ -241,4 +241,3 @@ bool msys::TextureProcessor::GenerateMipmaps(prosper::IPrContext &context)
 	context.FlushSetupCommandBuffer();
 	return true;
 }
-#pragma optimize("",on)

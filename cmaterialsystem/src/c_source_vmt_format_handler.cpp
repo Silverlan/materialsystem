@@ -30,7 +30,6 @@
 #include <datasystem_vector.h>
 #include <fsys/ifile.hpp>
 
-#pragma optimize("",off)
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include <VTFLib.h>
@@ -425,4 +424,3 @@ bool msys::CSourceVmtFormatHandler::LoadVMTData(VTFLib::CVMTFile &vmt,const std:
 	return true;
 }
 #endif
-#pragma optimize("",on)

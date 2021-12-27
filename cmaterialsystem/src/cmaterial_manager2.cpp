@@ -20,7 +20,6 @@
 #include "shaders/source2/c_shader_decompose_metalness_reflectance.hpp"
 #include "shaders/source2/c_shader_decompose_pbr.hpp"
 
-#pragma optimize("",off)
 std::shared_ptr<msys::CMaterialManager> msys::CMaterialManager::Create(prosper::IPrContext &context)
 {
 	auto matManager = std::shared_ptr<CMaterialManager>{new CMaterialManager{context}};
@@ -100,4 +99,3 @@ void msys::CMaterialManager::Poll()
 		}
 	}
 }
-#pragma optimize("",on)
