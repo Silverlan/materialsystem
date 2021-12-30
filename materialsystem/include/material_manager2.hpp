@@ -76,7 +76,7 @@ namespace msys
 		void SetErrorMaterial(Material *mat);
 		Material *GetErrorMaterial() const;
 
-		std::shared_ptr<Material> ReloadAsset(const std::string &path,std::unique_ptr<MaterialLoadInfo> &&loadInfo=nullptr);
+		std::shared_ptr<Material> ReloadAsset(const std::string &path,std::unique_ptr<MaterialLoadInfo> &&loadInfo=nullptr,PreloadResult *optOutResult=nullptr);
 		
 		std::shared_ptr<ds::Settings> CreateDataSettings() const;
 		virtual std::shared_ptr<Material> CreateMaterial(const std::string &shader,const std::shared_ptr<ds::Block> &data);
@@ -90,7 +90,7 @@ namespace msys
 		virtual void InitializeProcessor(util::IAssetProcessor &processor) override;
 		virtual std::shared_ptr<Material> CreateMaterialObject(const std::string &shader,const std::shared_ptr<ds::Block> &data);
 		virtual util::AssetObject InitializeAsset(const util::Asset &asset,const util::AssetLoadJob &job) override;
-		virtual util::AssetObject ReloadAsset(const std::string &path,std::unique_ptr<util::AssetLoadInfo> &&loadInfo) override;
+		virtual util::AssetObject ReloadAsset(const std::string &path,std::unique_ptr<util::AssetLoadInfo> &&loadInfo,PreloadResult *optOutResult=nullptr) override;
 		msys::MaterialHandle m_error;
 	};
 };

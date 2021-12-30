@@ -220,12 +220,12 @@ void msys::MaterialManager::Reset()
 	m_error = nullptr;
 	util::TFileAssetManager<Material,MaterialLoadInfo>::Reset();
 }
-std::shared_ptr<Material> msys::MaterialManager::ReloadAsset(const std::string &path,std::unique_ptr<MaterialLoadInfo> &&loadInfo)
+std::shared_ptr<Material> msys::MaterialManager::ReloadAsset(const std::string &path,std::unique_ptr<MaterialLoadInfo> &&loadInfo,PreloadResult *optOutResult)
 {
 	auto *asset = FindCachedAsset(path);
 	if(!asset)
-		return LoadAsset(path,std::move(loadInfo));
-	auto matNew = LoadAsset(path,util::AssetLoadFlags::IgnoreCache | util::AssetLoadFlags::DontCache);
+		return LoadAsset(path,std::move(loadInfo),optOutResult);
+	auto matNew = LoadAsset(path,util::AssetLoadFlags::IgnoreCache | util::AssetLoadFlags::DontCache,optOutResult);
 	if(!matNew)
 		return nullptr;
 	auto matOld = GetAssetObject(*asset);
@@ -233,9 +233,9 @@ std::shared_ptr<Material> msys::MaterialManager::ReloadAsset(const std::string &
 	OnAssetReloaded(path);
 	return matOld;
 }
-util::AssetObject msys::MaterialManager::ReloadAsset(const std::string &path,std::unique_ptr<util::AssetLoadInfo> &&loadInfo)
+util::AssetObject msys::MaterialManager::ReloadAsset(const std::string &path,std::unique_ptr<util::AssetLoadInfo> &&loadInfo,PreloadResult *optOutResult)
 {
-	return ReloadAsset(path,util::static_unique_pointer_cast<util::AssetLoadInfo,MaterialLoadInfo>(std::move(loadInfo)));
+	return ReloadAsset(path,util::static_unique_pointer_cast<util::AssetLoadInfo,MaterialLoadInfo>(std::move(loadInfo)),optOutResult);
 }
 void msys::MaterialManager::InitializeImportHandlers()
 {
