@@ -143,13 +143,20 @@ bool msys::SourceVmtFormatHandler::LoadVMT(VTFLib::CVMTFile &vmt,const std::stri
 	{
 		bWater = true;
 		shaderName = "water";
+		auto hasDudv = false;
 		if((node = vmtRoot->GetNode("$bumpmap")) != nullptr)
 		{
 			if(node->GetType() == VMTNodeType::NODE_TYPE_STRING)
 			{
 				auto *bumpMapNode = static_cast<VTFLib::Nodes::CVMTStringNode*>(node);
 				root->AddData(Material::DUDV_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,bumpMapNode->GetValue()));
+				hasDudv = true;
 			}
+		}
+		if(!hasDudv)
+		{
+			std::string defaultDudvMap = "nature/water_coast01_dudv"; // Should be shipped with SFM or HL2
+			root->AddData(Material::DUDV_MAP_IDENTIFIER,std::make_shared<ds::Texture>(*dataSettings,defaultDudvMap));
 		}
 		if((node = vmtRoot->GetNode("$normalmap")) != nullptr)
 		{
