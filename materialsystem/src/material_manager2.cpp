@@ -281,9 +281,23 @@ std::shared_ptr<Material> msys::MaterialManager::CreateMaterial(const std::strin
 }
 std::shared_ptr<Material> msys::MaterialManager::CreateMaterial(const std::string &identifier,const std::string &shader,const std::shared_ptr<ds::Block> &data)
 {
-	auto mat = CreateMaterialObject(shader,data);
-	auto asset = std::make_shared<util::Asset>();
-	asset->assetObject = mat;
-	AddToCache(identifier,asset);
+	auto tmpMat = CreateMaterialObject(shader,data);
+	std::shared_ptr<Material> mat = nullptr;
+	auto *asset = FindCachedAsset(identifier);
+	if(asset)
+	{
+		mat = GetAssetObject(*asset);
+		mat->Assign(*tmpMat);
+	}
+	else
+	{
+		auto asset = std::make_shared<util::Asset>();
+		asset->assetObject = tmpMat;
+		auto idx = AddToCache(identifier,asset);
+		mat = tmpMat;
+		mat->SetIndex(idx);
+		mat->SetLoaded(true);
+		mat->SetName(ToCacheIdentifier(identifier));
+	}
 	return mat;
 }

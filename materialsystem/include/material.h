@@ -130,6 +130,7 @@ public:
 	bool SaveLegacy() const;
 
 	MaterialIndex GetIndex() const {return m_index;}
+	uint32_t GetUpdateIndex() const {return m_updateIndex;}
 
 	virtual void Assign(const Material &other);
 	
@@ -152,6 +153,7 @@ protected:
 	virtual void Initialize(const std::shared_ptr<ds::Block> &data);
 	virtual void OnTexturesUpdated();
 	void SetIndex(MaterialIndex index) {m_index = index;}
+	uint32_t m_updateIndex = 0;
 	util::WeakHandle<util::ShaderInfo> m_shaderInfo = {};
 	std::unique_ptr<std::string> m_shader;
 	std::string m_name;
