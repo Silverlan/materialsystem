@@ -148,6 +148,7 @@ void Material::UpdateTextures()
 	else
 		m_alphaMode = static_cast<AlphaMode>(data->GetInt("alpha_mode",umath::to_integral(AlphaMode::Opaque)));
 
+	++m_updateIndex;
 	OnTexturesUpdated();
 }
 
@@ -270,18 +271,40 @@ bool Material::Save(const std::string &relFileName,std::string &outErr,bool abso
 		return false;
 	auto fileName = relFileName;
 	if(absolutePath == false)
+	{
+		auto assetFilePath = GetManager().FindAssetFilePath(fileName);
+		if(assetFilePath.has_value())
+			fileName = std::move(*assetFilePath);
 		fileName = "materials/" +fileName;
+	}
+
+	std::string existingFilePath;
+	// If material already exists (e.g. inside an addon), make sure we have the correct path to overwrite it
+	if(FileManager::FindLocalPath(fileName,existingFilePath))
+		fileName = std::move(existingFilePath);
+
+	std::string ext;
+	auto binary = false;
+	if(ufile::get_extension(fileName,&ext) && ustring::compare(ext.c_str(),FORMAT_MATERIAL_BINARY,false))
+		binary = true;
+	
+	ufile::remove_extension_from_filename(fileName,g_knownMaterialFormats);
+	if(binary)
+		fileName += '.' +std::string{FORMAT_MATERIAL_BINARY};
+	else
+		fileName += '.' +std::string{FORMAT_MATERIAL_ASCII};
+	
 	FileManager::CreatePath(ufile::get_path_from_filename(fileName).c_str());
-	auto writeFileName = fileName;
-	ufile::remove_extension_from_filename(writeFileName,g_knownMaterialFormats);
-	writeFileName += '.' +std::string{FORMAT_MATERIAL_ASCII};
-	auto f = FileManager::OpenFile<VFilePtrReal>(writeFileName.c_str(),"w");
+	auto f = FileManager::OpenFile<VFilePtrReal>(fileName.c_str(),binary ? "wb" : "w");
 	if(f == nullptr)
 	{
-		outErr = "Unable to open file '" +writeFileName +"'!";
+		outErr = "Unable to open file '" +fileName +"'!";
 		return false;
 	}
-	result = udmData->SaveAscii(f,udm::AsciiSaveFlags::None);
+	if(binary)
+		result = udmData->Save(f);
+	else
+		result = udmData->SaveAscii(f,udm::AsciiSaveFlags::None);
 	if(result == false)
 	{
 		outErr = "Unable to save UDM data!";
