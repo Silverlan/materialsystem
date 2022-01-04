@@ -327,6 +327,7 @@ void CMaterial::SetTexture(const std::string &identifier,Texture *texture)
 	v.name = texture->GetName();
 	m_data->AddData(identifier,dataTex);
 
+	umath::set_flag(Material::m_stateFlags,Material::StateFlags::TexturesUpdated,false);
 	UpdateTextures();
 	auto &shaderHandler = static_cast<msys::CMaterialManager&>(GetManager()).GetShaderHandler();
 	if(shaderHandler != nullptr)
@@ -367,6 +368,7 @@ void CMaterial::SetTexture(const std::string &identifier,const std::string &text
 	auto dsSettingsTmp = ds::create_data_settings({});
 	auto dataTex = std::make_shared<ds::Texture>(*dsSettingsTmp,texture); // Data settings will be overwrriten by AddData-call below
 	m_data->AddData(identifier,dataTex);
+	umath::set_flag(Material::m_stateFlags,Material::StateFlags::TexturesUpdated,false);
 	UpdateTextures();
 
 	SetLoaded(false);
