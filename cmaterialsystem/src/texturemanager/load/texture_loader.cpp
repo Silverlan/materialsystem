@@ -31,7 +31,7 @@ void msys::setup_sampler_mipmap_mode(prosper::util::SamplerCreateInfo &createInf
 }
 
 msys::TextureLoader::TextureLoader(util::IAssetManager &assetManager,prosper::IPrContext &context)
-	: util::TAssetFormatLoader<TextureProcessor>{assetManager},m_context{context}
+	: util::TAssetFormatLoader<TextureProcessor>{assetManager,"texture"},m_context{context}
 {
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
 	setup_sampler_mipmap_mode(samplerCreateInfo,TextureMipmapMode::Load);

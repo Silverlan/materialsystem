@@ -30,7 +30,7 @@ namespace msys
 	{
 	public:
 		MaterialLoader(util::IAssetManager &assetManager)
-			: util::TAssetFormatLoader<MaterialProcessor>{assetManager}
+			: util::TAssetFormatLoader<MaterialProcessor>{assetManager,"material"}
 		{}
 	protected:
 		virtual std::unique_ptr<util::IAssetProcessor> CreateAssetProcessor(
