@@ -210,7 +210,7 @@ bool msys::TextureProcessor::CopyBuffersToImage(prosper::IPrContext &context)
 		setupCmd->RecordCopyBufferToImage(copyInfo,*bufInfo.buffer,*image);
 	}
 
-	if(m_generateMipmaps)
+	if(!m_generateMipmaps)
 		setupCmd->RecordImageBarrier(*image,prosper::ImageLayout::TransferDstOptimal,prosper::ImageLayout::ShaderReadOnlyOptimal);
 	context.FlushSetupCommandBuffer(); // Make sure image copy is complete before generating mipmaps
 
