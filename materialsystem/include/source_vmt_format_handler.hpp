@@ -11,6 +11,11 @@
 
 namespace VTFLib {class CVMTFile;};
 namespace ds {class Block;};
+namespace ValveKeyValueFormat
+{
+	class KVNode;
+	class KVBranch;
+};
 namespace msys
 {
 	class DLLMATSYS SourceVmtFormatHandler
@@ -22,6 +27,17 @@ namespace msys
 	protected:
 		virtual bool LoadVMTData(VTFLib::CVMTFile &vmt,const std::string &vmtShader,ds::Block &rootData,std::string &matShader);
 		bool LoadVMT(VTFLib::CVMTFile &vmt,const std::string &outputPath,std::string &outFilePath);
+	};
+	class DLLMATSYS SourceVmtFormatHandler2
+		: public util::IImportAssetFormatHandler
+	{
+	public:
+		SourceVmtFormatHandler2(util::IAssetManager &assetManager);
+		virtual bool Import(const std::string &outputPath,std::string &outFilePath) override;
+	protected:
+		static std::optional<std::string> GetStringValue(ValveKeyValueFormat::KVBranch &node,std::string key);
+		virtual bool LoadVMTData(ValveKeyValueFormat::KVNode &vmt,const std::string &vmtShader,ds::Block &rootData,std::string &matShader);
+		bool LoadVMT(ValveKeyValueFormat::KVNode &vmt,const std::string &outputPath,std::string &outFilePath);
 	};
 };
 #endif

@@ -20,6 +20,14 @@ namespace msys
 	protected:
 		virtual bool LoadVMTData(VTFLib::CVMTFile &vmt,const std::string &vmtShader,ds::Block &rootData,std::string &matShader) override;
 	};
+	class DLLCMATSYS CSourceVmtFormatHandler2
+		: public SourceVmtFormatHandler2
+	{
+	public:
+		CSourceVmtFormatHandler2(util::IAssetManager &assetManager);
+	protected:
+		virtual bool LoadVMTData(ValveKeyValueFormat::KVNode &vmt,const std::string &vmtShader,ds::Block &rootData,std::string &matShader) override;
+	};
 };
 
 #endif
