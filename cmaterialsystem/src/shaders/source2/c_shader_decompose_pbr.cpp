@@ -81,13 +81,14 @@ msys::source2::ShaderDecomposePBR::DecomposedImageSet msys::source2::ShaderDecom
 	auto &setupCmd = context.GetSetupCommandBuffer();
 	if(setupCmd->RecordBeginRenderPass(*rt))
 	{
-		if(BeginDraw(setupCmd))
+		prosper::ShaderBindState bindState {*setupCmd};
+		if(RecordBeginDraw(bindState))
 		{
 			PushConstants pushConstants {};
 			pushConstants.flags = flags;
-			if(RecordPushConstants(pushConstants))
-				Draw(ds);
-			EndDraw();
+			if(RecordPushConstants(bindState,pushConstants))
+				RecordDraw(bindState,ds);
+			RecordEndDraw(bindState);
 		}
 		setupCmd->RecordEndRenderPass();
 	}
@@ -104,8 +105,8 @@ void msys::source2::ShaderDecomposePBR::InitializeGfxPipeline(prosper::GraphicsP
 	ShaderGraphics::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
 	AddDefaultVertexAttributes(pipelineInfo);
-	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_TEXTURE);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),prosper::ShaderStageFlags::FragmentBit);
+	AddDescriptorSetGroup(pipelineInfo,pipelineIdx,DESCRIPTOR_SET_TEXTURE);
+	AttachPushConstantRange(pipelineInfo,pipelineIdx,0u,sizeof(PushConstants),prosper::ShaderStageFlags::FragmentBit);
 	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 }
 

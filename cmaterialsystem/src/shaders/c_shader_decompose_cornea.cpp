@@ -27,7 +27,7 @@ void msys::ShaderDecomposeCornea::InitializeGfxPipeline(prosper::GraphicsPipelin
 	ShaderGraphics::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
 	AddDefaultVertexAttributes(pipelineInfo);
-	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_TEXTURE);
+	AddDescriptorSetGroup(pipelineInfo,pipelineIdx,DESCRIPTOR_SET_TEXTURE);
 }
 
 void msys::ShaderDecomposeCornea::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx)

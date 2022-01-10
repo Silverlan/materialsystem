@@ -35,8 +35,8 @@ void msys::ShaderExtractImageChannel::InitializeGfxPipeline(prosper::GraphicsPip
 	ShaderGraphics::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
 
 	AddDefaultVertexAttributes(pipelineInfo);
-	AddDescriptorSetGroup(pipelineInfo,DESCRIPTOR_SET_TEXTURE);
-	AttachPushConstantRange(pipelineInfo,0u,sizeof(PushConstants),prosper::ShaderStageFlags::FragmentBit);
+	AddDescriptorSetGroup(pipelineInfo,pipelineIdx,DESCRIPTOR_SET_TEXTURE);
+	AttachPushConstantRange(pipelineInfo,pipelineIdx,0u,sizeof(PushConstants),prosper::ShaderStageFlags::FragmentBit);
 }
 
 void msys::ShaderExtractImageChannel::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx)
@@ -95,16 +95,17 @@ std::shared_ptr<prosper::IImage> msys::ShaderExtractImageChannel::ExtractImageCh
 	auto &setupCmd = context.GetSetupCommandBuffer();
 	if(setupCmd->RecordBeginRenderPass(*rt))
 	{
-		if(BeginDraw(setupCmd))
+		prosper::ShaderBindState bindState {*setupCmd};
+		if(RecordBeginDraw(bindState))
 		{
-			if(RecordPushConstants(PushConstants{
+			if(RecordPushConstants(bindState,PushConstants{
 				channelValues.at(0),
 				channelValues.at(1),
 				channelValues.at(2),
 				channelValues.at(3)
 			}))
-				Draw(ds);
-			EndDraw();
+				RecordDraw(bindState,ds);
+			RecordEndDraw(bindState);
 		}
 		setupCmd->RecordEndRenderPass();
 	}

@@ -230,10 +230,11 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				auto &setupCmd = context.GetSetupCommandBuffer();
 				if(setupCmd->RecordBeginRenderPass(*rt))
 				{
-					if(shaderDecomposeCornea->BeginDraw(setupCmd))
+					prosper::ShaderBindState bindState{*setupCmd};
+					if(shaderDecomposeCornea->RecordBeginDraw(bindState))
 					{
-						shaderDecomposeCornea->Draw(ds);
-						shaderDecomposeCornea->EndDraw();
+						shaderDecomposeCornea->RecordDraw(bindState,ds);
+						shaderDecomposeCornea->RecordEndDraw(bindState);
 					}
 					setupCmd->RecordEndRenderPass();
 				}
@@ -474,10 +475,11 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt,LoadInfo &info,ds
 				auto &setupCmd = context.GetSetupCommandBuffer();
 				if(setupCmd->RecordBeginRenderPass(*rt))
 				{
-					if(shaderSSBumpMapToNormalMap->BeginDraw(setupCmd))
+					prosper::ShaderBindState bindState{*setupCmd};
+					if(shaderSSBumpMapToNormalMap->RecordBeginDraw(bindState))
 					{
-						shaderSSBumpMapToNormalMap->Draw(ds);
-						shaderSSBumpMapToNormalMap->EndDraw();
+						shaderSSBumpMapToNormalMap->RecordDraw(bindState,ds);
+						shaderSSBumpMapToNormalMap->RecordEndDraw(bindState);
 					}
 					setupCmd->RecordEndRenderPass();
 				}

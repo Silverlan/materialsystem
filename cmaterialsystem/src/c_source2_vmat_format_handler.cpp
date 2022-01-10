@@ -121,10 +121,11 @@ bool msys::CSource2VmatFormatHandler::InitializeVMatData(
 					auto &setupCmd = context.GetSetupCommandBuffer();
 					if(setupCmd->RecordBeginRenderPass(*rt))
 					{
-						if(shaderDecomposeMetalnessReflectance->BeginDraw(setupCmd))
+						prosper::ShaderBindState bindState{*setupCmd};
+						if(shaderDecomposeMetalnessReflectance->RecordBeginDraw(bindState))
 						{
-							shaderDecomposeMetalnessReflectance->Draw(ds);
-							shaderDecomposeMetalnessReflectance->EndDraw();
+							shaderDecomposeMetalnessReflectance->RecordDraw(bindState,ds);
+							shaderDecomposeMetalnessReflectance->RecordEndDraw(bindState);
 						}
 						setupCmd->RecordEndRenderPass();
 					}
@@ -384,10 +385,11 @@ bool msys::CSource2VmatFormatHandler::InitializeVMatData(
 						auto &setupCmd = context.GetSetupCommandBuffer();
 						if(setupCmd->RecordBeginRenderPass(*rt))
 						{
-							if(shaderGenerateTangentSpaceNormalMap->BeginDraw(setupCmd))
+							prosper::ShaderBindState bindState{*setupCmd};
+							if(shaderGenerateTangentSpaceNormalMap->RecordBeginDraw(bindState))
 							{
-								shaderGenerateTangentSpaceNormalMap->Draw(ds);
-								shaderGenerateTangentSpaceNormalMap->EndDraw();
+								shaderGenerateTangentSpaceNormalMap->RecordDraw(bindState,ds);
+								shaderGenerateTangentSpaceNormalMap->RecordEndDraw(bindState);
 							}
 							setupCmd->RecordEndRenderPass();
 						}
