@@ -69,6 +69,7 @@ link_external_library(iglfw)
 link_external_library(glfw)
 link_external_library(util_source2)
 link_external_library(util_udm)
+link_external_library(vkv_parser)
 
 add_include_dir(glm)
 add_include_dir(gli)

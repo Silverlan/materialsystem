@@ -63,6 +63,7 @@ link_external_library(lpng)
 link_external_library(util_image)
 link_external_library(util_source2)
 link_external_library(util_udm)
+link_external_library(vkv_parser)
 add_external_library(lz4)
 
 add_include_dir(glm)
