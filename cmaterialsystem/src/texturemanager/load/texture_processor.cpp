@@ -94,6 +94,15 @@ bool msys::TextureProcessor::InitializeProsperImage(prosper::IPrContext &context
 
 		imageFormat = prosper::Format::B8G8R8A8_UNorm;
 	}
+	else if(imageFormat == prosper::Format::R8G8B8_UNorm_PoorCoverage && context.IsImageFormatSupported(imageFormat,usage,prosper::ImageType::e2D,prosper::ImageTiling::Optimal) == false)
+	{
+		cpuImageConverter = [](const void *imgData,std::shared_ptr<uimg::ImageBuffer> &outImg,uint32_t width,uint32_t height) {
+			outImg = uimg::ImageBuffer::Create(imgData,width,height,uimg::Format::RGB8);
+			outImg->Convert(uimg::Format::RGBA8);
+		};
+
+		imageFormat = prosper::Format::R8G8B8A8_UNorm;
+	}
 	if(context.IsImageFormatSupported(imageFormat,usage) == false || (targetGpuConversionFormat.has_value() && context.IsImageFormatSupported(*targetGpuConversionFormat,usage) == false))
 		return false;
 
