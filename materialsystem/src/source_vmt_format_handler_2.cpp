@@ -250,6 +250,12 @@ bool msys::SourceVmtFormatHandler2::LoadVMT(ValveKeyValueFormat::KVNode &vmt,con
 			root->AddValue("vector4","color_factor","0.1 0.1 0.1 1.0");
 			root->AddValue("vector4","bloom_color_factor","0 0 0 1");
 		}
+		else
+		{
+			// Additive isn't supported right now, so we'll just hide
+			// the material for the time being
+			root->AddValue("float","alpha_factor","0");
+		}
 	}
 
 	auto bHasGlowMap = false;
