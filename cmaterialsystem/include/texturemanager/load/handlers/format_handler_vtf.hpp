@@ -12,7 +12,7 @@
 
 #ifndef DISABLE_VTF_SUPPORT
 namespace VTFLib {class CVTFFile;};
-enum tagVTFImageFormat;
+
 namespace msys
 {
 	namespace detail
