@@ -18,6 +18,7 @@
 #include <VMTFile.h>
 #include <VTFLib.h>
 #include "util_vmt.hpp"
+
 msys::SourceVmtFormatHandler::SourceVmtFormatHandler(util::IAssetManager &assetManager)
 	: util::IImportAssetFormatHandler{assetManager}
 {}
@@ -114,11 +115,13 @@ static std::array<float,3> get_vmt_matrix(VTFLib::Nodes::CVMTStringNode &node)
 	std::vector<std::string> substrings {};
 	ustring::explode_whitespace(value,substrings);
 
-	std::array<float,3> data {
-		(substrings.size() > 0) ? util::to_float(substrings.at(0)) : 0.f,
-		(substrings.size() > 1) ? util::to_float(substrings.at(1)) : 0.f,
-		(substrings.size() > 2) ? util::to_float(substrings.at(2)) : 0.f,
-	};
+	std::array<float,3> data {0.f,0.f,0.f};
+	for(uint8_t i=0;i<umath::min(substrings.size(),static_cast<size_t>(3));++i)
+	{
+		auto val = util::to_float(substrings.at(i));
+		for(auto j=i;j<3;++j)
+			data[j] = val;
+	}
 	return data;
 }
 
