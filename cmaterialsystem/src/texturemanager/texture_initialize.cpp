@@ -148,8 +148,7 @@ static void initialize_image(TextureQueueItem &item,const Texture &texture,const
 		prosper::util::BufferImageCopyInfo copyInfo {};
 		copyInfo.mipLevel = bufInfo.mipmapIndex;
 		copyInfo.baseArrayLayer = bufInfo.layerIndex;
-		copyInfo.width = extent.width;
-		copyInfo.height = extent.height;
+		copyInfo.imageExtent = {extent.width,extent.height};
 		setupCmd->RecordCopyBufferToImage(copyInfo,*bufInfo.buffer,*outImage);
 	}
 
