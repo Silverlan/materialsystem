@@ -190,6 +190,7 @@ void Material::SetLoaded(bool b)
 }
 bool Material::Save(udm::AssetData outData,std::string &outErr)
 {
+	outData.GetData().Add(GetShaderIdentifier());
 	auto udm = (*outData)[GetShaderIdentifier()];
 	std::function<void(udm::LinkedPropertyWrapper,ds::Block&)> dataBlockToUdm = nullptr;
 	dataBlockToUdm = [&dataBlockToUdm,&udm](udm::LinkedPropertyWrapper prop,ds::Block &block) {
