@@ -83,16 +83,16 @@ runs:
             ls -R
             echo "Done!"
             
-    - name: Build submodule - VKVParser
-      uses: Silverlan/common_actions/build_submodule@main
-      with:
-        repo: 'https://github.com/Silverlan/VKVParser.git'
-        repo_name: 'VKVParser'
-        repo_branch: 'master'
-        build_target: KVParser
-        lib_name: ${{ matrix.config.build_type }}/KVParser
-        cmake_var: 'DEPENDENCY_VKV_PARSER_INCLUDE'
-        cmake_var_lib: 'DEPENDENCY_VKV_PARSER_LIBRARY'
+    #- name: Build submodule - VKVParser
+    #  uses: Silverlan/common_actions/build_submodule@main
+    #  with:
+    #    repo: 'https://github.com/Silverlan/VKVParser.git'
+    #    repo_name: 'VKVParser'
+    #    repo_branch: 'master'
+    #    build_target: KVParser
+    #    lib_name: ${{ matrix.config.build_type }}/KVParser
+    #    cmake_var: 'DEPENDENCY_VKV_PARSER_INCLUDE'
+    #    cmake_var_lib: 'DEPENDENCY_VKV_PARSER_LIBRARY'
             
     - name: Build submodule - util_source2
       uses: Silverlan/util_source2/github_actions/build@master
