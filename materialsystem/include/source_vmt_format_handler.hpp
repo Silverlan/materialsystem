@@ -28,6 +28,7 @@ namespace msys
 		virtual bool LoadVMTData(VTFLib::CVMTFile &vmt,const std::string &vmtShader,ds::Block &rootData,std::string &matShader);
 		bool LoadVMT(VTFLib::CVMTFile &vmt,const std::string &outputPath,std::string &outFilePath);
 	};
+#ifdef ENABLE_VKV_PARSER
 	class DLLMATSYS SourceVmtFormatHandler2
 		: public util::IImportAssetFormatHandler
 	{
@@ -39,6 +40,7 @@ namespace msys
 		virtual bool LoadVMTData(ValveKeyValueFormat::KVNode &vmt,const std::string &vmtShader,ds::Block &rootData,std::string &matShader);
 		bool LoadVMT(ValveKeyValueFormat::KVNode &vmt,const std::string &outputPath,std::string &outFilePath);
 	};
+#endif
 };
 #endif
 

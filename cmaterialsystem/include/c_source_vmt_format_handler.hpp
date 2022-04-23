@@ -20,6 +20,7 @@ namespace msys
 	protected:
 		virtual bool LoadVMTData(VTFLib::CVMTFile &vmt,const std::string &vmtShader,ds::Block &rootData,std::string &matShader) override;
 	};
+#ifdef ENABLE_VKV_PARSER
 	class DLLCMATSYS CSourceVmtFormatHandler2
 		: public SourceVmtFormatHandler2
 	{
@@ -28,6 +29,7 @@ namespace msys
 	protected:
 		virtual bool LoadVMTData(ValveKeyValueFormat::KVNode &vmt,const std::string &vmtShader,ds::Block &rootData,std::string &matShader) override;
 	};
+#endif
 };
 
 #endif

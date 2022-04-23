@@ -15,6 +15,7 @@
 #include <datasystem.h>
 
 #ifndef DISABLE_VMT_SUPPORT
+#ifdef ENABLE_VKV_PARSER
 #include "util_vmt.hpp"
 #include <VKVParser/library.h>
 msys::SourceVmtFormatHandler2::SourceVmtFormatHandler2(util::IAssetManager &assetManager)
@@ -574,4 +575,5 @@ bool msys::SourceVmtFormatHandler2::LoadVMT(ValveKeyValueFormat::KVNode &vmt,con
 	return true;
 }
 bool msys::SourceVmtFormatHandler2::LoadVMTData(ValveKeyValueFormat::KVNode &node,const std::string &vmtShader,ds::Block &rootData,std::string &matShader) {return true;}
+#endif
 #endif

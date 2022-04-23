@@ -3,7 +3,9 @@
 
 #include <VMTFile.h>
 #include <VTFLib.h>
+#ifdef ENABLE_VKV_PARSER
 #include <VKVParser/library.h>
+#endif
 #include <sharedutils/util.h>
 #include <sharedutils/util_string.h>
 #include <mathutil/uvec.h>

@@ -31,6 +31,7 @@
 #include <fsys/ifile.hpp>
 
 #ifndef DISABLE_VMT_SUPPORT
+#ifdef ENABLE_VKV_PARSER
 #include "util_vmt.hpp"
 #include <VKVParser/library.h>
 msys::CSourceVmtFormatHandler2::CSourceVmtFormatHandler2(util::IAssetManager &assetManager)
@@ -400,4 +401,5 @@ bool msys::CSourceVmtFormatHandler2::LoadVMTData(ValveKeyValueFormat::KVNode &vm
 	matManager.GetTextureManager().ClearUnused();
 	return true;
 }
+#endif
 #endif
