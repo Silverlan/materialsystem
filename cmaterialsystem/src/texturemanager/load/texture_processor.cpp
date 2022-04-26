@@ -12,7 +12,7 @@
 #include <image/prosper_image.hpp>
 #include <image/prosper_sampler.hpp>
 #include <util_image_buffer.hpp>
-
+#pragma optimize("",off)
 bool msys::TextureProcessor::PrepareImage(prosper::IPrContext &context)
 {
 	return InitializeProsperImage(context) && InitializeImageBuffers(context) && InitializeTexture(context);
@@ -172,6 +172,8 @@ bool msys::TextureProcessor::InitializeImageBuffers(prosper::IPrContext &context
 	buffers.reserve(numLayers *mipmapCount);
 	auto &imgBuffers = m_tmpImgBuffers;
 	imgBuffers.reserve(numLayers *mipmapCount);
+	auto bufAlignment = prosper::util::is_compressed_format(inputTextureInfo.format) ?
+		prosper::util::get_block_size(inputTextureInfo.format) : 0;
 	for(auto iLayer=decltype(numLayers){0u};iLayer<numLayers;++iLayer)
 	{
 		for(auto iMipmap=decltype(mipmapCount){0u};iMipmap<mipmapCount;++iMipmap)
@@ -195,7 +197,7 @@ bool msys::TextureProcessor::InitializeImageBuffers(prosper::IPrContext &context
 			}
 
 			// Initialize buffer with source image data
-			auto buf = context.AllocateTemporaryBuffer(dataSize,0u /* alignment */,data);
+			auto buf = context.AllocateTemporaryBuffer(dataSize,bufAlignment,data);
 			buffers.push_back({buf,iLayer,iMipmap}); // We need to keep the buffers alive until the copy has completed
 		}
 	}
@@ -249,3 +251,4 @@ bool msys::TextureProcessor::GenerateMipmaps(prosper::IPrContext &context)
 	context.FlushSetupCommandBuffer();
 	return true;
 }
+#pragma optimize("",on)
