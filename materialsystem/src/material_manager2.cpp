@@ -224,7 +224,10 @@ std::shared_ptr<Material> msys::MaterialManager::ReloadAsset(const std::string &
 {
 	auto *asset = FindCachedAsset(path);
 	if(!asset)
+	{
+		ClearCachedResult(GetIdentifierHash(path));
 		return LoadAsset(path,std::move(loadInfo),optOutResult);
+	}
 	auto matNew = LoadAsset(path,util::AssetLoadFlags::IgnoreCache | util::AssetLoadFlags::DontCache,optOutResult);
 	if(!matNew)
 		return nullptr;
