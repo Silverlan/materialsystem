@@ -18,6 +18,8 @@ bool msys::TextureFormatHandlerGli::GetDataPtr(uint32_t layer,uint32_t mipmapIdx
 bool msys::TextureFormatHandlerGli::LoadData(InputTextureInfo &texInfo)
 {
 	auto sz = m_file->GetSize();
+	if(sz == 0)
+		return false;
 	std::vector<uint8_t> data(sz);
 	m_file->Read(data.data(),sz);
 	m_texture = gli::load(static_cast<char*>(static_cast<void*>(data.data())),data.size());
