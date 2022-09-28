@@ -35,7 +35,7 @@ namespace msys
 		virtual void InitializeImportHandlers() override;
 		std::function<void(Material*)> m_shaderHandler;
 		prosper::IPrContext &m_context;
-		std::unique_ptr<msys::TextureManager> m_textureManager = nullptr;
+        std::unique_ptr<msys::TextureManager> m_textureManager;
 		std::queue<std::weak_ptr<Material>> m_reloadShaderQueue;
 	};
 };
