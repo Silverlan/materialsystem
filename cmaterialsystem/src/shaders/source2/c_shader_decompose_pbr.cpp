@@ -7,6 +7,7 @@
 #undef MemoryBarrier
 #endif
 #include "shaders/source2/c_shader_decompose_pbr.hpp"
+#include <shader/prosper_shader_t.hpp>
 #include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_util.hpp>
 #include <prosper_context.hpp>

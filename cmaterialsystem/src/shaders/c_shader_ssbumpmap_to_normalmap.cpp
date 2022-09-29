@@ -4,6 +4,7 @@
 
 #include "shaders/c_shader_ssbumpmap_to_normalmap.hpp"
 #include <shader/prosper_pipeline_create_info.hpp>
+#include <shader/prosper_shader_t.hpp>
 #include <prosper_util.hpp>
 
 decltype(msys::ShaderSSBumpMapToNormalMap::DESCRIPTOR_SET_TEXTURE) msys::ShaderSSBumpMapToNormalMap::DESCRIPTOR_SET_TEXTURE = {
