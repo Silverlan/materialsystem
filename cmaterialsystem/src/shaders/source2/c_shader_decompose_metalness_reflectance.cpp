@@ -3,7 +3,6 @@
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "shaders/source2/c_shader_decompose_metalness_reflectance.hpp"
-#include <shader/prosper_shader_t.hpp>
 #include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_util.hpp>
 
