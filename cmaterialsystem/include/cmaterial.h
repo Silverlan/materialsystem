@@ -58,6 +58,7 @@ public:
 	const std::shared_ptr<prosper::IDescriptorSetGroup> &GetDescriptorSetGroup(prosper::Shader &shader) const;
 	virtual TextureInfo *GetTextureInfo(const std::string &key) override;
 	bool IsInitialized() const;
+	virtual std::shared_ptr<Material> Copy() const override;
 	void SetDescriptorSetGroup(prosper::Shader &shader,const std::shared_ptr<prosper::IDescriptorSetGroup> &descSetGroup);
 	prosper::Shader *GetPrimaryShader();
 	std::shared_ptr<prosper::ISampler> GetSampler();
