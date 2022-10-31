@@ -16,26 +16,11 @@
 msys::MaterialFormatHandler::MaterialFormatHandler(util::IAssetManager &assetManager)
 	: util::IAssetFormatHandler{assetManager}
 {}
-bool msys::PmatFormatHandler::LoadData(MaterialProcessor &processor,MaterialLoadInfo &info)
+
+bool msys::udm_to_data_block(udm::LinkedPropertyWrapper &udmDataRoot,ds::Block &root)
 {
-	std::shared_ptr<udm::Data> udmData = nullptr;
-	try
-	{
-		udmData = udm::Data::Load(std::move(m_file));
-	}
-	catch(const udm::Exception &e)
-	{
-		return false;
-	}
-	if(udmData == nullptr)
-		return false;
-	auto udmDataRoot = udmData->GetAssetData().GetData();
-
-	auto dataSettings = static_cast<MaterialManager&>(GetAssetManager()).CreateDataSettings();
-	auto root = std::make_shared<ds::Block>(*dataSettings);
-
 	std::function<void(const std::string &key,udm::LinkedPropertyWrapper &prop,ds::Block &block,bool texture)> udmToDataSys = nullptr;
-	udmToDataSys = [&udmToDataSys,&dataSettings](const std::string &key,udm::LinkedPropertyWrapper &prop,ds::Block &block,bool texture) {
+	udmToDataSys = [&udmToDataSys](const std::string &key,udm::LinkedPropertyWrapper &prop,ds::Block &block,bool texture) {
 		prop.InitializeProperty();
 		if(prop.prop)
 		{
@@ -91,21 +76,40 @@ bool msys::PmatFormatHandler::LoadData(MaterialProcessor &processor,MaterialLoad
 		}
 		prop.GetValuePtr<float>();
 	};
+	auto udmTextures = udmDataRoot["textures"];
+	for(auto udmTex : udmTextures.ElIt())
+		udmToDataSys(std::string{udmTex.key},udmTex.property,root,true);
+	
+	auto udmProps = udmDataRoot["properties"];
+	for(auto udmProp : udmProps.ElIt())
+		udmToDataSys(std::string{udmProp.key},udmProp.property,root,false);
+	return true;
+}
+bool msys::PmatFormatHandler::LoadData(MaterialProcessor &processor,MaterialLoadInfo &info)
+{
+	std::shared_ptr<udm::Data> udmData = nullptr;
+	try
+	{
+		udmData = udm::Data::Load(std::move(m_file));
+	}
+	catch(const udm::Exception &e)
+	{
+		return false;
+	}
+	if(udmData == nullptr)
+		return false;
+	auto udmDataRoot = udmData->GetAssetData().GetData();
+
+	auto dataSettings = static_cast<MaterialManager&>(GetAssetManager()).CreateDataSettings();
+	auto root = std::make_shared<ds::Block>(*dataSettings);
 	auto it = udmDataRoot.begin_el();
 	if(it == udmDataRoot.end_el())
 		return false;
 	auto &firstEl = *it;
-
-	auto udmTextures = firstEl.property["textures"];
-	for(auto udmTex : udmTextures.ElIt())
-		udmToDataSys(std::string{udmTex.key},udmTex.property,*root,true);
-	
-	auto udmProps = firstEl.property["properties"];
-	for(auto udmProp : udmProps.ElIt())
-		udmToDataSys(std::string{udmProp.key},udmProp.property,*root,false);
-
-	data = root;
 	shader = firstEl.key;
+	if(!udm_to_data_block(firstEl.property,*root))
+		return false;
+	data = root;
 	return true;
 }
 msys::PmatFormatHandler::PmatFormatHandler(util::IAssetManager &assetManager)

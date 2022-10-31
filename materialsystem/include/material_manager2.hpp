@@ -11,8 +11,10 @@
 #include <sharedutils/asset_loader/asset_format_loader.hpp>
 #include <sharedutils/asset_loader/file_asset_manager.hpp>
 
+namespace udm {struct LinkedPropertyWrapper;};
 namespace msys
 {
+	DLLMATSYS bool udm_to_data_block(udm::LinkedPropertyWrapper &udmDataRoot,ds::Block &root);
 	class DLLMATSYS MaterialProcessor
 		: public util::FileAssetProcessor
 	{
