@@ -503,6 +503,7 @@ std::shared_ptr<Material> Material::Copy() const
 	if(IsLoaded())
 		r->SetLoaded(true);
 	r->m_stateFlags = m_stateFlags;
+	umath::set_flag(r->m_stateFlags,StateFlags::TexturesUpdated,false);
 	return r;
 }
 
