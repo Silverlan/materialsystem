@@ -1,9 +1,14 @@
 name: Build Linux
 on:
   push:
-    branches: [ master, actions ]
+    branches: [ master ]
   pull_request:
-    branches: [ master, actions ]
+    branches: [ master ]
+
+
+concurrency:
+  group: environment-lin-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -13,12 +18,12 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             name: "Ubuntu GCC-11"
             artifact: "ubuntu_gcc.7z"
             build_type: "RelWithDebInfo"
-            cc: "gcc-11"
-            cxx: "g++-11"
+            cc: "clang-14"
+            cxx: "clang++-14"
             archiver: "7z a"
             generators: "Unix Makefiles"
             build_dir: 'build'
@@ -39,9 +44,11 @@ jobs:
         id: build
         uses: Silverlan/materialsystem/github_actions/build@master
         with:
-          root_dir: "${{ env.GA_ROOT_DIR }}"
-          should_checkout: "0"
-          dir: '.'
+          repo-directory: '.'
           
       - name: Upload binaries
         uses: Silverlan/common_actions/upload_build_binaries@main
+
+      - name: Handle Error
+        uses: Silverlan/common_actions/action_handle_error@main
+        if: failure()
