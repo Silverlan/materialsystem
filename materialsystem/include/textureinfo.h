@@ -10,8 +10,7 @@
 
 #pragma warning(push)
 #pragma warning(disable : 4251)
-struct DLLMATSYS TextureInfo
-{
+struct DLLMATSYS TextureInfo {
 	TextureInfo();
 	TextureInfo(const TextureInfo &other);
 	std::string name;
@@ -20,14 +19,11 @@ struct DLLMATSYS TextureInfo
 	std::shared_ptr<void> texture;
 };
 
-namespace ds
-{
-	class DLLMATSYS Texture
-		: public Value
-	{
-	public:
-		Texture(ds::Settings &dataSettings,const std::string &value);
-		Texture(ds::Settings &dataSettings,const TextureInfo &value);
+namespace ds {
+	class DLLMATSYS Texture : public Value {
+	  public:
+		Texture(ds::Settings &dataSettings, const std::string &value);
+		Texture(ds::Settings &dataSettings, const TextureInfo &value);
 		virtual Texture *Copy() override;
 		const TextureInfo &GetValue() const;
 		TextureInfo &GetValue();
@@ -41,9 +37,9 @@ namespace ds
 		virtual ::Vector3 GetVector() const override;
 		virtual ::Vector2 GetVector2() const override;
 		virtual ::Vector4 GetVector4() const override;
-	protected:
-		Texture(ds::Settings &dataSettings,const std::string &value,bool bCubemap);
-	private:
+	  protected:
+		Texture(ds::Settings &dataSettings, const std::string &value, bool bCubemap);
+	  private:
 		TextureInfo m_value;
 	};
 

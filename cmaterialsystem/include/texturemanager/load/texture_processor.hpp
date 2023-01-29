@@ -15,33 +15,41 @@
 #include <functional>
 #include <memory>
 
-namespace prosper {class IBuffer; class IPrContext; class IImage; class Texture; class ISampler;};
-namespace uimg {class ImageBuffer;};
-namespace util {struct Asset; class AssetFormatLoader; class IAssetFormatHandler;};
-namespace msys
-{
+namespace prosper {
+	class IBuffer;
+	class IPrContext;
+	class IImage;
+	class Texture;
+	class ISampler;
+};
+namespace uimg {
+	class ImageBuffer;
+};
+namespace util {
+	struct Asset;
+	class AssetFormatLoader;
+	class IAssetFormatHandler;
+};
+namespace msys {
 	class TextureLoader;
 	struct TextureAsset;
 
-	class DLLCMATSYS TextureProcessor
-		: public util::FileAssetProcessor
-	{
-	public:
-		struct BufferInfo
-		{
+	class DLLCMATSYS TextureProcessor : public util::FileAssetProcessor {
+	  public:
+		struct BufferInfo {
 			std::shared_ptr<prosper::IBuffer> buffer = nullptr;
 			uint32_t layerIndex = 0u;
 			uint32_t mipmapIndex = 0u;
 		};
 
-		TextureProcessor(util::AssetFormatLoader &loader,std::unique_ptr<util::IAssetFormatHandler> &&handler);
+		TextureProcessor(util::AssetFormatLoader &loader, std::unique_ptr<util::IAssetFormatHandler> &&handler);
 		virtual bool Load() override;
 		virtual bool Finalize() override;
 		bool InitializeProsperImage(prosper::IPrContext &context);
 		bool InitializeImageBuffers(prosper::IPrContext &context);
 		bool InitializeTexture(prosper::IPrContext &context);
 		bool CopyBuffersToImage(prosper::IPrContext &context);
-		bool ConvertImageFormat(prosper::IPrContext &context,prosper::Format targetFormat);
+		bool ConvertImageFormat(prosper::IPrContext &context, prosper::Format targetFormat);
 		bool GenerateMipmaps(prosper::IPrContext &context);
 
 		bool PrepareImage(prosper::IPrContext &context);
@@ -54,9 +62,9 @@ namespace msys
 		prosper::Format imageFormat = prosper::Format::Unknown;
 		uint32_t mipmapCount = 1;
 		std::optional<prosper::Format> targetGpuConversionFormat {};
-		std::function<void(const void*,std::shared_ptr<uimg::ImageBuffer>&,uint32_t,uint32_t)> cpuImageConverter = nullptr;
+		std::function<void(const void *, std::shared_ptr<uimg::ImageBuffer> &, uint32_t, uint32_t)> cpuImageConverter = nullptr;
 		std::vector<BufferInfo> buffers {};
-	private:
+	  private:
 		TextureLoader &GetLoader();
 		ITextureFormatHandler &GetHandler();
 

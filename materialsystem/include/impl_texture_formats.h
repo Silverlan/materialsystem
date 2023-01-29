@@ -14,7 +14,7 @@
 #include <sharedutils/util_string.h>
 
 class VFilePtrInternal;
-DLLMATSYS std::string translate_image_path(const std::string &imgFile,TextureType &type,std::string path,const std::function<std::shared_ptr<VFilePtrInternal>(const std::string&)> &fileHandler=nullptr,bool *optOutFound=nullptr);
-DLLMATSYS std::string translate_image_path(const std::string &imgFile,TextureType &type,const std::function<std::shared_ptr<VFilePtrInternal>(const std::string&)> &fileHandler=nullptr,bool *optOutFound=nullptr);
+DLLMATSYS std::string translate_image_path(const std::string &imgFile, TextureType &type, std::string path, const std::function<std::shared_ptr<VFilePtrInternal>(const std::string &)> &fileHandler = nullptr, bool *optOutFound = nullptr);
+DLLMATSYS std::string translate_image_path(const std::string &imgFile, TextureType &type, const std::function<std::shared_ptr<VFilePtrInternal>(const std::string &)> &fileHandler = nullptr, bool *optOutFound = nullptr);
 
 #endif

@@ -16,24 +16,30 @@
 
 #undef AddJob
 
-namespace prosper {class IPrContext; class ISampler; namespace util {struct SamplerCreateInfo;}; class IAssetProcessor;};
-namespace ufile {struct IFile;};
+namespace prosper {
+	class IPrContext;
+	class ISampler;
+	namespace util {
+		struct SamplerCreateInfo;
+	};
+	class IAssetProcessor;
+};
+namespace ufile {
+	struct IFile;
+};
 enum class TextureMipmapMode : int32_t;
-namespace msys
-{
-	DLLCMATSYS void setup_sampler_mipmap_mode(prosper::util::SamplerCreateInfo &createInfo,TextureMipmapMode mode);
-	class DLLCMATSYS TextureLoader
-		: public util::TAssetFormatLoader<TextureProcessor>
-	{
-	public:
-		TextureLoader(util::IAssetManager &assetManager,prosper::IPrContext &context);
-		void SetAllowMultiThreadedGpuResourceAllocation(bool b) {m_allowMultiThreadedGpuResourceAllocation = b;}
-		bool DoesAllowMultiThreadedGpuResourceAllocation() const {return m_allowMultiThreadedGpuResourceAllocation;}
-		prosper::IPrContext &GetContext() {return m_context;}
+namespace msys {
+	DLLCMATSYS void setup_sampler_mipmap_mode(prosper::util::SamplerCreateInfo &createInfo, TextureMipmapMode mode);
+	class DLLCMATSYS TextureLoader : public util::TAssetFormatLoader<TextureProcessor> {
+	  public:
+		TextureLoader(util::IAssetManager &assetManager, prosper::IPrContext &context);
+		void SetAllowMultiThreadedGpuResourceAllocation(bool b) { m_allowMultiThreadedGpuResourceAllocation = b; }
+		bool DoesAllowMultiThreadedGpuResourceAllocation() const { return m_allowMultiThreadedGpuResourceAllocation; }
+		prosper::IPrContext &GetContext() { return m_context; }
 
-		const std::shared_ptr<prosper::ISampler> &GetTextureSampler() const {return m_textureSampler;}
-		const std::shared_ptr<prosper::ISampler> &GetTextureSamplerNoMipmap() const {return m_textureSamplerNoMipmap;}
-	private:
+		const std::shared_ptr<prosper::ISampler> &GetTextureSampler() const { return m_textureSampler; }
+		const std::shared_ptr<prosper::ISampler> &GetTextureSamplerNoMipmap() const { return m_textureSamplerNoMipmap; }
+	  private:
 		bool m_allowMultiThreadedGpuResourceAllocation = true;
 		prosper::IPrContext &m_context;
 

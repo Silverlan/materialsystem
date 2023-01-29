@@ -7,13 +7,7 @@
 
 #include <mathutil/umath.h>
 
-enum class TextureLoadFlags : uint32_t
-{
-	None = 0u,
-	LoadInstantly = 1u,
-	Reload = LoadInstantly<<1u,
-	DontCache = Reload<<1u
-};
+enum class TextureLoadFlags : uint32_t { None = 0u, LoadInstantly = 1u, Reload = LoadInstantly << 1u, DontCache = Reload << 1u };
 REGISTER_BASIC_BITWISE_OPERATORS(TextureLoadFlags);
 
 #endif

@@ -6,17 +6,17 @@
 #define __CMATSYSDEFINITIONS_H__
 
 #ifdef DLLCMATSYS_EX
-	#ifdef __linux__
-		#define DLLCMATSYS __attribute__((visibility("default")))
-	#else
-		#define DLLCMATSYS  __declspec(dllexport)
-	#endif
+#ifdef __linux__
+#define DLLCMATSYS __attribute__((visibility("default")))
 #else
-	#ifdef __linux__
-		#define DLLCMATSYS
-	#else
-		#define DLLCMATSYS  __declspec(dllimport)
-	#endif
+#define DLLCMATSYS __declspec(dllexport)
+#endif
+#else
+#ifdef __linux__
+#define DLLCMATSYS
+#else
+#define DLLCMATSYS __declspec(dllimport)
+#endif
 #endif
 
 #endif

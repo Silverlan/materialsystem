@@ -11,8 +11,7 @@
 #include <pngstruct.h>
 #include <memory>
 
-struct DLLMATSYS PNGInfo
-{
+struct DLLMATSYS PNGInfo {
 	uint32_t format; // vk::Format
 	unsigned int width;
 	unsigned int height;
@@ -25,10 +24,9 @@ struct DLLMATSYS PNGInfo
 };
 
 class VFilePtrInternal;
-namespace material
-{
-	DLLMATSYS bool load_png_data(const char *path,PNGInfo &info);
-	DLLMATSYS bool load_png_data(std::shared_ptr<VFilePtrInternal> &f,PNGInfo &info);
+namespace material {
+	DLLMATSYS bool load_png_data(const char *path, PNGInfo &info);
+	DLLMATSYS bool load_png_data(std::shared_ptr<VFilePtrInternal> &f, PNGInfo &info);
 };
 
 #endif

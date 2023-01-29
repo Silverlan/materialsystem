@@ -13,40 +13,28 @@
 
 #undef AddJob
 
-namespace msys
-{
-	class DLLCMATSYS ITextureFormatHandler
-		: public util::IAssetFormatHandler
-	{
-	public:
-		struct InputTextureInfo
-		{
-			enum class Flags : uint32_t
-			{
-				None = 0u,
-				CubemapBit = 1u,
-				SrgbBit = CubemapBit<<1u
-			};
+namespace msys {
+	class DLLCMATSYS ITextureFormatHandler : public util::IAssetFormatHandler {
+	  public:
+		struct InputTextureInfo {
+			enum class Flags : uint32_t { None = 0u, CubemapBit = 1u, SrgbBit = CubemapBit << 1u };
 			uint32_t width = 0;
 			uint32_t height = 0;
 			prosper::Format format = prosper::Format::Unknown;
 			uint32_t layerCount = 1;
 			uint32_t mipmapCount = 1;
 			Flags flags = Flags::None;
-			std::array<prosper::ComponentSwizzle,4> swizzle = {
-				prosper::ComponentSwizzle::R,prosper::ComponentSwizzle::G,
-				prosper::ComponentSwizzle::B,prosper::ComponentSwizzle::A
-			};
+			std::array<prosper::ComponentSwizzle, 4> swizzle = {prosper::ComponentSwizzle::R, prosper::ComponentSwizzle::G, prosper::ComponentSwizzle::B, prosper::ComponentSwizzle::A};
 
 			std::optional<prosper::Format> conversionFormat {};
 		};
 
 		bool LoadData();
-		virtual bool GetDataPtr(uint32_t layer,uint32_t mipmapIdx,void **outPtr,size_t &outSize)=0;
-		const InputTextureInfo &GetInputTextureInfo() const {return m_inputTextureInfo;}
-	protected:
+		virtual bool GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize) = 0;
+		const InputTextureInfo &GetInputTextureInfo() const { return m_inputTextureInfo; }
+	  protected:
 		ITextureFormatHandler(util::IAssetManager &assetManager);
-		virtual bool LoadData(InputTextureInfo &texInfo)=0;
+		virtual bool LoadData(InputTextureInfo &texInfo) = 0;
 		InputTextureInfo m_inputTextureInfo;
 	};
 };

@@ -9,7 +9,7 @@
 
 struct PNGInfo;
 class TextureQueueItem;
-bool LoadPNGData(const char *path,PNGInfo &info);
+bool LoadPNGData(const char *path, PNGInfo &info);
 void InitializeTextureData(TextureQueueItem *item);
 
 #endif

@@ -11,32 +11,29 @@
 #include <array>
 
 #ifndef DISABLE_VTF_SUPPORT
-namespace VTFLib {class CVTFFile;};
+namespace VTFLib {
+	class CVTFFile;
+};
 
-namespace msys
-{
-	namespace detail
-	{
-		struct VulkanImageData
-		{
+namespace msys {
+	namespace detail {
+		struct VulkanImageData {
 			// Original image format
 			prosper::Format format = prosper::Format::R8G8B8A8_UNorm;
 
 			// Some formats may not be supported in optimal layout by common GPUs, in which case we need to convert it
 			std::optional<prosper::Format> conversionFormat = {};
 
-			std::array<prosper::ComponentSwizzle,4> swizzle = {prosper::ComponentSwizzle::R,prosper::ComponentSwizzle::G,prosper::ComponentSwizzle::B,prosper::ComponentSwizzle::A};
+			std::array<prosper::ComponentSwizzle, 4> swizzle = {prosper::ComponentSwizzle::R, prosper::ComponentSwizzle::G, prosper::ComponentSwizzle::B, prosper::ComponentSwizzle::A};
 		};
 	};
-	class DLLCMATSYS TextureFormatHandlerVtf
-		: public ITextureFormatHandler
-	{
-	public:
+	class DLLCMATSYS TextureFormatHandlerVtf : public ITextureFormatHandler {
+	  public:
 		TextureFormatHandlerVtf(util::IAssetManager &assetManager);
-		virtual bool GetDataPtr(uint32_t layer,uint32_t mipmapIdx,void **outPtr,size_t &outSize) override;
-	protected:
+		virtual bool GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize) override;
+	  protected:
 		virtual bool LoadData(InputTextureInfo &texInfo) override;
-	private:
+	  private:
 		std::shared_ptr<VTFLib::CVTFFile> m_texture = nullptr;
 	};
 };

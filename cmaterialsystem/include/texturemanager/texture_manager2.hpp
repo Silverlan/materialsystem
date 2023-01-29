@@ -15,24 +15,30 @@
 #include <unordered_set>
 
 class Texture;
-namespace prosper {class IPrContext;};
-namespace util {using AssetLoadJobPriority = int32_t; using AssetLoadJobId = uint64_t; enum class AssetLoaderWaitMode : uint8_t; class IAssetLoader; class IAssetProcessor; struct AssetLoadJob;};
-namespace ufile {struct IFile;};
+namespace prosper {
+	class IPrContext;
+};
+namespace util {
+	using AssetLoadJobPriority = int32_t;
+	using AssetLoadJobId = uint64_t;
+	enum class AssetLoaderWaitMode : uint8_t;
+	class IAssetLoader;
+	class IAssetProcessor;
+	struct AssetLoadJob;
+};
+namespace ufile {
+	struct IFile;
+};
 enum class TextureMipmapMode : int32_t;
-namespace msys
-{
-	struct DLLCMATSYS TextureLoadInfo
-		: public util::AssetLoadInfo
-	{
-		TextureLoadInfo(util::AssetLoadFlags flags=util::AssetLoadFlags::None);
+namespace msys {
+	struct DLLCMATSYS TextureLoadInfo : public util::AssetLoadInfo {
+		TextureLoadInfo(util::AssetLoadFlags flags = util::AssetLoadFlags::None);
 		TextureMipmapMode mipmapMode;
 	};
 	class TextureLoader;
 	class ITextureFormatHandler;
-	class DLLCMATSYS TextureManager
-		: public util::TFileAssetManager<Texture,TextureLoadInfo>
-	{
-	public:
+	class DLLCMATSYS TextureManager : public util::TFileAssetManager<Texture, TextureLoadInfo> {
+	  public:
 		using AssetType = Texture;
 
 		TextureManager(prosper::IPrContext &context);
@@ -42,9 +48,9 @@ namespace msys
 		void SetErrorTexture(const std::shared_ptr<Texture> &tex);
 
 		void Test();
-	protected:
+	  protected:
 		virtual void InitializeProcessor(util::IAssetProcessor &processor) override;
-		virtual util::AssetObject InitializeAsset(const util::Asset &asset,const util::AssetLoadJob &job) override;
+		virtual util::AssetObject InitializeAsset(const util::Asset &asset, const util::AssetLoadJob &job) override;
 
 		prosper::IPrContext &m_context;
 		std::shared_ptr<Texture> m_error;

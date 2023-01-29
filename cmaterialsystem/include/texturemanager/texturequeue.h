@@ -18,23 +18,23 @@
 #include <VTFFile.h>
 #endif
 
-namespace prosper
-{
+namespace prosper {
 	class IPrContext;
 	class ISampler;
 };
 
 class VFilePtrInternal;
 
-namespace uimg {class ImageBuffer;};
+namespace uimg {
+	class ImageBuffer;
+};
 class TCallback;
-class DLLCMATSYS TextureQueueItem
-{
-protected:
+class DLLCMATSYS TextureQueueItem {
+  protected:
 	TextureQueueItem();
-public:
-	TextureQueueItem(const TextureQueueItem&)=delete;
-	TextureQueueItem &operator=(const TextureQueueItem&)=delete;
+  public:
+	TextureQueueItem(const TextureQueueItem &) = delete;
+	TextureQueueItem &operator=(const TextureQueueItem &) = delete;
 	virtual ~TextureQueueItem();
 	std::weak_ptr<prosper::IPrContext> context;
 	std::string name;
@@ -54,52 +54,44 @@ public:
 	TextureType texturetype;
 };
 
-class DLLCMATSYS TextureQueueItemPNG
-	: public TextureQueueItem
-{
-public:
+class DLLCMATSYS TextureQueueItemPNG : public TextureQueueItem {
+  public:
 	TextureQueueItemPNG();
 	virtual ~TextureQueueItemPNG() override;
 	std::shared_ptr<uimg::ImageBuffer> pnginfo = nullptr;
 };
 
-class DLLCMATSYS TextureQueueItemStbi
-	: public TextureQueueItem
-{
-public:
+class DLLCMATSYS TextureQueueItemStbi : public TextureQueueItem {
+  public:
 	TextureQueueItemStbi(TextureType texType);
 	std::shared_ptr<uimg::ImageBuffer> imageBuffer = nullptr;
 };
 
 #ifndef DISABLE_VTF_SUPPORT
-class DLLCMATSYS TextureQueueItemVTF
-	: public TextureQueueItem
-{
-public:
+class DLLCMATSYS TextureQueueItemVTF : public TextureQueueItem {
+  public:
 	TextureQueueItemVTF();
 	virtual ~TextureQueueItemVTF() override;
 	std::shared_ptr<VTFLib::CVTFFile> texture = nullptr;
 };
 #endif
 #ifndef DISABLE_VTEX_SUPPORT
-namespace source2::resource {class Texture;};
-class DLLCMATSYS TextureQueueItemVTex
-	: public TextureQueueItem
-{
-public:
+namespace source2::resource {
+	class Texture;
+};
+class DLLCMATSYS TextureQueueItemVTex : public TextureQueueItem {
+  public:
 	TextureQueueItemVTex();
 	virtual ~TextureQueueItemVTex() override;
 	std::shared_ptr<source2::resource::Texture> texture = nullptr;
 	std::unique_ptr<fsys::File> fptr = nullptr;
 };
 #endif
-class DLLCMATSYS TextureQueueItemSurface
-	: public TextureQueueItem
-{
-public:
+class DLLCMATSYS TextureQueueItemSurface : public TextureQueueItem {
+  public:
 	TextureQueueItemSurface(TextureType type);
-	TextureQueueItemSurface(const TextureQueueItemSurface&)=delete;
-	TextureQueueItemSurface &operator=(const TextureQueueItemSurface&)=delete;
+	TextureQueueItemSurface(const TextureQueueItemSurface &) = delete;
+	TextureQueueItemSurface &operator=(const TextureQueueItemSurface &) = delete;
 	virtual ~TextureQueueItemSurface() override;
 	std::shared_ptr<gli::texture2d> texture = nullptr;
 	unsigned char **compressed;

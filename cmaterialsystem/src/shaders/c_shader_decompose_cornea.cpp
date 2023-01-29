@@ -7,37 +7,28 @@
 #include <shader/prosper_pipeline_create_info.hpp>
 #include <prosper_util.hpp>
 
-decltype(msys::ShaderDecomposeCornea::DESCRIPTOR_SET_TEXTURE) msys::ShaderDecomposeCornea::DESCRIPTOR_SET_TEXTURE = {
-	{
-		prosper::DescriptorSetInfo::Binding { // Iris Map
-			prosper::DescriptorType::CombinedImageSampler,
-			prosper::ShaderStageFlags::FragmentBit
-		},
-		prosper::DescriptorSetInfo::Binding { // Cornea Map
-			prosper::DescriptorType::CombinedImageSampler,
-			prosper::ShaderStageFlags::FragmentBit
-		}
-	}
-};
-msys::ShaderDecomposeCornea::ShaderDecomposeCornea(prosper::IPrContext &context,const std::string &identifier)
-	: ShaderBaseImageProcessing{context,identifier,"util/fs_decompose_cornea.gls"}
-{}
+decltype(msys::ShaderDecomposeCornea::DESCRIPTOR_SET_TEXTURE) msys::ShaderDecomposeCornea::DESCRIPTOR_SET_TEXTURE = {{prosper::DescriptorSetInfo::Binding {// Iris Map
+                                                                                                                        prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit},
+  prosper::DescriptorSetInfo::Binding {// Cornea Map
+    prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit}}};
+msys::ShaderDecomposeCornea::ShaderDecomposeCornea(prosper::IPrContext &context, const std::string &identifier) : ShaderBaseImageProcessing {context, identifier, "util/fs_decompose_cornea.gls"} {}
 
-void msys::ShaderDecomposeCornea::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo,uint32_t pipelineIdx)
+void msys::ShaderDecomposeCornea::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
 {
-	ShaderGraphics::InitializeGfxPipeline(pipelineInfo,pipelineIdx);
+	ShaderGraphics::InitializeGfxPipeline(pipelineInfo, pipelineIdx);
 
 	AddDefaultVertexAttributes(pipelineInfo);
-	AddDescriptorSetGroup(pipelineInfo,pipelineIdx,DESCRIPTOR_SET_TEXTURE);
+	AddDescriptorSetGroup(pipelineInfo, pipelineIdx, DESCRIPTOR_SET_TEXTURE);
 }
 
-void msys::ShaderDecomposeCornea::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass,uint32_t pipelineIdx)
+void msys::ShaderDecomposeCornea::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass, uint32_t pipelineIdx)
 {
 	CreateCachedRenderPass<msys::ShaderDecomposeCornea>(
-		std::vector<prosper::util::RenderPassCreateInfo::AttachmentInfo>{
-			{prosper::Format::R8G8B8A8_UNorm}, // Albedo
-			{prosper::Format::R8G8B8A8_UNorm}, // Normal
-			{prosper::Format::R8G8B8A8_UNorm}, // Parallax
-			{prosper::Format::R8G8B8A8_UNorm} // Noise
-	},outRenderPass,pipelineIdx);
+	  std::vector<prosper::util::RenderPassCreateInfo::AttachmentInfo> {
+	    {prosper::Format::R8G8B8A8_UNorm}, // Albedo
+	    {prosper::Format::R8G8B8A8_UNorm}, // Normal
+	    {prosper::Format::R8G8B8A8_UNorm}, // Parallax
+	    {prosper::Format::R8G8B8A8_UNorm}  // Noise
+	  },
+	  outRenderPass, pipelineIdx);
 }

@@ -12,8 +12,7 @@
 static msys::detail::VulkanImageData vtex_format_to_vulkan_format(source2::VTexFormat format)
 {
 	msys::detail::VulkanImageData vkImgData {};
-	switch(format)
-	{
+	switch(format) {
 	case source2::VTexFormat::DXT1:
 		vkImgData.format = prosper::Format::BC1_RGBA_UNorm_Block;
 		break;
@@ -43,7 +42,7 @@ static msys::detail::VulkanImageData vtex_format_to_vulkan_format(source2::VTexF
 		vkImgData.format = prosper::Format::BC7_UNorm_Block;
 		break;
 	case source2::VTexFormat::BGRA8888:
-		vkImgData.swizzle = {prosper::ComponentSwizzle::B,prosper::ComponentSwizzle::G,prosper::ComponentSwizzle::R,prosper::ComponentSwizzle::A};
+		vkImgData.swizzle = {prosper::ComponentSwizzle::B, prosper::ComponentSwizzle::G, prosper::ComponentSwizzle::R, prosper::ComponentSwizzle::A};
 		vkImgData.format = prosper::Format::B8G8R8A8_UNorm;
 		break;
 	case source2::VTexFormat::ATI1N:
@@ -60,11 +59,11 @@ static msys::detail::VulkanImageData vtex_format_to_vulkan_format(source2::VTexF
 	return vkImgData;
 }
 
-bool msys::TextureFormatHandlerVtex::GetDataPtr(uint32_t layer,uint32_t mipmapIdx,void **outPtr,size_t &outSize)
+bool msys::TextureFormatHandlerVtex::GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize)
 {
 	if(layer > 0)
 		return false;
-	m_texture->ReadTextureData(mipmapIdx,m_mipmapData);
+	m_texture->ReadTextureData(mipmapIdx, m_mipmapData);
 	outSize = m_mipmapData.size();
 	*outPtr = m_mipmapData.data();
 	return true;
@@ -76,14 +75,13 @@ bool msys::TextureFormatHandlerVtex::LoadData(InputTextureInfo &texInfo)
 	auto *dataBlock = resource ? resource->FindBlock(source2::BlockType::DATA) : nullptr;
 	if(!dataBlock)
 		return false;
-	auto *texBlock = dynamic_cast<source2::resource::Texture*>(dataBlock);
+	auto *texBlock = dynamic_cast<source2::resource::Texture *>(dataBlock);
 	if(!texBlock)
 		return false;
 	auto texture = std::static_pointer_cast<source2::resource::Texture>(texBlock->shared_from_this());
 
 	auto format = texture->GetFormat();
-	switch(format)
-	{
+	switch(format) {
 	case source2::VTexFormat::DXT1:
 	case source2::VTexFormat::DXT5:
 	case source2::VTexFormat::RGBA8888:

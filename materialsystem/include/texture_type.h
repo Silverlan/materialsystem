@@ -7,8 +7,7 @@
 
 #include <cinttypes>
 
-enum class TextureType : uint32_t
-{
+enum class TextureType : uint32_t {
 	Invalid = 0,
 	DDS,
 	KTX,
@@ -30,12 +29,11 @@ enum class TextureType : uint32_t
 	Count
 };
 
-enum class TextureMipmapMode : int32_t
-{
-	Ignore = -1, // Don't load or generate mipmaps
+enum class TextureMipmapMode : int32_t {
+	Ignore = -1,        // Don't load or generate mipmaps
 	LoadOrGenerate = 0, // Try to load mipmaps, generate if no mipmaps exist in the file
-	Load = 1, // Load if mipmaps exist, otherwise do nothing
-	Generate = 2 // Always generate mipmaps, ignore mipmaps in file
+	Load = 1,           // Load if mipmaps exist, otherwise do nothing
+	Generate = 2        // Always generate mipmaps, ignore mipmaps in file
 };
 
 #endif

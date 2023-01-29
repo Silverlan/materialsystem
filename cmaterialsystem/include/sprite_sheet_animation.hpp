@@ -15,8 +15,7 @@
 
 class VFilePtrInternal;
 class VFilePtrInternalReal;
-struct DLLCMATSYS SpriteSheetAnimation
-{
+struct DLLCMATSYS SpriteSheetAnimation {
 #if 0
 	static constexpr auto SAMPLE_COUNT = 1'024;
 	struct DLLCMATSYS SampleData
@@ -27,10 +26,8 @@ struct DLLCMATSYS SpriteSheetAnimation
 	};
 	std::array<SampleData,SAMPLE_COUNT> GenerateSamples() const;
 #endif
-	struct DLLCMATSYS Sequence
-	{
-		struct DLLCMATSYS Frame
-		{
+	struct DLLCMATSYS Sequence {
+		struct DLLCMATSYS Frame {
 			Vector2 uvStart {};
 			Vector2 uvEnd {};
 
@@ -43,13 +40,13 @@ struct DLLCMATSYS SpriteSheetAnimation
 		bool loop = false;
 		std::vector<Frame> frames {};
 
-		bool GetInterpolatedFrameData(float ptTime,uint32_t &outFrame0,uint32_t &outFrame1,float &outInterpFactor) const;
+		bool GetInterpolatedFrameData(float ptTime, uint32_t &outFrame0, uint32_t &outFrame1, float &outInterpFactor) const;
 		uint32_t GetAbsoluteFrameIndex(uint32_t localFrameIdx) const;
 		uint32_t GetLocalFrameIndex(uint32_t absFrameIdx) const;
 
 		uint32_t GetFrameOffset() const;
 		float GetDuration() const;
-	private:
+	  private:
 		friend SpriteSheetAnimation;
 		void SetFrameOffset(uint32_t offset);
 		uint32_t m_frameOffset = 0;
@@ -57,7 +54,7 @@ struct DLLCMATSYS SpriteSheetAnimation
 	};
 	std::vector<Sequence> sequences {};
 
-	uint32_t GetAbsoluteFrameIndex(uint32_t sequenceIdx,uint32_t localFrameIdx) const;
+	uint32_t GetAbsoluteFrameIndex(uint32_t sequenceIdx, uint32_t localFrameIdx) const;
 	void Save(std::shared_ptr<VFilePtrInternalReal> &f) const;
 	bool Load(std::shared_ptr<VFilePtrInternal> &f);
 

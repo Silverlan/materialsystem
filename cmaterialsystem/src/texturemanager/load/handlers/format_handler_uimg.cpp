@@ -7,7 +7,7 @@
 #include <prosper_util_image_buffer.hpp>
 #include <fsys/ifile.hpp>
 
-bool msys::TextureFormatHandlerUimg::GetDataPtr(uint32_t layer,uint32_t mipmapIdx,void **outPtr,size_t &outSize)
+bool msys::TextureFormatHandlerUimg::GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize)
 {
 	if(layer != 0 || mipmapIdx != 0)
 		return false;

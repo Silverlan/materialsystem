@@ -17,23 +17,26 @@
 #include <mathutil/uvec.h>
 
 class Material;
-namespace msys
-{
+namespace msys {
 	using MaterialHandle = std::shared_ptr<Material>;
 	class MaterialManager;
 };
 
 using MaterialIndex = uint32_t;
-namespace util {class ShaderInfo;};
+namespace util {
+	class ShaderInfo;
+};
 class VFilePtrInternalReal;
-namespace ds {class Block;};
-namespace udm {struct AssetData;};
+namespace ds {
+	class Block;
+};
+namespace udm {
+	struct AssetData;
+};
 #pragma warning(push)
 #pragma warning(disable : 4251)
-class DLLMATSYS Material
-	: public std::enable_shared_from_this<Material>
-{
-public:
+class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
+  public:
 	static constexpr auto PMAT_IDENTIFIER = "PMAT";
 	static constexpr uint32_t PMAT_VERSION = 1;
 
@@ -58,19 +61,12 @@ public:
 	static const std::string WRINKLE_COMPRESS_MAP_IDENTIFIER;
 	static const std::string EXPONENT_MAP_IDENTIFIER;
 
-	enum class StateFlags : uint32_t
-	{
-		None = 0u,
-		Loaded = 1u,
-		ExecutingOnLoadCallbacks = Loaded<<1u,
-		Error = ExecutingOnLoadCallbacks<<1u,
-		TexturesUpdated = Error<<1u
-	};
-	
+	enum class StateFlags : uint32_t { None = 0u, Loaded = 1u, ExecutingOnLoadCallbacks = Loaded << 1u, Error = ExecutingOnLoadCallbacks << 1u, TexturesUpdated = Error << 1u };
+
 	static std::shared_ptr<Material> Create(msys::MaterialManager &manager);
-	static std::shared_ptr<Material> Create(msys::MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
-	static std::shared_ptr<Material> Create(msys::MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
-	Material(const Material&)=delete;
+	static std::shared_ptr<Material> Create(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data);
+	static std::shared_ptr<Material> Create(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data);
+	Material(const Material &) = delete;
 	virtual ~Material();
 	msys::MaterialHandle GetHandle();
 	virtual void SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo);
@@ -121,38 +117,38 @@ public:
 	msys::MaterialManager &GetManager() const;
 	std::optional<std::string> GetAbsolutePath() const;
 
-	bool Save(udm::AssetData outData,std::string &outErr);
-	bool Save(const std::string &fileName,std::string &outErr,bool absolutePath=false);
+	bool Save(udm::AssetData outData, std::string &outErr);
+	bool Save(const std::string &fileName, std::string &outErr, bool absolutePath = false);
 	bool Save(std::string &outErr);
 
 	bool SaveLegacy(std::shared_ptr<VFilePtrInternalReal> f) const;
-	bool SaveLegacy(const std::string &fileName,const std::string &rootPath="") const;
+	bool SaveLegacy(const std::string &fileName, const std::string &rootPath = "") const;
 	bool SaveLegacy() const;
 
-	MaterialIndex GetIndex() const {return m_index;}
-	uint32_t GetUpdateIndex() const {return m_updateIndex;}
+	MaterialIndex GetIndex() const { return m_index; }
+	uint32_t GetUpdateIndex() const { return m_updateIndex; }
 
 	virtual void Assign(const Material &other);
-	
+
 	virtual std::shared_ptr<Material> Copy() const;
 
 	// Returns true if all textures associated with this material have been fully loaded
 	bool IsLoaded() const;
 	void *GetUserData();
 	void SetUserData(void *data);
-	void *GetUserData2() {return m_userData2;}
-	void SetUserData2(void *data) {m_userData2 = data;}
+	void *GetUserData2() { return m_userData2; }
+	void SetUserData2(void *data) { m_userData2 = data; }
 	virtual void Reset();
-	void Initialize(const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
-	void Initialize(const std::string &shader,const std::shared_ptr<ds::Block> &data);
-protected:
+	void Initialize(const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data);
+	void Initialize(const std::string &shader, const std::shared_ptr<ds::Block> &data);
+  protected:
 	friend msys::MaterialManager;
 	Material(msys::MaterialManager &manager);
-	Material(msys::MaterialManager &manager,const util::WeakHandle<util::ShaderInfo> &shaderInfo,const std::shared_ptr<ds::Block> &data);
-	Material(msys::MaterialManager &manager,const std::string &shader,const std::shared_ptr<ds::Block> &data);
+	Material(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data);
+	Material(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data);
 	virtual void Initialize(const std::shared_ptr<ds::Block> &data);
 	virtual void OnTexturesUpdated();
-	void SetIndex(MaterialIndex index) {m_index = index;}
+	void SetIndex(MaterialIndex index) { m_index = index; }
 	uint32_t m_updateIndex = 0;
 	util::WeakHandle<util::ShaderInfo> m_shaderInfo = {};
 	std::unique_ptr<std::string> m_shader;
@@ -175,6 +171,6 @@ protected:
 REGISTER_BASIC_ARITHMETIC_OPERATORS(Material::StateFlags)
 #pragma warning(pop)
 
-DLLMATSYS std::ostream &operator<<(std::ostream &out,const Material &o);
+DLLMATSYS std::ostream &operator<<(std::ostream &out, const Material &o);
 
 #endif

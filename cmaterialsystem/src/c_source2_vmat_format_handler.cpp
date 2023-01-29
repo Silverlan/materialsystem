@@ -33,7 +33,7 @@
 
 #ifndef DISABLE_VMAT_SUPPORT
 static bool g_downScaleRMATextures = true;
-static std::shared_ptr<prosper::Texture> load_texture(msys::CMaterialManager &matManager,const std::string &texPath,bool reload=false)
+static std::shared_ptr<prosper::Texture> load_texture(msys::CMaterialManager &matManager, const std::string &texPath, bool reload = false)
 {
 	auto &textureManager = matManager.GetTextureManager();
 	auto &context = matManager.GetContext();
@@ -43,33 +43,28 @@ static std::shared_ptr<prosper::Texture> load_texture(msys::CMaterialManager &ma
 	return map->GetVkTexture();
 }
 
-static std::shared_ptr<prosper::Texture> get_texture(msys::CMaterialManager &matManager,ds::Block &rootData,const std::string &identifier,std::string *optOutName=nullptr)
+static std::shared_ptr<prosper::Texture> get_texture(msys::CMaterialManager &matManager, ds::Block &rootData, const std::string &identifier, std::string *optOutName = nullptr)
 {
 	auto dsMap = std::dynamic_pointer_cast<ds::Texture>(rootData.GetValue(identifier));
 	if(dsMap == nullptr)
 		return nullptr;
 	if(optOutName)
 		*optOutName = dsMap->GetString();
-	return load_texture(matManager,dsMap->GetString());
+	return load_texture(matManager, dsMap->GetString());
 }
 
-msys::CSource2VmatFormatHandler::CSource2VmatFormatHandler(util::IAssetManager &assetManager)
-	: Source2VmatFormatHandler{assetManager}
-{}
-bool msys::CSource2VmatFormatHandler::ImportTexture(const std::string &fpath,const std::string &outputPath)
+msys::CSource2VmatFormatHandler::CSource2VmatFormatHandler(util::IAssetManager &assetManager) : Source2VmatFormatHandler {assetManager} {}
+bool msys::CSource2VmatFormatHandler::ImportTexture(const std::string &fpath, const std::string &outputPath)
 {
-	auto importHandler = static_cast<CMaterialManager&>(GetAssetManager()).GetExternalSourceFileImportHandler();
+	auto importHandler = static_cast<CMaterialManager &>(GetAssetManager()).GetExternalSourceFileImportHandler();
 	if(!importHandler)
 		return false;
-	return importHandler(fpath,outputPath).has_value();
+	return importHandler(fpath, outputPath).has_value();
 }
-bool msys::CSource2VmatFormatHandler::InitializeVMatData(
-	::source2::resource::Resource &resource,::source2::resource::Material &vmat,ds::Block &rootData,ds::Settings &settings,const std::string &shader,
-	VMatOrigin origin
-)
+bool msys::CSource2VmatFormatHandler::InitializeVMatData(::source2::resource::Resource &resource, ::source2::resource::Material &vmat, ds::Block &rootData, ds::Settings &settings, const std::string &shader, VMatOrigin origin)
 {
 	//TODO: These do not work if the textures haven't been imported yet!!
-	if(Source2VmatFormatHandler::InitializeVMatData(resource,vmat,rootData,settings,shader,origin) == false)
+	if(Source2VmatFormatHandler::InitializeVMatData(resource, vmat, rootData, settings, shader, origin) == false)
 		return false;
 	// TODO: Steam VR assets seem to behave differently than Source 2 assets.
 	// How do we determine what type it is?
@@ -77,27 +72,23 @@ bool msys::CSource2VmatFormatHandler::InitializeVMatData(
 	auto isDota2Mat = (origin == VMatOrigin::Dota2);
 	auto isSource2Mat = (origin == VMatOrigin::Source2);
 
-	auto &matManager = static_cast<CMaterialManager&>(GetAssetManager());
+	auto &matManager = static_cast<CMaterialManager &>(GetAssetManager());
 	auto rootPath = matManager.GetImportDirectory();
 	auto &context = matManager.GetContext();
 
-	auto *shaderExtractImageChannel = static_cast<msys::ShaderExtractImageChannel*>(context.GetShader("extract_image_channel").get());
-	if(isSteamVrMat)
-	{
+	auto *shaderExtractImageChannel = static_cast<msys::ShaderExtractImageChannel *>(context.GetShader("extract_image_channel").get());
+	if(isSteamVrMat) {
 		auto *metalnessMap = vmat.FindTextureParam("g_tMetalnessReflectance");
-		if(metalnessMap)
-		{
+		if(metalnessMap) {
 			auto &context = matManager.GetContext();
-			auto *shaderDecomposeMetalnessReflectance = static_cast<msys::source2::ShaderDecomposeMetalnessReflectance*>(context.GetShader("source2_decompose_metalness_reflectance").get());
-			if(shaderDecomposeMetalnessReflectance)
-			{
+			auto *shaderDecomposeMetalnessReflectance = static_cast<msys::source2::ShaderDecomposeMetalnessReflectance *>(context.GetShader("source2_decompose_metalness_reflectance").get());
+			if(shaderDecomposeMetalnessReflectance) {
 				auto &textureManager = matManager.GetTextureManager();
 
 				std::shared_ptr<void> normalMap = nullptr;
 				auto metalnessReflectancePath = vmat::get_vmat_texture_path(*metalnessMap).GetString();
 				auto pMetalnessReflectanceMap = textureManager.LoadAsset(metalnessReflectancePath);
-				if(pMetalnessReflectanceMap && pMetalnessReflectanceMap->HasValidVkTexture())
-				{
+				if(pMetalnessReflectanceMap && pMetalnessReflectanceMap->HasValidVkTexture()) {
 					prosper::util::ImageCreateInfo imgCreateInfo {};
 					//imgCreateInfo.flags |= prosper::util::ImageCreateInfo::Flags::FullMipmapChain;
 					imgCreateInfo.format = prosper::Format::R8G8B8A8_UNorm;
@@ -111,20 +102,18 @@ bool msys::CSource2VmatFormatHandler::InitializeVMatData(
 					auto imgRMA = context.CreateImage(imgCreateInfo);
 
 					prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
-					auto texRMA = context.CreateTexture({},*imgRMA,imgViewCreateInfo);
-					auto rt = context.CreateRenderTarget({texRMA},shaderDecomposeMetalnessReflectance->GetRenderPass());
+					auto texRMA = context.CreateTexture({}, *imgRMA, imgViewCreateInfo);
+					auto rt = context.CreateRenderTarget({texRMA}, shaderDecomposeMetalnessReflectance->GetRenderPass());
 
 					auto dsg = shaderDecomposeMetalnessReflectance->CreateDescriptorSetGroup(msys::source2::ShaderGenerateTangentSpaceNormalMap::DESCRIPTOR_SET_TEXTURE.setIndex);
 					auto &ds = *dsg->GetDescriptorSet();
 					auto &vkMetalnessReflectanceTex = pMetalnessReflectanceMap->GetVkTexture();
-					ds.SetBindingTexture(*vkMetalnessReflectanceTex,umath::to_integral(msys::source2::ShaderGenerateTangentSpaceNormalMap::TextureBinding::NormalMap));
+					ds.SetBindingTexture(*vkMetalnessReflectanceTex, umath::to_integral(msys::source2::ShaderGenerateTangentSpaceNormalMap::TextureBinding::NormalMap));
 					auto &setupCmd = context.GetSetupCommandBuffer();
-					if(setupCmd->RecordBeginRenderPass(*rt))
-					{
-						prosper::ShaderBindState bindState{*setupCmd};
-						if(shaderDecomposeMetalnessReflectance->RecordBeginDraw(bindState))
-						{
-							shaderDecomposeMetalnessReflectance->RecordDraw(bindState,ds);
+					if(setupCmd->RecordBeginRenderPass(*rt)) {
+						prosper::ShaderBindState bindState {*setupCmd};
+						if(shaderDecomposeMetalnessReflectance->RecordBeginDraw(bindState)) {
+							shaderDecomposeMetalnessReflectance->RecordDraw(bindState, ds);
 							shaderDecomposeMetalnessReflectance->RecordEndDraw(bindState);
 						}
 						setupCmd->RecordEndRenderPass();
@@ -134,9 +123,7 @@ bool msys::CSource2VmatFormatHandler::InitializeVMatData(
 					auto pathNoExt = metalnessReflectancePath;
 					ufile::remove_extension_from_filename(pathNoExt);
 
-					auto errHandler = [](const std::string &err) {
-						std::cout<<"WARNING: Unable to save map image as DDS: "<<err<<std::endl;
-					};
+					auto errHandler = [](const std::string &err) { std::cout << "WARNING: Unable to save map image as DDS: " << err << std::endl; };
 
 					// TODO: Change width/height
 					uimg::TextureInfo texInfo {};
@@ -144,31 +131,28 @@ bool msys::CSource2VmatFormatHandler::InitializeVMatData(
 					texInfo.alphaMode = uimg::TextureInfo::AlphaMode::Auto;
 					texInfo.inputFormat = uimg::TextureInfo::InputFormat::R8G8B8A8_UInt;
 					texInfo.outputFormat = uimg::TextureInfo::OutputFormat::ColorMap;
-					auto rmaPath = pathNoExt +"_rma";
-					prosper::util::save_texture((rootPath +('/' +rmaPath)).GetString(),texRMA->GetImage(),texInfo,errHandler);
+					auto rmaPath = pathNoExt + "_rma";
+					prosper::util::save_texture((rootPath + ('/' + rmaPath)).GetString(), texRMA->GetImage(), texInfo, errHandler);
 
-					rootData.AddData("rma_map",std::make_shared<ds::Texture>(settings,rmaPath));
+					rootData.AddData("rma_map", std::make_shared<ds::Texture>(settings, rmaPath));
 
 					auto rmaInfo = rootData.AddBlock("rma_info");
-					rmaInfo->AddValue("bool","requires_ao_update","1");
+					rmaInfo->AddValue("bool", "requires_ao_update", "1");
 				}
 			}
 		}
 	}
-	else if(isDota2Mat)
-	{
-		std::cout<<"TODO"<<std::endl;
+	else if(isDota2Mat) {
+		std::cout << "TODO" << std::endl;
 	}
-	else
-	{
-		auto *shaderDecomposePbr = static_cast<msys::source2::ShaderDecomposePBR*>(context.GetShader("source2_decompose_pbr").get());
+	else {
+		auto *shaderDecomposePbr = static_cast<msys::source2::ShaderDecomposePBR *>(context.GetShader("source2_decompose_pbr").get());
 		std::string texPath;
-		auto albedoTex = get_texture(matManager,rootData,"albedo_map",&texPath);
-		auto normalTex = get_texture(matManager,rootData,"normal_map");
+		auto albedoTex = get_texture(matManager, rootData, "albedo_map", &texPath);
+		auto normalTex = get_texture(matManager, rootData, "normal_map");
 		if(normalTex == nullptr)
-			normalTex = load_texture(matManager,"white");
-		if(albedoTex && normalTex)
-		{
+			normalTex = load_texture(matManager, "white");
+		if(albedoTex && normalTex) {
 			auto &textureManager = matManager.GetTextureManager();
 
 			auto pathNoExt = texPath;
@@ -183,26 +167,24 @@ bool msys::CSource2VmatFormatHandler::InitializeVMatData(
 			auto flags = msys::source2::ShaderDecomposePBR::Flags::None;
 			if((alphaTest && *alphaTest) || (translucent && *translucent))
 				flags |= msys::source2::ShaderDecomposePBR::Flags::TreatAlphaAsTransparency;
-			if(specular && *specular)
-			{
+			if(specular && *specular) {
 				flags |= msys::source2::ShaderDecomposePBR::Flags::SpecularWorkflow;
 
 				auto *s2AnisoGlossMap = vmat.FindTextureParam("g_tSelfIllumMask");
-				if(s2AnisoGlossMap)
-				{
-					::util::Path path{*s2AnisoGlossMap};
+				if(s2AnisoGlossMap) {
+					::util::Path path {*s2AnisoGlossMap};
 					path.RemoveFileExtension();
 					path += ".vtex_c";
 					path.PopFront();
 
-					anisoGlossMap = load_texture(matManager,path.GetString()).get();
+					anisoGlossMap = load_texture(matManager, path.GetString()).get();
 					if(anisoGlossMap == nullptr)
-						umath::set_flag(flags,msys::source2::ShaderDecomposePBR::Flags::SpecularWorkflow,false);
+						umath::set_flag(flags, msys::source2::ShaderDecomposePBR::Flags::SpecularWorkflow, false);
 				}
 				else
 					anisoGlossMap = normalTex.get();
 			}
-			
+
 			// Note: While the original roughness and metalness maps have the
 			// same resolution as the albedo or normal maps (which is usually quite high),
 			// we'll have to lower resolution, since we store them as a separate map
@@ -210,54 +192,48 @@ bool msys::CSource2VmatFormatHandler::InitializeVMatData(
 			prosper::Extent2D metallicRoughnessResolution {};
 			auto *s2AoMap = vmat.FindTextureParam("g_tAmbientOcclusion");
 			prosper::Texture *aoTex = nullptr;
-			if(s2AoMap)
-			{
-				::util::Path path{*s2AoMap};
+			if(s2AoMap) {
+				::util::Path path {*s2AoMap};
 				path.RemoveFileExtension();
 				path += ".vtex_c";
 
-				aoTex = load_texture(matManager,path.GetString()).get();
+				aoTex = load_texture(matManager, path.GetString()).get();
 			}
 
 			auto hasAoMap = true;
-			if(aoTex == nullptr)
-			{
-				aoTex = load_texture(matManager,"white").get();
+			if(aoTex == nullptr) {
+				aoTex = load_texture(matManager, "white").get();
 				hasAoMap = false;
 
 				auto &albedoImg = albedoTex->GetImage();
 				auto extents = albedoImg.GetExtents();
-				metallicRoughnessResolution = {static_cast<uint32_t>(extents.width) /4,static_cast<uint32_t>(extents.height) /4};
+				metallicRoughnessResolution = {static_cast<uint32_t>(extents.width) / 4, static_cast<uint32_t>(extents.height) / 4};
 				if(metallicRoughnessResolution.width == 0)
 					metallicRoughnessResolution.width = 0;
 				if(metallicRoughnessResolution.height == 0)
 					metallicRoughnessResolution.height = 0;
 			}
-			else
-			{
+			else {
 				auto &aoImg = aoTex->GetImage();
 				auto extents = aoImg.GetExtents();
-				metallicRoughnessResolution = {static_cast<uint32_t>(extents.width),static_cast<uint32_t>(extents.height)};
+				metallicRoughnessResolution = {static_cast<uint32_t>(extents.width), static_cast<uint32_t>(extents.height)};
 			}
 
-			auto pbrSet = shaderDecomposePbr->DecomposePBR(context,*albedoTex,*normalTex,*aoTex,flags,anisoGlossMap);
+			auto pbrSet = shaderDecomposePbr->DecomposePBR(context, *albedoTex, *normalTex, *aoTex, flags, anisoGlossMap);
 
-			auto albedoPath = pathNoExt +"_albedo";
+			auto albedoPath = pathNoExt + "_albedo";
 			uimg::TextureInfo texInfo {};
 			texInfo.containerFormat = uimg::TextureInfo::ContainerFormat::DDS;
 			texInfo.alphaMode = uimg::TextureInfo::AlphaMode::None;
 			texInfo.outputFormat = uimg::TextureInfo::OutputFormat::ColorMap;
-			auto useAlpha = umath::is_flag_set(flags,msys::source2::ShaderDecomposePBR::Flags::TreatAlphaAsTransparency);
-			if(useAlpha)
-			{
+			auto useAlpha = umath::is_flag_set(flags, msys::source2::ShaderDecomposePBR::Flags::TreatAlphaAsTransparency);
+			if(useAlpha) {
 				texInfo.alphaMode = uimg::TextureInfo::AlphaMode::Transparency;
 				texInfo.outputFormat = uimg::TextureInfo::OutputFormat::ColorMapSmoothAlpha;
 			}
 			texInfo.flags = uimg::TextureInfo::Flags::GenerateMipmaps;
 			texInfo.inputFormat = uimg::TextureInfo::InputFormat::R8G8B8A8_UInt;
-			prosper::util::save_texture((rootPath +('/' +albedoPath)).GetString(),*pbrSet.albedoMap,texInfo,[](const std::string &err) {
-				std::cout<<"WARNING: Unable to save albedo image as DDS: "<<err<<std::endl;
-			});
+			prosper::util::save_texture((rootPath + ('/' + albedoPath)).GetString(), *pbrSet.albedoMap, texInfo, [](const std::string &err) { std::cout << "WARNING: Unable to save albedo image as DDS: " << err << std::endl; });
 
 			// TODO
 			if(metallicRoughnessResolution.width > 1'024)
@@ -266,9 +242,8 @@ bool msys::CSource2VmatFormatHandler::InitializeVMatData(
 				metallicRoughnessResolution.height = 1'024;
 
 			auto mrExtents = pbrSet.rmaMap->GetExtents();
-			if(g_downScaleRMATextures && mrExtents.width > metallicRoughnessResolution.width && mrExtents.height > metallicRoughnessResolution.height)
-			{
-				std::cout<<"Downscaling RMA map from "<<mrExtents.width<<"x"<<mrExtents.height<<" to "<<metallicRoughnessResolution.width<<"x"<<metallicRoughnessResolution.height<<std::endl;
+			if(g_downScaleRMATextures && mrExtents.width > metallicRoughnessResolution.width && mrExtents.height > metallicRoughnessResolution.height) {
+				std::cout << "Downscaling RMA map from " << mrExtents.width << "x" << mrExtents.height << " to " << metallicRoughnessResolution.width << "x" << metallicRoughnessResolution.height << std::endl;
 				prosper::util::ImageCreateInfo imgCreateInfo {};
 				imgCreateInfo.format = prosper::Format::R8G8B8A8_UNorm;
 				imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
@@ -283,26 +258,23 @@ bool msys::CSource2VmatFormatHandler::InitializeVMatData(
 				prosper::util::BlitInfo blitInfo {};
 				blitInfo.extentsSrc = mrExtents;
 				blitInfo.extentsDst = metallicRoughnessResolution;
-				setupCmd->RecordImageBarrier(*pbrSet.rmaMap,prosper::ImageLayout::ShaderReadOnlyOptimal,prosper::ImageLayout::TransferSrcOptimal);
-				setupCmd->RecordBlitImage(blitInfo,*pbrSet.rmaMap,*imgRescaled);
+				setupCmd->RecordImageBarrier(*pbrSet.rmaMap, prosper::ImageLayout::ShaderReadOnlyOptimal, prosper::ImageLayout::TransferSrcOptimal);
+				setupCmd->RecordBlitImage(blitInfo, *pbrSet.rmaMap, *imgRescaled);
 				context.FlushSetupCommandBuffer();
 
 				pbrSet.rmaMap = imgRescaled;
 			}
 
-			auto metalnessRoughnessPath = pathNoExt +"_rma";
+			auto metalnessRoughnessPath = pathNoExt + "_rma";
 			texInfo.outputFormat = uimg::TextureInfo::OutputFormat::ColorMap;
-			prosper::util::save_texture((rootPath +('/' +metalnessRoughnessPath)).GetString(),*pbrSet.rmaMap,texInfo,[](const std::string &err) {
-				std::cout<<"WARNING: Unable to save RMA image as DDS: "<<err<<std::endl;
-			});
+			prosper::util::save_texture((rootPath + ('/' + metalnessRoughnessPath)).GetString(), *pbrSet.rmaMap, texInfo, [](const std::string &err) { std::cout << "WARNING: Unable to save RMA image as DDS: " << err << std::endl; });
 
-			rootData.AddData("albedo_map",std::make_shared<ds::Texture>(settings,albedoPath));
-			rootData.AddData("rma_map",std::make_shared<ds::Texture>(settings,metalnessRoughnessPath));
+			rootData.AddData("albedo_map", std::make_shared<ds::Texture>(settings, albedoPath));
+			rootData.AddData("rma_map", std::make_shared<ds::Texture>(settings, metalnessRoughnessPath));
 
-			if(hasAoMap == false)
-			{
+			if(hasAoMap == false) {
 				auto rmaInfo = rootData.AddBlock("rma_info");
-				rmaInfo->AddValue("bool","requires_ao_update","1");
+				rmaInfo->AddValue("bool", "requires_ao_update", "1");
 			}
 
 			// Ao map is now in rma map, so we won't need it anymore
@@ -311,30 +283,26 @@ bool msys::CSource2VmatFormatHandler::InitializeVMatData(
 				rootData.DetachData(*aoValue);
 
 			if(useAlpha)
-				rootData.AddValue("int","alpha_mode",std::to_string(umath::to_integral(AlphaMode::Blend)));
+				rootData.AddValue("int", "alpha_mode", std::to_string(umath::to_integral(AlphaMode::Blend)));
 		}
 	}
 
 	auto dsNormalMap = std::dynamic_pointer_cast<ds::Texture>(rootData.GetValue("normal_map"));
-	if(dsNormalMap)
-	{
+	if(dsNormalMap) {
 		auto normalMapPath = dsNormalMap->GetString();
 		auto path = matManager.GetTextureManager().FindAssetFilePath(normalMapPath);
 		auto isVtexFormat = false;
-		if(path.has_value())
-		{
+		if(path.has_value()) {
 			std::string ext;
-			if(ufile::get_extension(*path,&ext) && (ext == "vtex_c"))
+			if(ufile::get_extension(*path, &ext) && (ext == "vtex_c"))
 				isVtexFormat = true;
 		}
-		if(isVtexFormat)
-		{
+		if(isVtexFormat) {
 			//if(isSteamVrMat || isDota2Mat)
 			{
 				std::string texPath;
-				auto albedoTex = get_texture(matManager,rootData,"albedo_map",&texPath);
-				if(albedoTex)
-				{
+				auto albedoTex = get_texture(matManager, rootData, "albedo_map", &texPath);
+				if(albedoTex) {
 					auto pathNoExt = texPath;
 					ufile::remove_extension_from_filename(pathNoExt);
 
@@ -345,23 +313,19 @@ bool msys::CSource2VmatFormatHandler::InitializeVMatData(
 					texInfo.outputFormat = uimg::TextureInfo::OutputFormat::ColorMap;
 					texInfo.flags = uimg::TextureInfo::Flags::GenerateMipmaps;
 					texInfo.inputFormat = uimg::TextureInfo::InputFormat::R8G8B8A8_UInt;
-					prosper::util::save_texture((rootPath +('/' +albedoPath)).GetString(),albedoTex->GetImage(),texInfo,[](const std::string &err) {
-						std::cout<<"WARNING: Unable to save albedo image as DDS: "<<err<<std::endl;
-						});
+					prosper::util::save_texture((rootPath + ('/' + albedoPath)).GetString(), albedoTex->GetImage(), texInfo, [](const std::string &err) { std::cout << "WARNING: Unable to save albedo image as DDS: " << err << std::endl; });
 				}
 
 				msys::source2::ShaderGenerateTangentSpaceNormalMap *shaderGenerateTangentSpaceNormalMap = nullptr;
 				if(isSteamVrMat || isDota2Mat)
-					shaderGenerateTangentSpaceNormalMap = static_cast<msys::source2::ShaderGenerateTangentSpaceNormalMapProto*>(context.GetShader("source2_generate_tangent_space_normal_map_proto").get());
+					shaderGenerateTangentSpaceNormalMap = static_cast<msys::source2::ShaderGenerateTangentSpaceNormalMapProto *>(context.GetShader("source2_generate_tangent_space_normal_map_proto").get());
 				else
-					shaderGenerateTangentSpaceNormalMap = static_cast<msys::source2::ShaderGenerateTangentSpaceNormalMap*>(context.GetShader("source2_generate_tangent_space_normal_map").get());
-				if(shaderGenerateTangentSpaceNormalMap)
-				{
+					shaderGenerateTangentSpaceNormalMap = static_cast<msys::source2::ShaderGenerateTangentSpaceNormalMap *>(context.GetShader("source2_generate_tangent_space_normal_map").get());
+				if(shaderGenerateTangentSpaceNormalMap) {
 					auto &textureManager = matManager.GetTextureManager();
 
 					auto pNormalMap = textureManager.LoadAsset(normalMapPath);
-					if(pNormalMap && pNormalMap->HasValidVkTexture())
-					{
+					if(pNormalMap && pNormalMap->HasValidVkTexture()) {
 						prosper::util::ImageCreateInfo imgCreateInfo {};
 						//imgCreateInfo.flags |= prosper::util::ImageCreateInfo::Flags::FullMipmapChain;
 						imgCreateInfo.format = prosper::Format::R16G16B16A16_SFloat;
@@ -375,20 +339,18 @@ bool msys::CSource2VmatFormatHandler::InitializeVMatData(
 						auto imgNormal = context.CreateImage(imgCreateInfo);
 
 						prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
-						auto texNormal = context.CreateTexture({},*imgNormal,imgViewCreateInfo);
-						auto rt = context.CreateRenderTarget({texNormal},shaderGenerateTangentSpaceNormalMap->GetRenderPass());
+						auto texNormal = context.CreateTexture({}, *imgNormal, imgViewCreateInfo);
+						auto rt = context.CreateRenderTarget({texNormal}, shaderGenerateTangentSpaceNormalMap->GetRenderPass());
 
 						auto dsg = shaderGenerateTangentSpaceNormalMap->CreateDescriptorSetGroup(msys::source2::ShaderGenerateTangentSpaceNormalMap::DESCRIPTOR_SET_TEXTURE.setIndex);
 						auto &ds = *dsg->GetDescriptorSet();
 						auto &vkNormalTex = pNormalMap->GetVkTexture();
-						ds.SetBindingTexture(*vkNormalTex,umath::to_integral(msys::source2::ShaderGenerateTangentSpaceNormalMap::TextureBinding::NormalMap));
+						ds.SetBindingTexture(*vkNormalTex, umath::to_integral(msys::source2::ShaderGenerateTangentSpaceNormalMap::TextureBinding::NormalMap));
 						auto &setupCmd = context.GetSetupCommandBuffer();
-						if(setupCmd->RecordBeginRenderPass(*rt))
-						{
-							prosper::ShaderBindState bindState{*setupCmd};
-							if(shaderGenerateTangentSpaceNormalMap->RecordBeginDraw(bindState))
-							{
-								shaderGenerateTangentSpaceNormalMap->RecordDraw(bindState,ds);
+						if(setupCmd->RecordBeginRenderPass(*rt)) {
+							prosper::ShaderBindState bindState {*setupCmd};
+							if(shaderGenerateTangentSpaceNormalMap->RecordBeginDraw(bindState)) {
+								shaderGenerateTangentSpaceNormalMap->RecordDraw(bindState, ds);
 								shaderGenerateTangentSpaceNormalMap->RecordEndDraw(bindState);
 							}
 							setupCmd->RecordEndRenderPass();
@@ -398,9 +360,7 @@ bool msys::CSource2VmatFormatHandler::InitializeVMatData(
 						auto normalMapPathNoExt = normalMapPath;
 						ufile::remove_extension_from_filename(normalMapPathNoExt);
 
-						auto errHandler = [](const std::string &err) {
-							std::cout<<"WARNING: Unable to save normal map image as DDS: "<<err<<std::endl;
-						};
+						auto errHandler = [](const std::string &err) { std::cout << "WARNING: Unable to save normal map image as DDS: " << err << std::endl; };
 
 						// TODO: Change width/height
 						uimg::TextureInfo texInfo {};
@@ -409,10 +369,10 @@ bool msys::CSource2VmatFormatHandler::InitializeVMatData(
 						texInfo.inputFormat = uimg::TextureInfo::InputFormat::R16G16B16A16_Float;
 						texInfo.outputFormat = uimg::TextureInfo::OutputFormat::NormalMap;
 						texInfo.SetNormalMap();
-						prosper::util::save_texture((rootPath +('/' +normalMapPathNoExt)).GetString(),texNormal->GetImage(),texInfo,errHandler);
+						prosper::util::save_texture((rootPath + ('/' + normalMapPathNoExt)).GetString(), texNormal->GetImage(), texInfo, errHandler);
 
-						load_texture(matManager,normalMapPathNoExt,true);
-						rootData.AddData("normal_map",std::make_shared<ds::Texture>(settings,normalMapPathNoExt));
+						load_texture(matManager, normalMapPathNoExt, true);
+						rootData.AddData("normal_map", std::make_shared<ds::Texture>(settings, normalMapPathNoExt));
 					}
 				}
 			}

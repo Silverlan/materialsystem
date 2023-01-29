@@ -9,36 +9,34 @@
 #include "matsysdefinitions.h"
 #include <sharedutils/asset_loader/asset_format_handler.hpp>
 
-namespace VTFLib {class CVMTFile;};
-namespace ds {class Block;};
-namespace ValveKeyValueFormat
-{
+namespace VTFLib {
+	class CVMTFile;
+};
+namespace ds {
+	class Block;
+};
+namespace ValveKeyValueFormat {
 	class KVNode;
 	class KVBranch;
 };
-namespace msys
-{
-	class DLLMATSYS SourceVmtFormatHandler
-		: public util::IImportAssetFormatHandler
-	{
-	public:
+namespace msys {
+	class DLLMATSYS SourceVmtFormatHandler : public util::IImportAssetFormatHandler {
+	  public:
 		SourceVmtFormatHandler(util::IAssetManager &assetManager);
-		virtual bool Import(const std::string &outputPath,std::string &outFilePath) override;
-	protected:
-		virtual bool LoadVMTData(VTFLib::CVMTFile &vmt,const std::string &vmtShader,ds::Block &rootData,std::string &matShader);
-		bool LoadVMT(VTFLib::CVMTFile &vmt,const std::string &outputPath,std::string &outFilePath);
+		virtual bool Import(const std::string &outputPath, std::string &outFilePath) override;
+	  protected:
+		virtual bool LoadVMTData(VTFLib::CVMTFile &vmt, const std::string &vmtShader, ds::Block &rootData, std::string &matShader);
+		bool LoadVMT(VTFLib::CVMTFile &vmt, const std::string &outputPath, std::string &outFilePath);
 	};
 #ifdef ENABLE_VKV_PARSER
-	class DLLMATSYS SourceVmtFormatHandler2
-		: public util::IImportAssetFormatHandler
-	{
-	public:
+	class DLLMATSYS SourceVmtFormatHandler2 : public util::IImportAssetFormatHandler {
+	  public:
 		SourceVmtFormatHandler2(util::IAssetManager &assetManager);
-		virtual bool Import(const std::string &outputPath,std::string &outFilePath) override;
-	protected:
-		static std::optional<std::string> GetStringValue(ValveKeyValueFormat::KVBranch &node,std::string key);
-		virtual bool LoadVMTData(ValveKeyValueFormat::KVNode &vmt,const std::string &vmtShader,ds::Block &rootData,std::string &matShader);
-		bool LoadVMT(ValveKeyValueFormat::KVNode &vmt,const std::string &outputPath,std::string &outFilePath);
+		virtual bool Import(const std::string &outputPath, std::string &outFilePath) override;
+	  protected:
+		static std::optional<std::string> GetStringValue(ValveKeyValueFormat::KVBranch &node, std::string key);
+		virtual bool LoadVMTData(ValveKeyValueFormat::KVNode &vmt, const std::string &vmtShader, ds::Block &rootData, std::string &matShader);
+		bool LoadVMT(ValveKeyValueFormat::KVNode &vmt, const std::string &outputPath, std::string &outFilePath);
 	};
 #endif
 };

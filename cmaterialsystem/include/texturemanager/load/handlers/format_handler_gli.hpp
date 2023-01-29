@@ -8,17 +8,14 @@
 #include "texturemanager/load/texture_format_handler.hpp"
 #include <gli/load.hpp>
 
-namespace msys
-{
-	class DLLCMATSYS TextureFormatHandlerGli
-		: public ITextureFormatHandler
-	{
-	public:
-		TextureFormatHandlerGli(util::IAssetManager &assetManager) : ITextureFormatHandler{assetManager} {}
-		virtual bool GetDataPtr(uint32_t layer,uint32_t mipmapIdx,void **outPtr,size_t &outSize) override;
-	protected:
+namespace msys {
+	class DLLCMATSYS TextureFormatHandlerGli : public ITextureFormatHandler {
+	  public:
+		TextureFormatHandlerGli(util::IAssetManager &assetManager) : ITextureFormatHandler {assetManager} {}
+		virtual bool GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize) override;
+	  protected:
 		virtual bool LoadData(InputTextureInfo &texInfo) override;
-	private:
+	  private:
 		gli::texture m_texture;
 	};
 };

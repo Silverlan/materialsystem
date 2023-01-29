@@ -7,11 +7,10 @@
 #include "texturemanager/load/texture_processor.hpp"
 #include <prosper_context.hpp>
 
-void msys::setup_sampler_mipmap_mode(prosper::util::SamplerCreateInfo &createInfo,TextureMipmapMode mode)
+void msys::setup_sampler_mipmap_mode(prosper::util::SamplerCreateInfo &createInfo, TextureMipmapMode mode)
 {
-	switch(mode)
-	{
-		case TextureMipmapMode::Ignore:
+	switch(mode) {
+	case TextureMipmapMode::Ignore:
 		{
 			createInfo.minFilter = prosper::Filter::Nearest;
 			createInfo.magFilter = prosper::Filter::Nearest;
@@ -20,7 +19,7 @@ void msys::setup_sampler_mipmap_mode(prosper::util::SamplerCreateInfo &createInf
 			createInfo.maxLod = 0.f;
 			break;
 		}
-		default:
+	default:
 		{
 			createInfo.minFilter = prosper::Filter::Linear;
 			createInfo.magFilter = prosper::Filter::Linear;
@@ -30,14 +29,13 @@ void msys::setup_sampler_mipmap_mode(prosper::util::SamplerCreateInfo &createInf
 	}
 }
 
-msys::TextureLoader::TextureLoader(util::IAssetManager &assetManager,prosper::IPrContext &context)
-	: util::TAssetFormatLoader<TextureProcessor>{assetManager,"texture"},m_context{context}
+msys::TextureLoader::TextureLoader(util::IAssetManager &assetManager, prosper::IPrContext &context) : util::TAssetFormatLoader<TextureProcessor> {assetManager, "texture"}, m_context {context}
 {
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
-	setup_sampler_mipmap_mode(samplerCreateInfo,TextureMipmapMode::Load);
+	setup_sampler_mipmap_mode(samplerCreateInfo, TextureMipmapMode::Load);
 	m_textureSampler = context.CreateSampler(samplerCreateInfo);
 
 	samplerCreateInfo = {};
-	setup_sampler_mipmap_mode(samplerCreateInfo,TextureMipmapMode::Ignore);
+	setup_sampler_mipmap_mode(samplerCreateInfo, TextureMipmapMode::Ignore);
 	m_textureSamplerNoMipmap = context.CreateSampler(samplerCreateInfo);
 }

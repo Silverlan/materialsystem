@@ -13,10 +13,7 @@
 #include <image/prosper_sampler.hpp>
 #include <util_image_buffer.hpp>
 
-bool msys::TextureProcessor::PrepareImage(prosper::IPrContext &context)
-{
-	return InitializeProsperImage(context) && InitializeImageBuffers(context) && InitializeTexture(context);
-}
+bool msys::TextureProcessor::PrepareImage(prosper::IPrContext &context) { return InitializeProsperImage(context) && InitializeImageBuffers(context) && InitializeTexture(context); }
 
 bool msys::TextureProcessor::InitializeTexture(prosper::IPrContext &context)
 {
@@ -34,12 +31,12 @@ bool msys::TextureProcessor::InitializeTexture(prosper::IPrContext &context)
 	imgViewCreateInfo.swizzleBlue = swizzle.at(2);
 	imgViewCreateInfo.swizzleAlpha = swizzle.at(3);
 	createInfo.flags |= prosper::util::TextureCreateInfo::Flags::CreateImageViewForEachLayer;
-	texture = context.CreateTexture(createInfo,*targetImage,imgViewCreateInfo);
+	texture = context.CreateTexture(createInfo, *targetImage, imgViewCreateInfo);
 	return true;
 }
 
-msys::TextureLoader &msys::TextureProcessor::GetLoader() {return static_cast<TextureLoader&>(m_loader);}
-msys::ITextureFormatHandler &msys::TextureProcessor::GetHandler() {return static_cast<ITextureFormatHandler&>(*handler);}
+msys::TextureLoader &msys::TextureProcessor::GetLoader() { return static_cast<TextureLoader &>(m_loader); }
+msys::ITextureFormatHandler &msys::TextureProcessor::GetHandler() { return static_cast<ITextureFormatHandler &>(*handler); }
 
 bool msys::TextureProcessor::FinalizeImage(prosper::IPrContext &context)
 {
@@ -48,7 +45,7 @@ bool msys::TextureProcessor::FinalizeImage(prosper::IPrContext &context)
 	if(CopyBuffersToImage(context) == false)
 		return false;
 
-	if(targetGpuConversionFormat.has_value() && ConvertImageFormat(context,*targetGpuConversionFormat) == false)
+	if(targetGpuConversionFormat.has_value() && ConvertImageFormat(context, *targetGpuConversionFormat) == false)
 		return false;
 
 	if(m_generateMipmaps && GenerateMipmaps(context) == false)
@@ -57,13 +54,11 @@ bool msys::TextureProcessor::FinalizeImage(prosper::IPrContext &context)
 	return true;
 }
 
-msys::TextureProcessor::TextureProcessor(util::AssetFormatLoader &loader,std::unique_ptr<util::IAssetFormatHandler> &&handler)
-	: util::FileAssetProcessor{loader,std::move(handler)}
-{}
+msys::TextureProcessor::TextureProcessor(util::AssetFormatLoader &loader, std::unique_ptr<util::IAssetFormatHandler> &&handler) : util::FileAssetProcessor {loader, std::move(handler)} {}
 
 bool msys::TextureProcessor::Load()
 {
-	if(!static_cast<msys::ITextureFormatHandler&>(*handler).LoadData())
+	if(!static_cast<msys::ITextureFormatHandler &>(*handler).LoadData())
 		return false;
 	auto &loader = GetLoader();
 	return !loader.DoesAllowMultiThreadedGpuResourceAllocation() || PrepareImage(loader.GetContext());
@@ -83,47 +78,40 @@ bool msys::TextureProcessor::InitializeProsperImage(prosper::IPrContext &context
 	const auto height = inputTextureInfo.height;
 
 	// In some cases the format may not be supported by the GPU altogether. We may still be able to convert it to a compatible format by hand.
-	std::function<void(const void*,std::shared_ptr<uimg::ImageBuffer>&,uint32_t,uint32_t)> manualConverter = nullptr;
+	std::function<void(const void *, std::shared_ptr<uimg::ImageBuffer> &, uint32_t, uint32_t)> manualConverter = nullptr;
 	const auto usage = prosper::ImageUsageFlags::TransferSrcBit | prosper::ImageUsageFlags::TransferDstBit | prosper::ImageUsageFlags::SampledBit;
-	if(imageFormat == prosper::Format::B8G8R8_UNorm_PoorCoverage && context.IsImageFormatSupported(imageFormat,usage,prosper::ImageType::e2D,prosper::ImageTiling::Optimal) == false)
-	{
-		cpuImageConverter = [](const void *imgData,std::shared_ptr<uimg::ImageBuffer> &outImg,uint32_t width,uint32_t height) {
-			outImg = uimg::ImageBuffer::Create(imgData,width,height,uimg::Format::RGB8);
+	if(imageFormat == prosper::Format::B8G8R8_UNorm_PoorCoverage && context.IsImageFormatSupported(imageFormat, usage, prosper::ImageType::e2D, prosper::ImageTiling::Optimal) == false) {
+		cpuImageConverter = [](const void *imgData, std::shared_ptr<uimg::ImageBuffer> &outImg, uint32_t width, uint32_t height) {
+			outImg = uimg::ImageBuffer::Create(imgData, width, height, uimg::Format::RGB8);
 			outImg->Convert(uimg::Format::RGBA8);
 		};
 
 		imageFormat = prosper::Format::B8G8R8A8_UNorm;
 	}
-	else if(imageFormat == prosper::Format::R8G8B8_UNorm_PoorCoverage && context.IsImageFormatSupported(imageFormat,usage,prosper::ImageType::e2D,prosper::ImageTiling::Optimal) == false)
-	{
-		cpuImageConverter = [](const void *imgData,std::shared_ptr<uimg::ImageBuffer> &outImg,uint32_t width,uint32_t height) {
-			outImg = uimg::ImageBuffer::Create(imgData,width,height,uimg::Format::RGB8);
+	else if(imageFormat == prosper::Format::R8G8B8_UNorm_PoorCoverage && context.IsImageFormatSupported(imageFormat, usage, prosper::ImageType::e2D, prosper::ImageTiling::Optimal) == false) {
+		cpuImageConverter = [](const void *imgData, std::shared_ptr<uimg::ImageBuffer> &outImg, uint32_t width, uint32_t height) {
+			outImg = uimg::ImageBuffer::Create(imgData, width, height, uimg::Format::RGB8);
 			outImg->Convert(uimg::Format::RGBA8);
 		};
 
 		imageFormat = prosper::Format::R8G8B8A8_UNorm;
 	}
-	if(context.IsImageFormatSupported(imageFormat,usage) == false || (targetGpuConversionFormat.has_value() && context.IsImageFormatSupported(*targetGpuConversionFormat,usage) == false))
+	if(context.IsImageFormatSupported(imageFormat, usage) == false || (targetGpuConversionFormat.has_value() && context.IsImageFormatSupported(*targetGpuConversionFormat, usage) == false))
 		return false;
 
 	mipmapCount = inputTextureInfo.mipmapCount;
 	m_generateMipmaps = (mipmapMode == TextureMipmapMode::Generate || (mipmapMode == TextureMipmapMode::LoadOrGenerate && mipmapCount <= 1)) ? true : false;
-	if(m_generateMipmaps == true)
-	{
+	if(m_generateMipmaps == true) {
 		auto targetFormat = targetGpuConversionFormat.has_value() ? *targetGpuConversionFormat : imageFormat;
-		if(
-			context.AreFormatFeaturesSupported(targetFormat,prosper::FormatFeatureFlags::BlitSrcBit | prosper::FormatFeatureFlags::BlitDstBit,prosper::ImageTiling::Optimal)
-			!= prosper::FeatureSupport::Unsupported
-		)
-			mipmapCount = prosper::util::calculate_mipmap_count(width,height);
-		else
-		{
+		if(context.AreFormatFeaturesSupported(targetFormat, prosper::FormatFeatureFlags::BlitSrcBit | prosper::FormatFeatureFlags::BlitDstBit, prosper::ImageTiling::Optimal) != prosper::FeatureSupport::Unsupported)
+			mipmapCount = prosper::util::calculate_mipmap_count(width, height);
+		else {
 			m_generateMipmaps = false;
 			mipmapCount = 1;
 		}
 	}
 
-	auto cubemap = umath::is_flag_set(inputTextureInfo.flags,ITextureFormatHandler::InputTextureInfo::Flags::CubemapBit);
+	auto cubemap = umath::is_flag_set(inputTextureInfo.flags, ITextureFormatHandler::InputTextureInfo::Flags::CubemapBit);
 
 	// Initialize output image
 	prosper::util::ImageCreateInfo createInfo {};
@@ -146,8 +134,7 @@ bool msys::TextureProcessor::InitializeProsperImage(prosper::IPrContext &context
 	img->SetDebugName("texture_asset_img");
 	image = img;
 
-	if(targetGpuConversionFormat.has_value())
-	{
+	if(targetGpuConversionFormat.has_value()) {
 		// Image needs to be converted
 		auto createInfo = image->GetCreateInfo();
 		createInfo.format = *targetGpuConversionFormat;
@@ -169,27 +156,23 @@ bool msys::TextureProcessor::InitializeImageBuffers(prosper::IPrContext &context
 	auto &inputTextureInfo = handler.GetInputTextureInfo();
 	auto numLayers = inputTextureInfo.layerCount;
 	auto mipmapCount = inputTextureInfo.mipmapCount;
-	buffers.reserve(numLayers *mipmapCount);
+	buffers.reserve(numLayers * mipmapCount);
 	auto &imgBuffers = m_tmpImgBuffers;
-	imgBuffers.reserve(numLayers *mipmapCount);
-	auto bufAlignment = prosper::util::is_compressed_format(inputTextureInfo.format) ?
-		prosper::util::get_block_size(inputTextureInfo.format) : 0;
-	for(auto iLayer=decltype(numLayers){0u};iLayer<numLayers;++iLayer)
-	{
-		for(auto iMipmap=decltype(mipmapCount){0u};iMipmap<mipmapCount;++iMipmap)
-		{
+	imgBuffers.reserve(numLayers * mipmapCount);
+	auto bufAlignment = prosper::util::is_compressed_format(inputTextureInfo.format) ? prosper::util::get_block_size(inputTextureInfo.format) : 0;
+	for(auto iLayer = decltype(numLayers) {0u}; iLayer < numLayers; ++iLayer) {
+		for(auto iMipmap = decltype(mipmapCount) {0u}; iMipmap < mipmapCount; ++iMipmap) {
 			size_t dataSize;
 			void *data;
 
-			if(handler.GetDataPtr(iLayer,iMipmap,&data,dataSize) == false || data == nullptr)
+			if(handler.GetDataPtr(iLayer, iMipmap, &data, dataSize) == false || data == nullptr)
 				continue;
 
-			if(cpuImageConverter)
-			{
-				uint32_t wMipmap,hMipmap;
-				prosper::util::calculate_mipmap_size(inputTextureInfo.width,inputTextureInfo.height,&wMipmap,&hMipmap,iMipmap);
+			if(cpuImageConverter) {
+				uint32_t wMipmap, hMipmap;
+				prosper::util::calculate_mipmap_size(inputTextureInfo.width, inputTextureInfo.height, &wMipmap, &hMipmap, iMipmap);
 				std::shared_ptr<uimg::ImageBuffer> imgBuffer = nullptr;
-				cpuImageConverter(data,imgBuffer,wMipmap,hMipmap);
+				cpuImageConverter(data, imgBuffer, wMipmap, hMipmap);
 				data = imgBuffer->GetData();
 				dataSize = imgBuffer->GetSize();
 
@@ -197,8 +180,8 @@ bool msys::TextureProcessor::InitializeImageBuffers(prosper::IPrContext &context
 			}
 
 			// Initialize buffer with source image data
-			auto buf = context.AllocateTemporaryBuffer(dataSize,bufAlignment,data);
-			buffers.push_back({buf,iLayer,iMipmap}); // We need to keep the buffers alive until the copy has completed
+			auto buf = context.AllocateTemporaryBuffer(dataSize, bufAlignment, data);
+			buffers.push_back({buf, iLayer, iMipmap}); // We need to keep the buffers alive until the copy has completed
 		}
 	}
 	return true;
@@ -209,19 +192,18 @@ bool msys::TextureProcessor::CopyBuffersToImage(prosper::IPrContext &context)
 	// Note: We need a separate loop here, because the underlying VkBuffer of 'AllocateTemporaryBuffer' may get invalidated if the function
 	// is called multiple times.
 	auto &setupCmd = context.GetSetupCommandBuffer();
-	for(auto &bufInfo : buffers)
-	{
+	for(auto &bufInfo : buffers) {
 		// Copy buffer contents to output image
 		auto extent = image->GetExtents(bufInfo.mipmapIndex);
 		prosper::util::BufferImageCopyInfo copyInfo {};
 		copyInfo.mipLevel = bufInfo.mipmapIndex;
 		copyInfo.baseArrayLayer = bufInfo.layerIndex;
-		copyInfo.imageExtent = {extent.width,extent.height};
-		setupCmd->RecordCopyBufferToImage(copyInfo,*bufInfo.buffer,*image);
+		copyInfo.imageExtent = {extent.width, extent.height};
+		setupCmd->RecordCopyBufferToImage(copyInfo, *bufInfo.buffer, *image);
 	}
 
 	if(!m_generateMipmaps)
-		setupCmd->RecordImageBarrier(*image,prosper::ImageLayout::TransferDstOptimal,prosper::ImageLayout::ShaderReadOnlyOptimal);
+		setupCmd->RecordImageBarrier(*image, prosper::ImageLayout::TransferDstOptimal, prosper::ImageLayout::ShaderReadOnlyOptimal);
 	context.FlushSetupCommandBuffer(); // Make sure image copy is complete before generating mipmaps
 
 	// Don't need these anymore
@@ -230,13 +212,13 @@ bool msys::TextureProcessor::CopyBuffersToImage(prosper::IPrContext &context)
 	return true;
 }
 
-bool msys::TextureProcessor::ConvertImageFormat(prosper::IPrContext &context,prosper::Format targetFormat)
+bool msys::TextureProcessor::ConvertImageFormat(prosper::IPrContext &context, prosper::Format targetFormat)
 {
 	auto &setupCmd = context.GetSetupCommandBuffer();
 
-	setupCmd->RecordImageBarrier(*image,prosper::ImageLayout::ShaderReadOnlyOptimal,prosper::ImageLayout::TransferSrcOptimal);
-	setupCmd->RecordBlitImage({},*image,*convertedImage);
-	setupCmd->RecordImageBarrier(*convertedImage,prosper::ImageLayout::TransferDstOptimal,prosper::ImageLayout::ShaderReadOnlyOptimal);
+	setupCmd->RecordImageBarrier(*image, prosper::ImageLayout::ShaderReadOnlyOptimal, prosper::ImageLayout::TransferSrcOptimal);
+	setupCmd->RecordBlitImage({}, *image, *convertedImage);
+	setupCmd->RecordImageBarrier(*convertedImage, prosper::ImageLayout::TransferDstOptimal, prosper::ImageLayout::ShaderReadOnlyOptimal);
 
 	context.FlushSetupCommandBuffer();
 
@@ -247,7 +229,7 @@ bool msys::TextureProcessor::ConvertImageFormat(prosper::IPrContext &context,pro
 bool msys::TextureProcessor::GenerateMipmaps(prosper::IPrContext &context)
 {
 	auto &setupCmd = context.GetSetupCommandBuffer();
-	setupCmd->RecordGenerateMipmaps(*image,prosper::ImageLayout::TransferDstOptimal,prosper::AccessFlags::TransferWriteBit,prosper::PipelineStageFlags::TransferBit);
+	setupCmd->RecordGenerateMipmaps(*image, prosper::ImageLayout::TransferDstOptimal, prosper::AccessFlags::TransferWriteBit, prosper::PipelineStageFlags::TransferBit);
 	context.FlushSetupCommandBuffer();
 	return true;
 }

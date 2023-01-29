@@ -12,10 +12,7 @@
 #include <util_source2.hpp>
 #endif
 
-TextureQueueItem::TextureQueueItem()
-	: valid(true),mipmapMode(TextureMipmapMode::Load),cubemap(false),texturetype(TextureType::Invalid),
-	mipmap(NULL),mipmapid(-1),dxtformat(NULL),format(NULL),initialized(false),context()
-{}
+TextureQueueItem::TextureQueueItem() : valid(true), mipmapMode(TextureMipmapMode::Load), cubemap(false), texturetype(TextureType::Invalid), mipmap(NULL), mipmapid(-1), dxtformat(NULL), format(NULL), initialized(false), context() {}
 
 TextureQueueItem::~TextureQueueItem()
 {
@@ -27,16 +24,11 @@ TextureQueueItem::~TextureQueueItem()
 
 ////////////////////////
 
-TextureQueueItemPNG::TextureQueueItemPNG()
-	: TextureQueueItem(),pnginfo(NULL)
-{
-	texturetype = TextureType::PNG;
-}
+TextureQueueItemPNG::TextureQueueItemPNG() : TextureQueueItem(), pnginfo(NULL) { texturetype = TextureType::PNG; }
 
 TextureQueueItemPNG::~TextureQueueItemPNG()
 {
-	if(mipmap != NULL)
-	{
+	if(mipmap != NULL) {
 		delete[] mipmap[0];
 		delete[] mipmap;
 	}
@@ -44,26 +36,16 @@ TextureQueueItemPNG::~TextureQueueItemPNG()
 
 ////////////////////////
 
-TextureQueueItemStbi::TextureQueueItemStbi(TextureType texType)
-	: TextureQueueItem(),imageBuffer()
-{
-	texturetype = texType;
-}
+TextureQueueItemStbi::TextureQueueItemStbi(TextureType texType) : TextureQueueItem(), imageBuffer() { texturetype = texType; }
 
 ////////////////////////
 
 #ifndef DISABLE_VTF_SUPPORT
-TextureQueueItemVTF::TextureQueueItemVTF()
-	: TextureQueueItem()
-{
-	texturetype = TextureType::VTF;
-
-}
+TextureQueueItemVTF::TextureQueueItemVTF() : TextureQueueItem() { texturetype = TextureType::VTF; }
 
 TextureQueueItemVTF::~TextureQueueItemVTF()
 {
-	if(mipmap != nullptr)
-	{
+	if(mipmap != nullptr) {
 		delete[] mipmap[0];
 		delete[] mipmap;
 	}
@@ -73,17 +55,11 @@ TextureQueueItemVTF::~TextureQueueItemVTF()
 ////////////////////////
 
 #ifndef DISABLE_VTEX_SUPPORT
-TextureQueueItemVTex::TextureQueueItemVTex()
-	: TextureQueueItem()
-{
-	texturetype = TextureType::VTex;
-
-}
+TextureQueueItemVTex::TextureQueueItemVTex() : TextureQueueItem() { texturetype = TextureType::VTex; }
 
 TextureQueueItemVTex::~TextureQueueItemVTex()
 {
-	if(mipmap != nullptr)
-	{
+	if(mipmap != nullptr) {
 		delete[] mipmap[0];
 		delete[] mipmap;
 	}
@@ -92,11 +68,7 @@ TextureQueueItemVTex::~TextureQueueItemVTex()
 
 ////////////////////////
 
-TextureQueueItemSurface::TextureQueueItemSurface(TextureType type)
-	: TextureQueueItem(),/*ddsimg(NULL),*/compressed(nullptr),compressedsize(nullptr)
-{
-	texturetype = type;
-}
+TextureQueueItemSurface::TextureQueueItemSurface(TextureType type) : TextureQueueItem(), /*ddsimg(NULL),*/ compressed(nullptr), compressedsize(nullptr) { texturetype = type; }
 
 TextureQueueItemSurface::~TextureQueueItemSurface()
 {
@@ -111,24 +83,20 @@ TextureQueueItemSurface::~TextureQueueItemSurface()
 		}
 		delete[] ddsimg;
 	}*/
-	if(mipmap != NULL)
-	{
+	if(mipmap != NULL) {
 		if(!cubemap)
 			delete mipmap[0];
-		else
-		{
-			for(unsigned int i=0;i<6;i++)
+		else {
+			for(unsigned int i = 0; i < 6; i++)
 				delete[] mipmap[i];
 		}
 		delete[] mipmap;
 	}
-	if(compressed != NULL)
-	{
+	if(compressed != NULL) {
 		if(!cubemap)
 			delete compressed[0];
-		else
-		{
-			for(unsigned int i=0;i<6;i++)
+		else {
+			for(unsigned int i = 0; i < 6; i++)
 				delete[] compressed[i];
 		}
 		delete[] compressed;

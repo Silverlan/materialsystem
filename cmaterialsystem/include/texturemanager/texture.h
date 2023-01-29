@@ -15,21 +15,11 @@ class TextureManager;
 #pragma warning(push)
 #pragma warning(disable : 4251)
 enum class TextureType : uint32_t;
-class DLLCMATSYS Texture final
-	: public std::enable_shared_from_this<Texture>
-{
-public:
+class DLLCMATSYS Texture final : public std::enable_shared_from_this<Texture> {
+  public:
 	friend TextureManager;
-	enum class Flags : uint32_t
-	{
-		None = 0u,
-		Indexed = 1u,
-		Loaded = Indexed<<1u,
-		Error = Loaded<<1u,
-		SRGB = Error<<1u,
-		NormalMap = SRGB<<1u
-	};
-	Texture(prosper::IPrContext &context,std::shared_ptr<prosper::Texture> texture=nullptr);
+	enum class Flags : uint32_t { None = 0u, Indexed = 1u, Loaded = Indexed << 1u, Error = Loaded << 1u, SRGB = Error << 1u, NormalMap = SRGB << 1u };
+	Texture(prosper::IPrContext &context, std::shared_ptr<prosper::Texture> texture = nullptr);
 	~Texture();
 	void Reset();
 	CallbackHandle CallOnLoaded(const std::function<void(std::shared_ptr<Texture>)> &callback);
@@ -48,11 +38,11 @@ public:
 	void ClearVkTexture();
 	bool HasValidVkTexture() const;
 
-	uint32_t GetUpdateCount() const {return m_updateCount;}
+	uint32_t GetUpdateCount() const { return m_updateCount; }
 
-	TextureType GetFileFormatType() const {return m_fileFormatType;}
-	const std::optional<util::Path> &GetFilePath() {return m_filePath;}
-	void SetFileInfo(const util::Path &path,TextureType type);
+	TextureType GetFileFormatType() const { return m_fileFormatType; }
+	const std::optional<util::Path> &GetFilePath() { return m_filePath; }
+	void SetFileInfo(const util::Path &path, TextureType type);
 
 	bool HasFlag(Flags flag) const;
 	bool IsIndexed() const;
@@ -61,7 +51,7 @@ public:
 	void AddFlags(Flags flags);
 	Flags GetFlags() const;
 	void SetFlags(Flags flags);
-private:
+  private:
 	std::vector<CallbackHandle> m_onVkTextureChanged;
 	std::queue<CallbackHandle> m_onLoadCallbacks;
 	std::queue<CallbackHandle> m_onRemoveCallbacks;

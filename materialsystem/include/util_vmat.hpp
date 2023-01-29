@@ -5,11 +5,10 @@
 #include <sharedutils/util_path.hpp>
 #include <sharedutils/util_string.h>
 
-namespace vmat
-{
-	static util::Path get_vmat_texture_path(const std::string &strPath,std::string *optOutInputPath=nullptr)
+namespace vmat {
+	static util::Path get_vmat_texture_path(const std::string &strPath, std::string *optOutInputPath = nullptr)
 	{
-		::util::Path path{strPath};
+		::util::Path path {strPath};
 		path.RemoveFileExtension();
 		path += ".vtex_c";
 
@@ -18,8 +17,8 @@ namespace vmat
 		path.PopFront();
 
 		auto outputPath = path;
-		if(ustring::compare<std::string_view>(front,"materials",false) == false)
-			outputPath = "models/" +outputPath;
+		if(ustring::compare<std::string_view>(front, "materials", false) == false)
+			outputPath = "models/" + outputPath;
 
 		if(optOutInputPath)
 			*optOutInputPath = inputPath;
