@@ -70,7 +70,8 @@ void Material::Assign(const Material &other)
 	m_shader = other.m_shader ? std::make_unique<std::string>(*other.m_shader) : nullptr;
 	// m_index = other.m_index;
 
-	UpdateTextures();
+	if(IsValid())
+		UpdateTextures();
 }
 
 void Material::Reset()
@@ -476,6 +477,8 @@ const TextureInfo *Material::GetTextureInfo(const std::string &key) const { retu
 
 TextureInfo *Material::GetTextureInfo(const std::string &key)
 {
+	if(!m_data)
+		return nullptr;
 	auto &base = m_data->GetValue(key);
 	if(base == nullptr || base->IsBlock())
 		return nullptr;
