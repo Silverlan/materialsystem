@@ -383,31 +383,31 @@ TextureInfo *CMaterial::GetTextureInfo(const std::string &key)
 	return Material::GetTextureInfo(key);
 }
 
-void CMaterial::LoadTextures(bool precache)
+void CMaterial::LoadTextures(bool precache, bool force)
 {
 	if(precache) {
-		if(umath::is_flag_set(m_stateFlags, StateFlags::TexturesLoaded) || umath::is_flag_set(m_stateFlags, StateFlags::TexturesPrecached))
+		if(!force && (umath::is_flag_set(m_stateFlags, StateFlags::TexturesLoaded) || umath::is_flag_set(m_stateFlags, StateFlags::TexturesPrecached)))
 			return;
-		LoadTextures(*GetDataBlock(), precache);
+		LoadTextures(*GetDataBlock(), precache, force);
 		return;
 	}
-	if(umath::is_flag_set(m_stateFlags, StateFlags::TexturesLoaded))
+	if(!force && umath::is_flag_set(m_stateFlags, StateFlags::TexturesLoaded))
 		return;
-	LoadTextures(*GetDataBlock(), precache);
+	LoadTextures(*GetDataBlock(), precache, force);
 	UpdateTextures();
 	auto &shaderHandler = static_cast<msys::CMaterialManager &>(m_manager).GetShaderHandler();
 	if(shaderHandler)
 		shaderHandler(this);
 }
-void CMaterial::LoadTextures(ds::Block &data, bool precache)
+void CMaterial::LoadTextures(ds::Block &data, bool precache, bool force)
 {
 	if(precache) {
-		if(umath::is_flag_set(m_stateFlags, StateFlags::TexturesLoaded) || umath::is_flag_set(m_stateFlags, StateFlags::TexturesPrecached))
+		if(!force && (umath::is_flag_set(m_stateFlags, StateFlags::TexturesLoaded) || umath::is_flag_set(m_stateFlags, StateFlags::TexturesPrecached)))
 			return;
 		umath::set_flag(m_stateFlags, StateFlags::TexturesPrecached);
 	}
 	else {
-		if(umath::is_flag_set(m_stateFlags, StateFlags::TexturesLoaded))
+		if(!force && umath::is_flag_set(m_stateFlags, StateFlags::TexturesLoaded))
 			return;
 		umath::set_flag(m_stateFlags, StateFlags::TexturesLoaded);
 	}
@@ -424,7 +424,7 @@ void CMaterial::LoadTextures(ds::Block &data, bool precache)
 		}
 		else {
 			auto dataBlock = std::static_pointer_cast<ds::Block>(value);
-			LoadTextures(*dataBlock, precache);
+			LoadTextures(*dataBlock, precache, false);
 		}
 	}
 

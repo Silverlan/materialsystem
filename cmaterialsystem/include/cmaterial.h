@@ -68,6 +68,8 @@ class DLLCMATSYS CMaterial : public Material {
 	void ClearSpriteSheetAnimation();
 	const SpriteSheetAnimation *GetSpriteSheetAnimation() const;
 	SpriteSheetAnimation *GetSpriteSheetAnimation();
+
+	void LoadTextures(bool precache, bool force = false);
   protected:
 	CMaterial(msys::MaterialManager &manager);
 	CMaterial(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shader, const std::shared_ptr<ds::Block> &data);
@@ -80,8 +82,7 @@ class DLLCMATSYS CMaterial : public Material {
 	friend msys::CMaterialManager;
 	msys::TextureManager &GetTextureManager();
 
-	void LoadTextures(bool precache);
-	void LoadTextures(ds::Block &data, bool precache);
+	void LoadTextures(ds::Block &data, bool precache, bool force);
 	void LoadTexture(TextureInfo &texInfo, bool precache);
 
 	bool HaveTexturesBeenInitialized() const;
