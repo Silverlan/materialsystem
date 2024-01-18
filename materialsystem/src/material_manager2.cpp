@@ -177,8 +177,7 @@ msys::MaterialManager::MaterialManager()
 	auto fileHandler = std::make_unique<util::AssetFileHandler>();
 	fileHandler->open = [](const std::string &path, util::AssetFormatType formatType) -> std::unique_ptr<ufile::IFile> {
 		auto openMode = filemanager::FileMode::Read;
-		if(formatType == util::AssetFormatType::Binary)
-			openMode |= filemanager::FileMode::Binary;
+		openMode |= filemanager::FileMode::Binary;
 		auto f = filemanager::open_file(path, openMode);
 		if(!f)
 			return nullptr;
