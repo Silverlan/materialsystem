@@ -13,6 +13,12 @@
 #include <image/prosper_sampler.hpp>
 #include <util_image_buffer.hpp>
 
+// If enabled, images and textures will be initialized on a separate thread.
+// Should not be enabled at the moment, as some parts of the memory allocation in Anvil do
+// not support multi-threading at the moment.
+// (Enabling this may result in a VUID-VkImageMemoryBarrier-image-01932 error with the Vulkan Validator.)
+#define ENABLE_MT_IMAGE_INITIALIZATION 0
+
 bool msys::TextureProcessor::PrepareImage(prosper::IPrContext &context) { return InitializeProsperImage(context) && InitializeImageBuffers(context) && InitializeTexture(context); }
 
 bool msys::TextureProcessor::InitializeTexture(prosper::IPrContext &context)
@@ -61,12 +67,20 @@ bool msys::TextureProcessor::Load()
 	if(!static_cast<msys::ITextureFormatHandler &>(*handler).LoadData())
 		return false;
 	auto &loader = GetLoader();
+#if ENABLE_MT_IMAGE_INITIALIZATION == 1
 	return !loader.DoesAllowMultiThreadedGpuResourceAllocation() || PrepareImage(loader.GetContext());
+#else
+	return true;
+#endif
 }
 bool msys::TextureProcessor::Finalize()
 {
 	auto &loader = GetLoader();
+#if ENABLE_MT_IMAGE_INITIALIZATION == 1
 	return (loader.DoesAllowMultiThreadedGpuResourceAllocation() || PrepareImage(loader.GetContext())) && FinalizeImage(loader.GetContext());
+#else
+	return PrepareImage(loader.GetContext()) && FinalizeImage(loader.GetContext());
+#endif
 }
 
 bool msys::TextureProcessor::InitializeProsperImage(prosper::IPrContext &context)
