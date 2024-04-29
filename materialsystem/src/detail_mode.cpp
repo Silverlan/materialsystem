@@ -61,4 +61,5 @@ msys::DetailMode msys::to_detail_mode(const std::string &detailMode)
 		return msys::DetailMode::SelfShadowedBumpmap;
 	else if(ustring::compare<std::string>(detailMode, "ssbump_albedo", false))
 		return msys::DetailMode::SSBumpAlbedo;
+    return msys::DetailMode::Invalid;
 }
