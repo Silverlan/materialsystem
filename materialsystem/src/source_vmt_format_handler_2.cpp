@@ -83,7 +83,34 @@ static void merge_dx_node_values(ValveKeyValueFormat::KVNode &node)
 #endif
 }
 
-msys::SourceVmtFormatHandler2::SourceVmtFormatHandler2(util::IAssetManager &assetManager) : ISourceVmtFormatHandler {assetManager} {}
+static std::optional<util::LogSeverity> to_util_severity(ValveKeyValueFormat::LogLevel severity)
+{
+	switch(severity) {
+	case ValveKeyValueFormat::LogLevel::ALL:
+		return util::LogSeverity::Info;
+	case ValveKeyValueFormat::LogLevel::TRACE:
+		return util::LogSeverity::Trace;
+	case ValveKeyValueFormat::LogLevel::DEBUG:
+		return util::LogSeverity::Debug;
+	case ValveKeyValueFormat::LogLevel::WARN:
+		return util::LogSeverity::Warning;
+	case ValveKeyValueFormat::LogLevel::ERR:
+		return util::LogSeverity::Error;
+	}
+	return {};
+}
+
+msys::SourceVmtFormatHandler2::SourceVmtFormatHandler2(util::IAssetManager &assetManager) : ISourceVmtFormatHandler {assetManager}
+{
+	ValveKeyValueFormat::setLogCallback([&assetManager](const std::string &message, ValveKeyValueFormat::LogLevel severity) {
+		if(!assetManager.ShouldLog())
+			return;
+		auto utilSeverity = to_util_severity(severity);
+		if(!utilSeverity)
+			return;
+		assetManager.Log(message, *utilSeverity);
+	});
+}
 bool msys::SourceVmtFormatHandler2::Import(const std::string &outputPath, std::string &outFilePath)
 {
 	auto size = m_file->GetSize();
@@ -96,10 +123,12 @@ bool msys::SourceVmtFormatHandler2::Import(const std::string &outputPath, std::s
 		return false;
 	data.resize(size);
 
-	ValveKeyValueFormat::setLogCallback([](const std::string &message, ValveKeyValueFormat::LogLevel severity) { std::cout << message << std::endl; });
 	auto kvNode = ValveKeyValueFormat::parseKVBuffer(data);
 	if(!kvNode) {
-		m_error = "TODO";
+		auto fileName = m_file->GetFileName();
+		if(!fileName)
+			fileName = "UNKNOWN";
+		m_error = "Failed to parse VMT file data for file '" + *fileName + "'!";
 		return false;
 	}
 	auto *vmtRoot = kvNode.get();
@@ -108,38 +137,92 @@ bool msys::SourceVmtFormatHandler2::Import(const std::string &outputPath, std::s
 	return LoadVMT(*m_rootNode, outputPath, outFilePath);
 }
 
-static std::vector<float> get_vmt_matrix(std::string value, bool *optOutIsMatrix = nullptr)
+std::string msys::SourceVmtFormatHandler2::GetShader() const
 {
-	if(optOutIsMatrix)
-		*optOutIsMatrix = false;
-	if(value.front() == '[') {
-		value = value.substr(1);
-		if(optOutIsMatrix)
-			*optOutIsMatrix = true;
-	}
-	if(value.back() == ']')
-		value = value.substr(0, value.length() - 1);
-	std::vector<std::string> substrings {};
-	ustring::explode_whitespace(value, substrings);
-
-	std::vector<float> data;
-	data.reserve(substrings.size());
-	for(auto &str : substrings)
-		data.push_back(util::to_float(str));
-	return data;
+	auto &kvNode = GetVkvNode(*m_rootNode);
+	return std::string {kvNode.get_key()};
+}
+std::shared_ptr<const msys::IVmtNode> msys::SourceVmtFormatHandler2::GetNode(const std::string &key, const IVmtNode *optParent) const
+{
+	if(!optParent)
+		return GetNode(key, m_rootNode.get());
+	auto &kvNode = GetVkvNode(*optParent);
+	if(kvNode.get_type() != ValveKeyValueFormat::KVNodeType::BRANCH)
+		return nullptr;
+	auto &kvBranch = static_cast<const ValveKeyValueFormat::KVBranch &>(kvNode);
+	auto it = kvBranch.branches.find(key);
+	if(it == kvBranch.branches.end())
+		return nullptr;
+	return std::make_shared<VkvNode>(*it->second);
+}
+std::optional<std::string> msys::SourceVmtFormatHandler2::GetStringValue(const IVmtNode &node) const
+{
+	auto &kvNode = GetVkvNode(node);
+	if(kvNode.get_type() != ValveKeyValueFormat::KVNodeType::LEAF)
+		return {};
+	return std::string {static_cast<const ValveKeyValueFormat::KVLeaf &>(kvNode).value};
+}
+std::optional<bool> msys::SourceVmtFormatHandler2::GetBooleanValue(const IVmtNode &node) const
+{
+	auto &kvNode = GetVkvNode(node);
+	if(kvNode.get_type() != ValveKeyValueFormat::KVNodeType::LEAF)
+		return {};
+	std::string strVal {static_cast<const ValveKeyValueFormat::KVLeaf &>(kvNode).value};
+	bool value;
+	if(!vmt_parameter_to_numeric_type<bool>(strVal, value))
+		return {};
+	return value;
+}
+std::optional<float> msys::SourceVmtFormatHandler2::GetFloatValue(const IVmtNode &node) const
+{
+	auto &kvNode = GetVkvNode(node);
+	if(kvNode.get_type() != ValveKeyValueFormat::KVNodeType::LEAF)
+		return {};
+	std::string strVal {static_cast<const ValveKeyValueFormat::KVLeaf &>(kvNode).value};
+	float value;
+	if(!vmt_parameter_to_numeric_type<float>(strVal, value))
+		return {};
+	return value;
+}
+std::optional<Vector3> msys::SourceVmtFormatHandler2::GetColorValue(const IVmtNode &node) const
+{
+	auto &kvNode = GetVkvNode(node);
+	if(kvNode.get_type() != ValveKeyValueFormat::KVNodeType::LEAF)
+		return {};
+	return vmt_parameter_to_color(std::string {static_cast<const ValveKeyValueFormat::KVLeaf &>(kvNode).value});
+}
+std::optional<uint8_t> msys::SourceVmtFormatHandler2::GetUint8Value(const IVmtNode &node) const
+{
+	auto &kvNode = GetVkvNode(node);
+	if(kvNode.get_type() != ValveKeyValueFormat::KVNodeType::LEAF)
+		return {};
+	std::string strVal {static_cast<const ValveKeyValueFormat::KVLeaf &>(kvNode).value};
+	uint8_t value;
+	if(!vmt_parameter_to_numeric_type<uint8_t>(strVal, value))
+		return {};
+	return value;
+}
+std::optional<int32_t> msys::SourceVmtFormatHandler2::GetInt32Value(const IVmtNode &node) const
+{
+	auto &kvNode = GetVkvNode(node);
+	if(kvNode.get_type() != ValveKeyValueFormat::KVNodeType::LEAF)
+		return {};
+	std::string strVal {static_cast<const ValveKeyValueFormat::KVLeaf &>(kvNode).value};
+	int32_t value;
+	if(!vmt_parameter_to_numeric_type<int32_t>(strVal, value))
+		return {};
+	return value;
+}
+std::optional<std::array<float, 3>> msys::SourceVmtFormatHandler2::GetMatrixValue(const IVmtNode &node) const
+{
+	auto &kvNode = GetVkvNode(node);
+	if(kvNode.get_type() != ValveKeyValueFormat::KVNodeType::LEAF)
+		return {};
+	std::string strVal {static_cast<const ValveKeyValueFormat::KVLeaf &>(kvNode).value};
+	int32_t value;
+	return get_vmt_matrix(strVal);
 }
 
-std::optional<std::string> msys::SourceVmtFormatHandler2::GetStringValue(ValveKeyValueFormat::KVBranch &node, std::string key)
-{
-	for(auto &c : key)
-		c = std::tolower(c);
-	auto it = node.branches.find(key);
-	if(it == node.branches.end())
-		return {};
-	auto *leaf = it->second->as_leaf();
-	if(!leaf)
-		return {};
-	return std::string {leaf->value};
-}
+const ValveKeyValueFormat::KVNode &msys::SourceVmtFormatHandler2::GetVkvNode(const IVmtNode &vmtNode) const { return static_cast<const VkvNode &>(vmtNode).vkvNode; }
 #endif
 #endif

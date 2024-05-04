@@ -70,7 +70,7 @@ std::optional<uint8_t> msys::ISourceVmtFormatHandler::GetUint8Value(const std::s
 		return defaultValue;
 	return val;
 }
-std::optional<uint8_t> msys::ISourceVmtFormatHandler::GetInt32Value(const std::string &key, const IVmtNode *optParent, const std::optional<uint8_t> &defaultValue) const
+std::optional<int32_t> msys::ISourceVmtFormatHandler::GetInt32Value(const std::string &key, const IVmtNode *optParent, const std::optional<uint8_t> &defaultValue) const
 {
 	auto node = GetNode(key, optParent);
 	if(!node)
@@ -502,30 +502,13 @@ std::optional<uint8_t> msys::SourceVmtFormatHandler::GetUint8Value(const IVmtNod
 		return {};
 	return value;
 }
-std::optional<uint8_t> msys::SourceVmtFormatHandler::GetInt32Value(const IVmtNode &node) const
+std::optional<int32_t> msys::SourceVmtFormatHandler::GetInt32Value(const IVmtNode &node) const
 {
 	auto &vtfLibNode = GetVtfLibNode(node);
 	int32_t value;
 	if(!vmt_parameter_to_numeric_type<int32_t>(&vtfLibNode, value))
 		return {};
 	return value;
-}
-static std::array<float, 3> get_vmt_matrix(std::string value)
-{
-	if(value.front() == '[')
-		value = value.substr(1);
-	if(value.back() == ']')
-		value = value.substr(0, value.length() - 1);
-	std::vector<std::string> substrings {};
-	ustring::explode_whitespace(value, substrings);
-
-	std::array<float, 3> data {0.f, 0.f, 0.f};
-	for(uint8_t i = 0; i < umath::min(substrings.size(), static_cast<size_t>(3)); ++i) {
-		auto val = util::to_float(substrings.at(i));
-		for(auto j = i; j < 3; ++j)
-			data[j] = val;
-	}
-	return data;
 }
 std::optional<std::array<float, 3>> msys::SourceVmtFormatHandler::GetMatrixValue(const IVmtNode &node) const
 {

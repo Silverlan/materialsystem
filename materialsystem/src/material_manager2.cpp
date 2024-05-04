@@ -223,10 +223,18 @@ util::AssetObject msys::MaterialManager::ReloadAsset(const std::string &path, st
 {
 	return ReloadAsset(path, util::static_unique_pointer_cast<util::AssetLoadInfo, MaterialLoadInfo>(std::move(loadInfo)), optOutResult);
 }
+
+static bool g_shouldUseVkvVmtParser = false;
+void msys::set_use_vkv_vmt_parser(bool useVkvParser) { g_shouldUseVkvVmtParser = useVkvParser; }
+bool msys::should_use_vkv_vmt_parser() { return g_shouldUseVkvVmtParser; }
+
 void msys::MaterialManager::InitializeImportHandlers()
 {
 #ifndef DISABLE_VMT_SUPPORT
-	RegisterImportHandler<SourceVmtFormatHandler>("vmt");
+	if(should_use_vkv_vmt_parser())
+		RegisterImportHandler<SourceVmtFormatHandler2>("vmt");
+	else
+		RegisterImportHandler<SourceVmtFormatHandler>("vmt");
 #endif
 #ifndef DISABLE_VMAT_SUPPORT
 	RegisterImportHandler<Source2VmatFormatHandler>("vmat_c");

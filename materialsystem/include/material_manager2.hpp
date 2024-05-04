@@ -15,6 +15,8 @@ namespace udm {
 	struct LinkedPropertyWrapper;
 };
 namespace msys {
+	DLLMATSYS void set_use_vkv_vmt_parser(bool useVkvParser);
+	DLLMATSYS bool should_use_vkv_vmt_parser();
 	DLLMATSYS bool udm_to_data_block(udm::LinkedPropertyWrapper &udmDataRoot, ds::Block &root);
 	class DLLMATSYS MaterialProcessor : public util::FileAssetProcessor {
 	  public:

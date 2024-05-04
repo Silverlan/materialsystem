@@ -45,7 +45,7 @@ namespace msys {
 		virtual std::optional<float> GetFloatValue(const IVmtNode &node) const = 0;
 		virtual std::optional<Vector3> GetColorValue(const IVmtNode &node) const = 0;
 		virtual std::optional<uint8_t> GetUint8Value(const IVmtNode &node) const = 0;
-		virtual std::optional<uint8_t> GetInt32Value(const IVmtNode &node) const = 0;
+		virtual std::optional<int32_t> GetInt32Value(const IVmtNode &node) const = 0;
 		virtual std::optional<std::array<float, 3>> GetMatrixValue(const IVmtNode &node) const = 0;
 
 		std::optional<std::string> GetStringValue(const std::string &key, const IVmtNode *optParent = nullptr, const std::optional<std::string> &defaultValue = {}) const;
@@ -53,7 +53,7 @@ namespace msys {
 		std::optional<float> GetFloatValue(const std::string &key, const IVmtNode *optParent = nullptr, const std::optional<float> &defaultValue = {}) const;
 		std::optional<Vector3> GetColorValue(const std::string &key, const IVmtNode *optParent = nullptr, const std::optional<Vector3> &defaultValue = {}) const;
 		std::optional<uint8_t> GetUint8Value(const std::string &key, const IVmtNode *optParent = nullptr, const std::optional<uint8_t> &defaultValue = {}) const;
-		std::optional<uint8_t> GetInt32Value(const std::string &key, const IVmtNode *optParent = nullptr, const std::optional<uint8_t> &defaultValue = {}) const;
+		std::optional<int32_t> GetInt32Value(const std::string &key, const IVmtNode *optParent = nullptr, const std::optional<uint8_t> &defaultValue = {}) const;
 
 		bool AssignStringValue(ds::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey) const;
 		bool AssignTextureValue(ds::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey) const;
@@ -79,7 +79,7 @@ namespace msys {
 		virtual std::optional<float> GetFloatValue(const IVmtNode &node) const override;
 		virtual std::optional<Vector3> GetColorValue(const IVmtNode &node) const override;
 		virtual std::optional<uint8_t> GetUint8Value(const IVmtNode &node) const override;
-		virtual std::optional<uint8_t> GetInt32Value(const IVmtNode &node) const override;
+		virtual std::optional<int32_t> GetInt32Value(const IVmtNode &node) const override;
 		virtual std::optional<std::array<float, 3>> GetMatrixValue(const IVmtNode &node) const override;
 
 		using ISourceVmtFormatHandler::GetBooleanValue;
@@ -101,7 +101,17 @@ namespace msys {
 		SourceVmtFormatHandler2(util::IAssetManager &assetManager);
 		virtual bool Import(const std::string &outputPath, std::string &outFilePath) override;
 	  protected:
-		static std::optional<std::string> GetStringValue(ValveKeyValueFormat::KVBranch &node, std::string key);
+		const ValveKeyValueFormat::KVNode &GetVkvNode(const IVmtNode &vmtNode) const;
+
+		virtual std::string GetShader() const override;
+		virtual std::shared_ptr<const IVmtNode> GetNode(const std::string &key, const IVmtNode *optParent = nullptr) const override;
+		virtual std::optional<std::string> GetStringValue(const IVmtNode &node) const override;
+		virtual std::optional<bool> GetBooleanValue(const IVmtNode &node) const override;
+		virtual std::optional<float> GetFloatValue(const IVmtNode &node) const override;
+		virtual std::optional<Vector3> GetColorValue(const IVmtNode &node) const override;
+		virtual std::optional<uint8_t> GetUint8Value(const IVmtNode &node) const override;
+		virtual std::optional<int32_t> GetInt32Value(const IVmtNode &node) const override;
+		virtual std::optional<std::array<float, 3>> GetMatrixValue(const IVmtNode &node) const override;
 
 		using ISourceVmtFormatHandler::GetBooleanValue;
 		using ISourceVmtFormatHandler::GetColorValue;

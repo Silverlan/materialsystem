@@ -50,7 +50,10 @@ std::shared_ptr<Material> msys::CMaterialManager::CreateMaterialObject(const std
 void msys::CMaterialManager::InitializeImportHandlers()
 {
 #ifndef DISABLE_VMT_SUPPORT
-	RegisterImportHandler<CSourceVmtFormatHandler>("vmt");
+	if(should_use_vkv_vmt_parser())
+		RegisterImportHandler<CSourceVmtFormatHandler2>("vmt");
+	else
+		RegisterImportHandler<CSourceVmtFormatHandler>("vmt");
 #endif
 #ifndef DISABLE_VMAT_SUPPORT
 	RegisterImportHandler<CSource2VmatFormatHandler>("vmat_c");

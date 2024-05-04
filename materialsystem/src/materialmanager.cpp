@@ -23,14 +23,30 @@
 #include <source2/resource.hpp>
 #endif
 
-static const std::unordered_map<std::string, std::string> ENUM_VARS = { // These have to correspond with their respective vulkan enum values!
-  {"SAMPLER_ADDRESS_MODE_REPEAT", "0"}, {"SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT", "1"}, {"SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE", "2"}, {"SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER", "3"}, {"SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE", "4"},
+static const std::unordered_map<std::string, std::string> ENUM_VARS = {
+  // These have to correspond with their respective vulkan enum values!
+  {"SAMPLER_ADDRESS_MODE_REPEAT", "0"},
+  {"SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT", "1"},
+  {"SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE", "2"},
+  {"SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER", "3"},
+  {"SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE", "4"},
 
-  {"MIPMAP_MODE_IGNORE", "-1"}, {"MIPMAP_MODE_LOAD_OR_GENERATE", "0"}, {"MIPMAP_MODE_LOAD", "1"}, {"MIPMAP_MODE_GENERATE", "2"},
+  {"MIPMAP_MODE_IGNORE", "-1"},
+  {"MIPMAP_MODE_LOAD_OR_GENERATE", "0"},
+  {"MIPMAP_MODE_LOAD", "1"},
+  {"MIPMAP_MODE_GENERATE", "2"},
 
-  {"BORDER_COLOR_FLOAT_TRANSPARENT_BLACK", "0"}, {"BORDER_COLOR_INT_TRANSPARENT_BLACK", "1"}, {"BORDER_COLOR_FLOAT_OPAQUE_BLACK", "2"}, {"BORDER_COLOR_INT_OPAQUE_BLACK", "3"}, {"BORDER_COLOR_FLOAT_OPAQUE_WHITE", "4"}, {"BORDER_COLOR_INT_OPAQUE_WHITE", "5"},
+  {"BORDER_COLOR_FLOAT_TRANSPARENT_BLACK", "0"},
+  {"BORDER_COLOR_INT_TRANSPARENT_BLACK", "1"},
+  {"BORDER_COLOR_FLOAT_OPAQUE_BLACK", "2"},
+  {"BORDER_COLOR_INT_OPAQUE_BLACK", "3"},
+  {"BORDER_COLOR_FLOAT_OPAQUE_WHITE", "4"},
+  {"BORDER_COLOR_INT_OPAQUE_WHITE", "5"},
 
-  {"ALPHA_MODE_OPAQUE", std::to_string(umath::to_integral(AlphaMode::Opaque))}, {"ALPHA_MODE_MASK", std::to_string(umath::to_integral(AlphaMode::Mask))}, {"ALPHA_MODE_BLEND", std::to_string(umath::to_integral(AlphaMode::Blend))}};
+  {"ALPHA_MODE_OPAQUE", std::to_string(umath::to_integral(AlphaMode::Opaque))},
+  {"ALPHA_MODE_MASK", std::to_string(umath::to_integral(AlphaMode::Mask))},
+  {"ALPHA_MODE_BLEND", std::to_string(umath::to_integral(AlphaMode::Blend))},
+};
 
 MaterialManager::LoadInfo::LoadInfo() : material(nullptr) {}
 

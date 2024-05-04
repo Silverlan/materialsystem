@@ -79,18 +79,7 @@ static std::optional<Vector3> vmt_parameter_to_color(const VTFLib::Nodes::CVMTNo
 	if(node.GetType() != VMTNodeType::NODE_TYPE_STRING)
 		return {};
 	auto &stringNode = static_cast<const VTFLib::Nodes::CVMTStringNode &>(node);
-	std::string value = stringNode.GetValue();
-	auto start = value.find_first_of("[{");
-	auto end = value.find_first_of("]}", start);
-	if(end == std::string::npos)
-		return {};
-	auto colorValue = (value.at(start) == '{');
-	value = value.substr(start + 1, end - start - 1);
-	ustring::remove_whitespace(value);
-	auto color = uvec::create(value);
-	if(colorValue)
-		color /= static_cast<float>(std::numeric_limits<uint8_t>::max());
-	return color;
+	return vmt_parameter_to_color(std::string {stringNode.GetValue()});
 }
 
 template<class TData, typename TInternal>
@@ -142,6 +131,24 @@ void get_vmt_data(const std::shared_ptr<ds::Block> &root, ds::Settings &dataSett
 		}
 	}
 	root->AddData(key, std::make_shared<TData>(dataSettings, value));
+}
+
+static std::array<float, 3> get_vmt_matrix(std::string value)
+{
+	if(value.front() == '[')
+		value = value.substr(1);
+	if(value.back() == ']')
+		value = value.substr(0, value.length() - 1);
+	std::vector<std::string> substrings {};
+	ustring::explode_whitespace(value, substrings);
+
+	std::array<float, 3> data {0.f, 0.f, 0.f};
+	for(uint8_t i = 0; i < umath::min(substrings.size(), static_cast<size_t>(3)); ++i) {
+		auto val = util::to_float(substrings.at(i));
+		for(auto j = i; j < 3; ++j)
+			data[j] = val;
+	}
+	return data;
 }
 
 #endif
