@@ -34,51 +34,25 @@
 #include <VMTFile.h>
 #include <VTFLib.h>
 #include "util_vmt.hpp"
-msys::CSourceVmtFormatHandler::CSourceVmtFormatHandler(util::IAssetManager &assetManager) : SourceVmtFormatHandler {assetManager} {}
-bool msys::CSourceVmtFormatHandler::LoadVMTData(VTFLib::CVMTFile &vmt, const std::string &vmtShader, ds::Block &rootData, std::string &matShader)
+
+template<class T>
+bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Block &rootData, std::string &matShader)
 {
-	auto r = SourceVmtFormatHandler::LoadVMTData(vmt, vmtShader, rootData, matShader);
-	if(!r)
-		return false;
+	auto &fh = formatHandler;
 	//TODO: These do not work if the textures haven't been imported yet!!
-	VTFLib::Nodes::CVMTNode *node = nullptr;
-	auto *vmtRoot = vmt.GetRoot();
 	auto settings = ds::create_data_settings({});
-	auto &matManager = static_cast<CMaterialManager &>(GetAssetManager());
+	auto &matManager = static_cast<msys::CMaterialManager &>(fh.GetAssetManager());
 	auto rootPath = matManager.GetImportDirectory();
 	if(ustring::compare<std::string>(vmtShader, "eyes", false)) {
 		matShader = "eye_legacy";
-		if((node = vmtRoot->GetNode("$iris")) != nullptr) {
-			if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
-				auto *irisNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-				rootData.AddData("iris_map", std::make_shared<ds::Texture>(*settings, irisNode->GetValue()));
-			}
-		}
-		if((node = vmtRoot->GetNode("$basetexture")) != nullptr) {
-			if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
-				auto *irisNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-				rootData.AddData("sclera_map", std::make_shared<ds::Texture>(*settings, irisNode->GetValue()));
-			}
-		}
+		fh.AssignTextureValue(rootData, *fh.m_rootNode, "$iris", "iris_map");
+		fh.AssignTextureValue(rootData, *fh.m_rootNode, "$basetexture", "sclera_map");
 		rootData.AddValue("float", "iris_scale", "0.5");
 	}
 	else if(ustring::compare<std::string>(vmtShader, "eyerefract", false)) {
 		matShader = "eye";
-		std::string irisTexture = "";
-		if((node = vmtRoot->GetNode("$iris")) != nullptr) {
-			if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
-				auto *irisNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-				irisTexture = irisNode->GetValue();
-			}
-		}
-
-		std::string corneaTexture = "";
-		if((node = vmtRoot->GetNode("$corneatexture")) != nullptr) {
-			if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
-				auto *corneaNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-				corneaTexture = corneaNode->GetValue();
-			}
-		}
+		auto irisTexture = fh.GetStringValue("$iris");
+		auto corneaTexture = fh.GetStringValue("$corneatexture");
 
 		// Some conversions are required for the iris and cornea textures for usage in Pragma
 		auto &context = matManager.GetContext();
@@ -86,11 +60,11 @@ bool msys::CSourceVmtFormatHandler::LoadVMTData(VTFLib::CVMTFile &vmt, const std
 		if(shaderDecomposeCornea) {
 			auto &textureManager = matManager.GetTextureManager();
 
-			auto irisMap = textureManager.LoadAsset(irisTexture);
+			auto irisMap = irisTexture ? textureManager.LoadAsset(*irisTexture) : nullptr;
 			if(irisMap == nullptr)
 				irisMap = textureManager.GetErrorTexture();
 
-			auto corneaMap = textureManager.LoadAsset(corneaTexture);
+			auto corneaMap = corneaTexture ? textureManager.LoadAsset(*corneaTexture) : nullptr;
 			if(corneaMap == nullptr)
 				corneaMap = textureManager.GetErrorTexture();
 
@@ -137,9 +111,9 @@ bool msys::CSourceVmtFormatHandler::LoadVMTData(VTFLib::CVMTFile &vmt, const std
 				}
 				context.FlushSetupCommandBuffer();
 
-				auto irisTextureNoExt = irisTexture;
+				auto irisTextureNoExt = *irisTexture;
 				ufile::remove_extension_from_filename(irisTextureNoExt);
-				auto corneaTextureNoExt = corneaTexture;
+				auto corneaTextureNoExt = *corneaTexture;
 				ufile::remove_extension_from_filename(corneaTextureNoExt);
 
 				auto albedoTexName = irisTextureNoExt + "_albedo";
@@ -182,11 +156,8 @@ bool msys::CSourceVmtFormatHandler::LoadVMTData(VTFLib::CVMTFile &vmt, const std
 				rootData.AddValue("vector", "subsurface_radius", "112 52.8 1.6");
 			}
 
-			auto ptrRoot = std::static_pointer_cast<ds::Block>(rootData.shared_from_this());
-			if((node = vmtRoot->GetNode("$eyeballradius")) != nullptr)
-				get_vmt_data<ds::Bool, int32_t>(ptrRoot, *settings, "eyeball_radius", node);
-			if((node = vmtRoot->GetNode("$dilation")) != nullptr)
-				get_vmt_data<ds::Bool, int32_t>(ptrRoot, *settings, "pupil_dilation", node);
+			fh.AssignFloatValue(rootData, *fh.m_rootNode, "$eyeballradius", "eyeball_radius");
+			fh.AssignFloatValue(rootData, *fh.m_rootNode, "$dilation", "pupil_dilation");
 		}
 	}
 	else if(ustring::compare<std::string>(vmtShader, "spritecard", false)) {
@@ -194,56 +165,55 @@ bool msys::CSourceVmtFormatHandler::LoadVMTData(VTFLib::CVMTFile &vmt, const std
 		// Since our texture formats don't support that, we'll have to extract it and
 		// store it separately.
 		matShader = "particle";
-		if((node = vmtRoot->GetNode("$basetexture")) != nullptr) {
-			if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
-				auto *baseTexture = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-				auto &textureManager = matManager.GetTextureManager();
+		auto baseTexture = fh.GetStringValue("$basetexture");
+		if(baseTexture) {
+			auto &textureManager = matManager.GetTextureManager();
 
-				auto &context = matManager.GetContext();
-				auto baseTexMap = textureManager.LoadAsset(baseTexture->GetValue());
-				if(baseTexMap != nullptr) {
-					auto &baseTexName = baseTexMap->GetName();
-					auto texPath = matManager.GetRootDirectory();
-					texPath += util::Path::CreateFile(baseTexName + ".vtf");
-					auto fptr = FileManager::OpenFile(texPath.GetString().c_str(), "rb");
-					if(fptr) {
-						fsys::File f {fptr};
-						VTFLib::CVTFFile fVtf {};
-						if(fVtf.Load(&f, false)) {
-							vlUInt resSize;
-							auto *ptr = fVtf.GetResourceData(tagVTFResourceEntryType::VTF_RSRC_SHEET, resSize);
-							if(ptr) {
-								DataStream ds {ptr, resSize};
-								ds->SetOffset(0);
-								auto version = ds->Read<int32_t>();
-								assert(version == 0 || version == 1);
-								auto numSequences = ds->Read<int32_t>();
+			auto &context = matManager.GetContext();
+			auto baseTexMap = textureManager.LoadAsset(*baseTexture);
+			if(baseTexMap != nullptr) {
+				auto &baseTexName = baseTexMap->GetName();
+				auto texPath = matManager.GetRootDirectory();
+				texPath += util::Path::CreateFile(baseTexName + ".vtf");
+				auto fptr = FileManager::OpenFile(texPath.GetString().c_str(), "rb");
+				if(fptr) {
+					fsys::File f {fptr};
+					VTFLib::CVTFFile fVtf {};
+					if(fVtf.Load(&f, false)) {
+						vlUInt resSize;
+						auto *ptr = fVtf.GetResourceData(tagVTFResourceEntryType::VTF_RSRC_SHEET, resSize);
+						if(ptr) {
+							DataStream ds {ptr, resSize};
+							ds->SetOffset(0);
+							auto version = ds->Read<int32_t>();
+							assert(version == 0 || version == 1);
+							auto numSequences = ds->Read<int32_t>();
 
-								SpriteSheetAnimation anim {};
-								auto &sequences = anim.sequences;
-								sequences.reserve(numSequences);
-								for(auto i = decltype(numSequences) {0}; i < numSequences; ++i) {
-									auto seqIdx = ds->Read<int32_t>();
-									if(seqIdx >= sequences.size())
-										sequences.resize(seqIdx + 1);
-									auto &seq = sequences.at(seqIdx);
-									seq.loop = !static_cast<bool>(ds->Read<int32_t>());
-									auto numFrames = ds->Read<int32_t>();
-									seq.frames.resize(numFrames);
-									auto sequenceLength = ds->Read<float>();
-									for(auto j = decltype(numFrames) {0}; j < numFrames; ++j) {
-										auto &frame = seq.frames.at(j);
-										frame.duration = ds->Read<float>();
+							SpriteSheetAnimation anim {};
+							auto &sequences = anim.sequences;
+							sequences.reserve(numSequences);
+							for(auto i = decltype(numSequences) {0}; i < numSequences; ++i) {
+								auto seqIdx = ds->Read<int32_t>();
+								if(seqIdx >= sequences.size())
+									sequences.resize(seqIdx + 1);
+								auto &seq = sequences.at(seqIdx);
+								seq.loop = !static_cast<bool>(ds->Read<int32_t>());
+								auto numFrames = ds->Read<int32_t>();
+								seq.frames.resize(numFrames);
+								auto sequenceLength = ds->Read<float>();
+								for(auto j = decltype(numFrames) {0}; j < numFrames; ++j) {
+									auto &frame = seq.frames.at(j);
+									frame.duration = ds->Read<float>();
 
-										auto constexpr MAX_IMAGES_PER_FRAME = 4u;
-										frame.uvStart = ds->Read<Vector2>();
-										frame.uvEnd = ds->Read<Vector2>();
+									auto constexpr MAX_IMAGES_PER_FRAME = 4u;
+									frame.uvStart = ds->Read<Vector2>();
+									frame.uvEnd = ds->Read<Vector2>();
 
-										// Animation data can contain multiple images per frame.
-										// I'm not sure what the purpose of that is (multi-texture?), but we'll ignore it for
-										// the time being.
-										if(version > 0)
-											ds->SetOffset(ds->GetOffset() + sizeof(Vector2) * 2 * (MAX_IMAGES_PER_FRAME - 1));
+									// Animation data can contain multiple images per frame.
+									// I'm not sure what the purpose of that is (multi-texture?), but we'll ignore it for
+									// the time being.
+									if(version > 0)
+										ds->SetOffset(ds->GetOffset() + sizeof(Vector2) * 2 * (MAX_IMAGES_PER_FRAME - 1));
 #if 0
 										for(auto t=decltype(MAX_IMAGES_PER_FRAME){0u};t<MAX_IMAGES_PER_FRAME;++t)
 										{
@@ -261,15 +231,14 @@ bool msys::CSourceVmtFormatHandler::LoadVMTData(VTFLib::CVMTFile &vmt, const std
 											}
 										}
 #endif
-									}
 								}
-								auto sequenceFilePath = rootPath + util::Path::CreateFile(baseTexName + ".psd");
-								FileManager::CreatePath(sequenceFilePath.GetPath().data());
-								auto fSeq = FileManager::OpenFile<VFilePtrReal>(sequenceFilePath.GetString().c_str(), "wb");
-								if(fSeq) {
-									anim.Save(fSeq);
-									rootData.AddValue("string", "animation", util::Path {baseTexName}.GetString());
-								}
+							}
+							auto sequenceFilePath = rootPath + util::Path::CreateFile(baseTexName + ".psd");
+							FileManager::CreatePath(sequenceFilePath.GetPath().data());
+							auto fSeq = FileManager::OpenFile<VFilePtrReal>(sequenceFilePath.GetString().c_str(), "wb");
+							if(fSeq) {
+								anim.Save(fSeq);
+								rootData.AddValue("string", "animation", util::Path {baseTexName}.GetString());
 							}
 						}
 					}
@@ -277,48 +246,38 @@ bool msys::CSourceVmtFormatHandler::LoadVMTData(VTFLib::CVMTFile &vmt, const std
 			}
 		}
 
-		auto *nodeOverbrightFactor = vmtRoot->GetNode("$overbrightfactor");
-		if(nodeOverbrightFactor == nullptr)
-			nodeOverbrightFactor = vmtRoot->GetNode("srgb?$overbrightfactor");
-		if(nodeOverbrightFactor) {
-			float overbrightFactor;
-			if(vmt_parameter_to_numeric_type(nodeOverbrightFactor, overbrightFactor) && overbrightFactor != 0.f) {
-				// Overbright factors can get fairly large (e.g. 31 -> "particle/blood1/blood_goop3_spray"), we'll scale it down for Pragma
-				// so that a factor of 30 roughly equals 1.9
-				overbrightFactor = umath::max(overbrightFactor, 1.2f);
-				overbrightFactor = logf(overbrightFactor) / logf(6.f); // log base 6
-				Vector4 colorFactor {0.f, 0.f, 0.f, 0.f};
-				auto vColorFactor = rootData.GetValue("bloom_color_factor");
-				if(vColorFactor && typeid(*vColorFactor) == typeid(ds::Vector4))
-					colorFactor = static_cast<ds::Vector4 &>(*vColorFactor).GetValue();
-				colorFactor += Vector4 {overbrightFactor, overbrightFactor, overbrightFactor, 0.f};
+		auto overbrightFactor = fh.GetFloatValue("$overbrightfactor");
+		if(!overbrightFactor)
+			overbrightFactor = fh.GetFloatValue("srgb?$overbrightfactor");
+		if(overbrightFactor && *overbrightFactor != 0.f) {
+			// Overbright factors can get fairly large (e.g. 31 -> "particle/blood1/blood_goop3_spray"), we'll scale it down for Pragma
+			// so that a factor of 30 roughly equals 1.9
+			*overbrightFactor = umath::max(*overbrightFactor, 1.2f);
+			*overbrightFactor = logf(*overbrightFactor) / logf(6.f); // log base 6
+			Vector4 colorFactor {0.f, 0.f, 0.f, 0.f};
+			auto vColorFactor = rootData.GetValue("bloom_color_factor");
+			if(vColorFactor && typeid(*vColorFactor) == typeid(ds::Vector4))
+				colorFactor = static_cast<ds::Vector4 &>(*vColorFactor).GetValue();
+			colorFactor += Vector4 {*overbrightFactor, *overbrightFactor, *overbrightFactor, 0.f};
 
-				rootData.AddValue("vector4", "bloom_color_factor", std::to_string(colorFactor.r) + ' ' + std::to_string(colorFactor.g) + ' ' + std::to_string(colorFactor.b) + " 1.0");
-			}
+			rootData.AddValue("vector4", "bloom_color_factor", std::to_string(colorFactor.r) + ' ' + std::to_string(colorFactor.g) + ' ' + std::to_string(colorFactor.b) + " 1.0");
 		}
 
-		auto *nodeAddSelf = vmtRoot->GetNode("$addself");
-		float addSelf;
-		if(nodeAddSelf && vmt_parameter_to_numeric_type(nodeAddSelf, addSelf)) {
+		auto addSelf = fh.GetFloatValue("$addself");
+		if(addSelf) {
 			Vector4 colorFactor {1.f, 1.f, 1.f, 1.f};
 			auto vColorFactor = rootData.GetValue("color_factor");
 			if(vColorFactor && typeid(*vColorFactor) == typeid(ds::Vector4))
 				colorFactor = static_cast<ds::Vector4 &>(*vColorFactor).GetValue();
-			colorFactor += Vector4 {addSelf, addSelf, addSelf, 0.f};
+			colorFactor += Vector4 {*addSelf, *addSelf, *addSelf, 0.f};
 
 			rootData.AddValue("vector4", "color_factor", std::to_string(colorFactor.r) + ' ' + std::to_string(colorFactor.g) + ' ' + std::to_string(colorFactor.b) + " 1.0");
 		}
 	}
-	int32_t ssBumpmap;
-	if((node = vmtRoot->GetNode("$ssbump")) != nullptr && vmt_parameter_to_numeric_type<int32_t>(node, ssBumpmap) && ssBumpmap != 0) {
+	auto ssBump = fh.GetInt32Value("$ssbump");
+	if(ssBump && *ssBump != 0) {
 		// Material is using a self-shadowing bump map, which Pragma doesn't support, so we'll convert it to a normal map.
-		std::string bumpMapTexture = "";
-		if((node = vmtRoot->GetNode("$bumpmap")) != nullptr) {
-			if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
-				auto *bumpNapNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-				bumpMapTexture = bumpNapNode->GetValue();
-			}
-		}
+		auto bumpMapTexture = fh.GetStringValue("$bumpmap");
 
 		auto &context = matManager.GetContext();
 		auto *shaderSSBumpMapToNormalMap = static_cast<msys::ShaderSSBumpMapToNormalMap *>(context.GetShader("ssbumpmap_to_normalmap").get());
@@ -326,7 +285,7 @@ bool msys::CSourceVmtFormatHandler::LoadVMTData(VTFLib::CVMTFile &vmt, const std
 		if(shaderSSBumpMapToNormalMap) {
 			auto &textureManager = matManager.GetTextureManager();
 
-			auto bumpMap = textureManager.LoadAsset(bumpMapTexture);
+			auto bumpMap = bumpMapTexture ? textureManager.LoadAsset(*bumpMapTexture) : nullptr;
 			if(bumpMap && bumpMap->HasValidVkTexture()) {
 				// Prepare output texture (normal map)
 				prosper::util::ImageCreateInfo imgCreateInfo {};
@@ -360,10 +319,10 @@ bool msys::CSourceVmtFormatHandler::LoadVMTData(VTFLib::CVMTFile &vmt, const std
 				}
 				context.FlushSetupCommandBuffer();
 
-				auto bumpMapTextureNoExt = bumpMapTexture;
-				ufile::remove_extension_from_filename(bumpMapTexture);
+				auto bumpMapTextureNoExt = *bumpMapTexture;
+				ufile::remove_extension_from_filename(bumpMapTextureNoExt);
 
-				auto normalTexName = bumpMapTexture + "_normal";
+				auto normalTexName = bumpMapTextureNoExt + "_normal";
 
 				auto errHandler = [](const std::string &err) { std::cout << "WARNING: Unable to save converted ss bumpmap as DDS: " << err << std::endl; };
 
@@ -384,5 +343,17 @@ bool msys::CSourceVmtFormatHandler::LoadVMTData(VTFLib::CVMTFile &vmt, const std
 	}
 	matManager.GetTextureManager().ClearUnused();
 	return true;
+}
+
+template bool msys::load_vmt_data<msys::CSourceVmtFormatHandler>(msys::CSourceVmtFormatHandler &, const std::string &, ds::Block &, std::string &);
+template bool msys::load_vmt_data<msys::CSourceVmtFormatHandler2>(msys::CSourceVmtFormatHandler2 &, const std::string &, ds::Block &, std::string &);
+
+msys::CSourceVmtFormatHandler::CSourceVmtFormatHandler(util::IAssetManager &assetManager) : SourceVmtFormatHandler {assetManager} {}
+bool msys::CSourceVmtFormatHandler::LoadVmtData(const std::string &vmtShader, ds::Block &rootData, std::string &matShader)
+{
+	auto r = SourceVmtFormatHandler::LoadVmtData(vmtShader, rootData, matShader);
+	if(!r)
+		return false;
+	return load_vmt_data(*this, vmtShader, rootData, matShader);
 }
 #endif

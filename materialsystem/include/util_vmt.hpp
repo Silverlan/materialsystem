@@ -12,27 +12,27 @@
 #include <datasystem.h>
 
 template<typename T>
-bool vmt_parameter_to_numeric_type(VTFLib::Nodes::CVMTNode *node, T &outResult)
+bool vmt_parameter_to_numeric_type(const VTFLib::Nodes::CVMTNode *node, T &outResult)
 {
 	auto type = node->GetType();
 	switch(type) {
 	case VMTNodeType::NODE_TYPE_SINGLE:
 		{
-			auto *singleNode = static_cast<VTFLib::Nodes::CVMTSingleNode *>(node);
+			auto *singleNode = static_cast<const VTFLib::Nodes::CVMTSingleNode *>(node);
 			auto v = singleNode->GetValue();
 			outResult = static_cast<T>(v);
 			return true;
 		}
 	case VMTNodeType::NODE_TYPE_INTEGER:
 		{
-			auto *integerNode = static_cast<VTFLib::Nodes::CVMTIntegerNode *>(node);
+			auto *integerNode = static_cast<const VTFLib::Nodes::CVMTIntegerNode *>(node);
 			auto v = static_cast<float>(integerNode->GetValue());
 			outResult = static_cast<T>(v);
 			return true;
 		}
 	case VMTNodeType::NODE_TYPE_STRING:
 		{
-			auto *stringNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
+			auto *stringNode = static_cast<const VTFLib::Nodes::CVMTStringNode *>(node);
 			auto v = ::util::to_float(stringNode->GetValue());
 			outResult = static_cast<T>(v);
 			return true;
@@ -74,11 +74,11 @@ static std::optional<Vector3> vmt_parameter_to_color(std::string value)
 	return color;
 }
 
-static std::optional<Vector3> vmt_parameter_to_color(VTFLib::Nodes::CVMTNode &node)
+static std::optional<Vector3> vmt_parameter_to_color(const VTFLib::Nodes::CVMTNode &node)
 {
 	if(node.GetType() != VMTNodeType::NODE_TYPE_STRING)
 		return {};
-	auto &stringNode = static_cast<VTFLib::Nodes::CVMTStringNode &>(node);
+	auto &stringNode = static_cast<const VTFLib::Nodes::CVMTStringNode &>(node);
 	std::string value = stringNode.GetValue();
 	auto start = value.find_first_of("[{");
 	auto end = value.find_first_of("]}", start);

@@ -13,18 +13,24 @@ namespace ds {
 	class Block;
 };
 namespace msys {
+	template<class T>
+	bool load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Block &rootData, std::string &matShader);
 	class DLLCMATSYS CSourceVmtFormatHandler : public SourceVmtFormatHandler {
 	  public:
+		template<class T>
+		friend bool load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Block &rootData, std::string &matShader);
 		CSourceVmtFormatHandler(util::IAssetManager &assetManager);
 	  protected:
-		virtual bool LoadVMTData(VTFLib::CVMTFile &vmt, const std::string &vmtShader, ds::Block &rootData, std::string &matShader) override;
+		virtual bool LoadVmtData(const std::string &vmtShader, ds::Block &rootData, std::string &matShader) override;
 	};
 #ifdef ENABLE_VKV_PARSER
 	class DLLCMATSYS CSourceVmtFormatHandler2 : public SourceVmtFormatHandler2 {
 	  public:
+		template<class T>
+		friend bool load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Block &rootData, std::string &matShader);
 		CSourceVmtFormatHandler2(util::IAssetManager &assetManager);
 	  protected:
-		virtual bool LoadVMTData(ValveKeyValueFormat::KVNode &vmt, const std::string &vmtShader, ds::Block &rootData, std::string &matShader) override;
+		virtual bool LoadVmtData(const std::string &vmtShader, ds::Block &rootData, std::string &matShader) override;
 	};
 #endif
 };
