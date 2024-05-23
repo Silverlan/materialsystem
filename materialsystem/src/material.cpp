@@ -14,8 +14,10 @@
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
 #include <sharedutils/util_path.hpp>
+#include <sharedutils/magic_enum.hpp>
 #include <datasystem_color.h>
-#include <udm.hpp>
+
+import udm;
 
 #undef CreateFile
 

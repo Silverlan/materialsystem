@@ -12,7 +12,6 @@
 #include <sharedutils/util_file.h>
 #include <sharedutils/util.h>
 #include <array>
-#include <udm.hpp>
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include <VTFLib.h>
@@ -22,6 +21,8 @@
 #include <util_source2.hpp>
 #include <source2/resource.hpp>
 #endif
+
+import udm;
 
 static const std::unordered_map<std::string, std::string> ENUM_VARS = {
   // These have to correspond with their respective vulkan enum values!
