@@ -14,7 +14,6 @@
 #include <buffers/prosper_buffer.hpp>
 #include <prosper_command_buffer.hpp>
 #include <mathutil/glmutil.h>
-#include <gli/gli.hpp>
 #include <util_image.hpp>
 #include <sharedutils/datastream.h>
 #include <sharedutils/util.h>
@@ -311,20 +310,20 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 			// if(gli::is_srgb(img->format()))
 			texture->AddFlags(Texture::Flags::SRGB);
 			ImageFormatLoader gliLoader {};
-			gliLoader.userData = static_cast<gli::texture2d *>(img.get());
+			gliLoader.userData = static_cast<gli_wrapper::GliTextureWrapper *>(img.get());
 			gliLoader.get_image_info = [](void *userData, const TextureQueueItem &item, uint32_t &outWidth, uint32_t &outHeight, prosper::Format &outFormat, bool &outCubemap, uint32_t &outLayerCount, uint32_t &outMipmapCount, std::optional<prosper::Format> &outConversionFormat) -> void {
-				auto &texture = *static_cast<gli::texture2d *>(userData);
-				auto img = texture[0];
-				auto extents = img.extent();
-				outWidth = extents.x;
-				outHeight = extents.y;
+				auto &texture = *static_cast<gli_wrapper::GliTextureWrapper *>(userData);
+				uint32_t w, h;
+				texture.extent(0, w, h);
+				outWidth = w;
+				outHeight = h;
 				outFormat = static_cast<prosper::Format>(texture.format());
 				outCubemap = (texture.faces() == 6);
 				outLayerCount = item.cubemap ? texture.faces() : texture.layers();
 				outMipmapCount = texture.levels();
 			};
 			gliLoader.get_image_data = [](void *userData, const TextureQueueItem &item, uint32_t layer, uint32_t mipmapIdx, uint32_t &outDataSize) -> const void * {
-				auto &texture = *static_cast<gli::texture2d *>(userData);
+				auto &texture = *static_cast<gli_wrapper::GliTextureWrapper *>(userData);
 				auto gliLayer = item.cubemap ? 0 : layer;
 				auto gliFace = item.cubemap ? layer : 0;
 				outDataSize = texture.size(mipmapIdx);

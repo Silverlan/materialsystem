@@ -22,17 +22,18 @@ bool msys::TextureFormatHandlerGli::LoadData(InputTextureInfo &texInfo)
 		return false;
 	std::vector<uint8_t> data(sz);
 	m_file->Read(data.data(), sz);
-	m_texture = gli::load(static_cast<char *>(static_cast<void *>(data.data())), data.size());
-	if(m_texture.empty())
+	auto success = m_texture.load(static_cast<char *>(static_cast<void *>(data.data())), data.size());
+	if(!success)
 		return false;
 	texInfo.flags |= InputTextureInfo::Flags::SrgbBit;
 	auto isCubemap = m_texture.faces() == 6;
 	umath::set_flag(texInfo.flags, InputTextureInfo::Flags::CubemapBit, isCubemap);
-	auto extents = m_texture.extent();
-	texInfo.width = extents.x;
-	texInfo.height = extents.y;
+	uint32_t w, h;
+	m_texture.extent(w, h);
+	texInfo.width = w;
+	texInfo.height = h;
 	texInfo.layerCount = isCubemap ? 6 : 1;
 	texInfo.mipmapCount = m_texture.levels();
-	texInfo.format = static_cast<prosper::Format>(m_texture.format());
+	texInfo.format = m_texture.format();
 	return true;
 }

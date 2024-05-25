@@ -13,8 +13,6 @@
 #include <prosper_util.hpp>
 #include <image/prosper_sampler.hpp>
 #include <mathutil/glmutil.h>
-#include <gli/gli.hpp>
-#include <gli/texture2d.hpp>
 #include <sharedutils/util_string.h>
 #include <sharedutils/util_file.h>
 #include <sharedutils/util_ifile.hpp>

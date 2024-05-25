@@ -9,11 +9,10 @@
 #include <string>
 #include <sharedutils/functioncallback.h>
 #include "texture_type.h"
+#include "gli_wrapper.hpp"
 #include <png_info.h>
 #include <mathutil/glmutil.h>
 #include <fsys/ifile.hpp>
-#include <gli/gli.hpp>
-#include <gli/texture2d.hpp>
 #ifndef DISABLE_VTF_SUPPORT
 #include <VTFFile.h>
 #endif
@@ -93,7 +92,7 @@ class DLLCMATSYS TextureQueueItemSurface : public TextureQueueItem {
 	TextureQueueItemSurface(const TextureQueueItemSurface &) = delete;
 	TextureQueueItemSurface &operator=(const TextureQueueItemSurface &) = delete;
 	virtual ~TextureQueueItemSurface() override;
-	std::shared_ptr<gli::texture2d> texture = nullptr;
+	std::shared_ptr<gli_wrapper::GliTextureWrapper> texture = nullptr;
 	unsigned char **compressed;
 	unsigned int *compressedsize;
 };

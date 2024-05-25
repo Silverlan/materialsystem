@@ -39,11 +39,12 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 			auto sz = f->GetSize();
 			std::vector<uint8_t> data(sz);
 			f->Read(data.data(), sz);
-			auto tex = gli::load(static_cast<char *>(static_cast<void *>(data.data())), data.size());
-			if(tex.empty())
+			auto tex = std::make_unique<gli_wrapper::GliTextureWrapper>();
+			auto success = tex->load(static_cast<char *>(static_cast<void *>(data.data())), data.size());
+			if(!success)
 				item.valid = false;
 			else {
-				surface->texture = std::make_unique<gli::texture2d>(tex);
+				surface->texture = std::move(tex);
 				surface->valid = surface->texture != nullptr;
 			}
 		}

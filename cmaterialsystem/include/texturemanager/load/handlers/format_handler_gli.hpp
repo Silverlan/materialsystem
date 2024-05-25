@@ -6,7 +6,7 @@
 #define __MSYS_TEXTURE_FORMAT_HANDLER_GLI_HPP__
 
 #include "texturemanager/load/texture_format_handler.hpp"
-#include <gli/load.hpp>
+#include "gli_wrapper.hpp"
 
 namespace msys {
 	class DLLCMATSYS TextureFormatHandlerGli : public ITextureFormatHandler {
@@ -16,7 +16,7 @@ namespace msys {
 	  protected:
 		virtual bool LoadData(InputTextureInfo &texInfo) override;
 	  private:
-		gli::texture m_texture;
+		gli_wrapper::GliTextureWrapper m_texture;
 	};
 };
 
