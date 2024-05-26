@@ -12,7 +12,8 @@
 #include <fsys/filesystem.h>
 #include <fsys/ifile.hpp>
 
-#include <udm.hpp>
+import udm;
+
 msys::MaterialFormatHandler::MaterialFormatHandler(util::IAssetManager &assetManager) : util::IAssetFormatHandler {assetManager} {}
 
 bool msys::udm_to_data_block(udm::LinkedPropertyWrapper &udmDataRoot, ds::Block &root)
@@ -63,7 +64,7 @@ bool msys::udm_to_data_block(udm::LinkedPropertyWrapper &udmDataRoot, ds::Block 
 			case udm::Type::Element:
 				{
 					auto childBlock = block.AddBlock(key);
-					for(auto udmChild : prop.ElIt())
+					for(auto udmChild : udm::ElIt {prop})
 						udmToDataSys(std::string {udmChild.key}, udmChild.property, *childBlock, texture);
 					break;
 				}
@@ -73,11 +74,11 @@ bool msys::udm_to_data_block(udm::LinkedPropertyWrapper &udmDataRoot, ds::Block 
 		prop.GetValuePtr<float>();
 	};
 	auto udmTextures = udmDataRoot["textures"];
-	for(auto udmTex : udmTextures.ElIt())
+	for(auto udmTex : udm::ElIt {udmTextures})
 		udmToDataSys(std::string {udmTex.key}, udmTex.property, root, true);
 
 	auto udmProps = udmDataRoot["properties"];
-	for(auto udmProp : udmProps.ElIt())
+	for(auto udmProp : udm::ElIt {udmProps})
 		udmToDataSys(std::string {udmProp.key}, udmProp.property, root, false);
 	return true;
 }

@@ -361,7 +361,7 @@ bool MaterialManager::LoadUdm(std::shared_ptr<VFilePtrInternal> &f, LoadInfo &lo
 			case udm::Type::Element:
 				{
 					auto childBlock = block.AddBlock(key);
-					for(auto udmChild : prop.ElIt())
+					for(auto udmChild : udm::ElIt {prop})
 						udmToDataSys(std::string {udmChild.key}, udmChild.property, *childBlock, texture);
 					break;
 				}
@@ -376,11 +376,11 @@ bool MaterialManager::LoadUdm(std::shared_ptr<VFilePtrInternal> &f, LoadInfo &lo
 	auto &firstEl = *it;
 
 	auto udmTextures = firstEl.property["textures"];
-	for(auto udmTex : udmTextures.ElIt())
+	for(auto udmTex : udm::ElIt {udmTextures})
 		udmToDataSys(std::string {udmTex.key}, udmTex.property, *root, true);
 
 	auto udmProps = firstEl.property["properties"];
-	for(auto udmProp : udmProps.ElIt())
+	for(auto udmProp : udm::ElIt {udmProps})
 		udmToDataSys(std::string {udmProp.key}, udmProp.property, *root, false);
 
 	loadInfo.shader = firstEl.key;
