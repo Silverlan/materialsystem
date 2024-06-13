@@ -14,7 +14,7 @@ namespace prosper {
 class CMaterial;
 namespace msys {
 	class TextureManager;
-	class DLLMATSYS CMaterialManager : public MaterialManager {
+	class DLLCMATSYS CMaterialManager : public MaterialManager {
 	  public:
 		static std::shared_ptr<CMaterialManager> Create(prosper::IPrContext &context);
 		virtual ~CMaterialManager() override;
