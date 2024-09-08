@@ -7,16 +7,22 @@
 #include <shader/prosper_shader_t.hpp>
 #include <prosper_util.hpp>
 
-decltype(msys::ShaderSSBumpMapToNormalMap::DESCRIPTOR_SET_TEXTURE) msys::ShaderSSBumpMapToNormalMap::DESCRIPTOR_SET_TEXTURE = {{prosper::DescriptorSetInfo::Binding {// SSBumpMap
-  prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit}}};
-msys::ShaderSSBumpMapToNormalMap::ShaderSSBumpMapToNormalMap(prosper::IPrContext &context, const std::string &identifier) : ShaderBaseImageProcessing {context, identifier, "util/fs_ssbumpmap_to_normalmap.gls"} {}
+decltype(msys::ShaderSSBumpMapToNormalMap::DESCRIPTOR_SET_TEXTURE) msys::ShaderSSBumpMapToNormalMap::DESCRIPTOR_SET_TEXTURE = {
+  "TEXTURE",
+  {prosper::DescriptorSetInfo::Binding {"SS_BUMP", prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit}},
+};
+msys::ShaderSSBumpMapToNormalMap::ShaderSSBumpMapToNormalMap(prosper::IPrContext &context, const std::string &identifier) : ShaderBaseImageProcessing {context, identifier, "programs/util/ssbumpmap_to_normalmap"} {}
 
+void msys::ShaderSSBumpMapToNormalMap::InitializeShaderResources()
+{
+	ShaderGraphics::InitializeShaderResources();
+
+	AddDefaultVertexAttributes();
+	AddDescriptorSetGroup(DESCRIPTOR_SET_TEXTURE);
+}
 void msys::ShaderSSBumpMapToNormalMap::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
 {
 	ShaderGraphics::InitializeGfxPipeline(pipelineInfo, pipelineIdx);
-
-	AddDefaultVertexAttributes(pipelineInfo);
-	AddDescriptorSetGroup(pipelineInfo, pipelineIdx, DESCRIPTOR_SET_TEXTURE);
 }
 
 void msys::ShaderSSBumpMapToNormalMap::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass, uint32_t pipelineIdx)

@@ -16,15 +16,13 @@
 #include <image/prosper_render_target.hpp>
 #include <image/prosper_texture.hpp>
 
-decltype(msys::source2::ShaderDecomposePBR::DESCRIPTOR_SET_TEXTURE) msys::source2::ShaderDecomposePBR::DESCRIPTOR_SET_TEXTURE = {{prosper::DescriptorSetInfo::Binding {// Albedo Map
-                                                                                                                                    prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit},
-  prosper::DescriptorSetInfo::Binding {// Normal Map
-    prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit},
-  prosper::DescriptorSetInfo::Binding {// Anisotropic Glossiness Map
-    prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit},
-  prosper::DescriptorSetInfo::Binding {// Ambient occlusion Map
-    prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit}}};
-msys::source2::ShaderDecomposePBR::ShaderDecomposePBR(prosper::IPrContext &context, const std::string &identifier) : ShaderBaseImageProcessing {context, identifier, "util/source2/fs_decompose_pbr.gls"} {}
+decltype(msys::source2::ShaderDecomposePBR::DESCRIPTOR_SET_TEXTURE) msys::source2::ShaderDecomposePBR::DESCRIPTOR_SET_TEXTURE = {
+  "TEXTURE",
+  {prosper::DescriptorSetInfo::Binding {"ALBEDO", prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit}, prosper::DescriptorSetInfo::Binding {"NORMAL", prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit},
+    prosper::DescriptorSetInfo::Binding {"ANISOTROPIC_GLOSSINESS", prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit},
+    prosper::DescriptorSetInfo::Binding {"AMBIENT_OCCLUSION", prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit}},
+};
+msys::source2::ShaderDecomposePBR::ShaderDecomposePBR(prosper::IPrContext &context, const std::string &identifier) : ShaderBaseImageProcessing {context, identifier, "programs/util/source2/decompose_pbr"} {}
 
 msys::source2::ShaderDecomposePBR::DecomposedImageSet msys::source2::ShaderDecomposePBR::DecomposePBR(prosper::IPrContext &context, prosper::Texture &albedoMap, prosper::Texture &normalMap, prosper::Texture &aoMap, Flags flags, prosper::Texture *optAniGlossMap)
 {
@@ -79,13 +77,19 @@ msys::source2::ShaderDecomposePBR::DecomposedImageSet msys::source2::ShaderDecom
 	return {texMetallicRoughnessOut->GetImage().shared_from_this(), texAlbedoOut->GetImage().shared_from_this()};
 }
 
+void msys::source2::ShaderDecomposePBR::InitializeShaderResources()
+{
+	ShaderGraphics::InitializeShaderResources();
+
+	AddDefaultVertexAttributes();
+	AddDescriptorSetGroup(DESCRIPTOR_SET_TEXTURE);
+	AttachPushConstantRange(0u, sizeof(PushConstants), prosper::ShaderStageFlags::FragmentBit);
+}
+
 void msys::source2::ShaderDecomposePBR::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
 {
 	ShaderGraphics::InitializeGfxPipeline(pipelineInfo, pipelineIdx);
 
-	AddDefaultVertexAttributes(pipelineInfo);
-	AddDescriptorSetGroup(pipelineInfo, pipelineIdx, DESCRIPTOR_SET_TEXTURE);
-	AttachPushConstantRange(pipelineInfo, pipelineIdx, 0u, sizeof(PushConstants), prosper::ShaderStageFlags::FragmentBit);
 	SetGenericAlphaColorBlendAttachmentProperties(pipelineInfo);
 }
 

@@ -17,18 +17,21 @@
 #include <image/prosper_render_target.hpp>
 #include <prosper_descriptor_set_group.hpp>
 
-decltype(msys::ShaderExtractImageChannel::DESCRIPTOR_SET_TEXTURE) msys::ShaderExtractImageChannel::DESCRIPTOR_SET_TEXTURE = {{prosper::DescriptorSetInfo::Binding {// Image map
-  prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit}}};
-msys::ShaderExtractImageChannel::ShaderExtractImageChannel(prosper::IPrContext &context, const std::string &identifier) : ShaderBaseImageProcessing {context, identifier, "util/fs_extract_image_channel.gls"} { SetPipelineCount(2); }
+decltype(msys::ShaderExtractImageChannel::DESCRIPTOR_SET_TEXTURE) msys::ShaderExtractImageChannel::DESCRIPTOR_SET_TEXTURE = {
+  "TEXTURE",
+  {prosper::DescriptorSetInfo::Binding {"IMAGE", prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit}},
+};
+msys::ShaderExtractImageChannel::ShaderExtractImageChannel(prosper::IPrContext &context, const std::string &identifier) : ShaderBaseImageProcessing {context, identifier, "programs/util/extract_image_channel"} { SetPipelineCount(2); }
 
-void msys::ShaderExtractImageChannel::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
+void msys::ShaderExtractImageChannel::InitializeShaderResources()
 {
-	ShaderGraphics::InitializeGfxPipeline(pipelineInfo, pipelineIdx);
+	ShaderGraphics::InitializeShaderResources();
 
-	AddDefaultVertexAttributes(pipelineInfo);
-	AddDescriptorSetGroup(pipelineInfo, pipelineIdx, DESCRIPTOR_SET_TEXTURE);
-	AttachPushConstantRange(pipelineInfo, pipelineIdx, 0u, sizeof(PushConstants), prosper::ShaderStageFlags::FragmentBit);
+	AddDefaultVertexAttributes();
+	AddDescriptorSetGroup(DESCRIPTOR_SET_TEXTURE);
+	AttachPushConstantRange(0u, sizeof(PushConstants), prosper::ShaderStageFlags::FragmentBit);
 }
+void msys::ShaderExtractImageChannel::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx) { ShaderGraphics::InitializeGfxPipeline(pipelineInfo, pipelineIdx); }
 
 void msys::ShaderExtractImageChannel::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass, uint32_t pipelineIdx)
 {
