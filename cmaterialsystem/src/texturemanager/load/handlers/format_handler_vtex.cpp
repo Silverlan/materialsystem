@@ -5,9 +5,8 @@
 #ifndef DISABLE_VTEX_SUPPORT
 #include "texturemanager/load/handlers/format_handler_vtex.hpp"
 #include "texturemanager/load/handlers/format_handler_vtf.hpp"
-#include <util_source2.hpp>
-#include <source2/resource.hpp>
-#include <source2/resource_data.hpp>
+
+import source2;
 
 static msys::detail::VulkanImageData vtex_format_to_vulkan_format(source2::VTexFormat format)
 {

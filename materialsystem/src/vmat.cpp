@@ -3,9 +3,8 @@
 #include <sharedutils/util_file.h>
 #ifndef DISABLE_VMAT_SUPPORT
 #include "util_vmat.hpp"
-#include <util_source2.hpp>
-#include <source2/resource.hpp>
-#include <source2/resource_data.hpp>
+
+import source2;
 #endif
 
 #ifndef DISABLE_VMT_SUPPORT

@@ -16,15 +16,14 @@
 #include <image/prosper_image.hpp>
 #include <prosper_command_buffer.hpp>
 #include <prosper_descriptor_set_group.hpp>
-#include <util_source2.hpp>
-#include <source2/resource.hpp>
-#include <source2/resource_data.hpp>
 #include <sharedutils/util_file.h>
 #include <sharedutils/util_path.hpp>
 #include <util_texture_info.hpp>
 #include <util_vmat.hpp>
 #include <sharedutils/alpha_mode.hpp>
 #include "impl_texture_formats.h"
+
+import source2;
 
 static std::shared_ptr<prosper::Texture> load_texture(CMaterialManager &matManager, const std::string &texPath, bool reload = false)
 {

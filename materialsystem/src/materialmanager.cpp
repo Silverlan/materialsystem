@@ -19,8 +19,7 @@
 #include "util_vmt.hpp"
 #endif
 #ifndef DISABLE_VMAT_SUPPORT
-#include <util_source2.hpp>
-#include <source2/resource.hpp>
+import source2;
 #endif
 
 static const std::unordered_map<std::string, std::string> ENUM_VARS = {

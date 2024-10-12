@@ -9,7 +9,7 @@
 #include <VTFWrapper.h>
 #endif
 #ifndef DISABLE_VTEX_SUPPORT
-#include <util_source2.hpp>
+import source2;
 #endif
 
 TextureQueueItem::TextureQueueItem() : valid(true), mipmapMode(TextureMipmapMode::Load), cubemap(false), texturetype(TextureType::Invalid), mipmap(NULL), mipmapid(-1), dxtformat(NULL), format(NULL), initialized(false), context() {}

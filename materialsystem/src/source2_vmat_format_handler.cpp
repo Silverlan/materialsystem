@@ -14,9 +14,7 @@
 #ifndef DISABLE_VMAT_SUPPORT
 #include "util_vmat.hpp"
 #include <datasystem.h>
-#include <util_source2.hpp>
-#include <source2/resource.hpp>
-#include <source2/resource_data.hpp>
+import source2;
 msys::Source2VmatFormatHandler::Source2VmatFormatHandler(util::IAssetManager &assetManager) : util::IImportAssetFormatHandler {assetManager} {}
 bool msys::Source2VmatFormatHandler::Import(const std::string &outputPath, std::string &outFilePath)
 {

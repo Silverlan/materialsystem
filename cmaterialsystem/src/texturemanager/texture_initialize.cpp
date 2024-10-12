@@ -19,8 +19,7 @@
 #include <sharedutils/datastream.h>
 #include <sharedutils/util.h>
 #ifndef DISABLE_VTEX_SUPPORT
-#include <util_source2.hpp>
-#include <source2/resource_data.hpp>
+import source2;
 #endif
 
 #define FLUSH_INIT_CMD 1

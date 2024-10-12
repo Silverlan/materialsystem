@@ -11,8 +11,7 @@
 #include <util_image.hpp>
 #include <fsys/ifile.hpp>
 #ifndef DISABLE_VTEX_SUPPORT
-#include <source2/resource.hpp>
-#include <source2/resource_data.hpp>
+import source2;
 #endif
 
 VFilePtr TextureManager::OpenTextureFile(const std::string &fpath)
