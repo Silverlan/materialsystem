@@ -28,9 +28,9 @@
 #include <sharedutils/alpha_mode.hpp>
 #include "impl_texture_formats.h"
 
+#ifndef DISABLE_VMAT_SUPPORT
 import source2;
 
-#ifndef DISABLE_VMAT_SUPPORT
 static bool g_downScaleRMATextures = true;
 static std::shared_ptr<prosper::Texture> load_texture(msys::CMaterialManager &matManager, const std::string &texPath, bool reload = false)
 {
