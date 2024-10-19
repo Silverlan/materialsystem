@@ -16,6 +16,9 @@ namespace msys {
 	class TextureManager;
 	class DLLCMATSYS CMaterialManager : public MaterialManager {
 	  public:
+		static void SetFlipTexturesVerticallyOnLoad(bool flip);
+		static bool ShouldFlipTextureVerticallyOnLoad();
+
 		static std::shared_ptr<CMaterialManager> Create(prosper::IPrContext &context);
 		virtual ~CMaterialManager() override;
 

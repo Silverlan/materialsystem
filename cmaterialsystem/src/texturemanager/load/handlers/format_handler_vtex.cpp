@@ -108,6 +108,9 @@ bool msys::TextureFormatHandlerVtex::LoadData(InputTextureInfo &texInfo)
 	texInfo.swizzle = vkFormat.swizzle;
 	texInfo.conversionFormat = vkFormat.conversionFormat;
 	m_texture = texture;
+
+	if(ShouldFlipTextureVertically())
+		Flip(texInfo);
 	return true;
 }
 

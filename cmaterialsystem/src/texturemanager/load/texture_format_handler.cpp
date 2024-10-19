@@ -3,7 +3,42 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "texturemanager/load/texture_format_handler.hpp"
+#include <gli/gli.hpp>
+
+static bool g_shouldFlipVertically = false;
+void msys::ITextureFormatHandler::SetFlipTexturesVertically(bool flip) { g_shouldFlipVertically = flip; }
+bool msys::ITextureFormatHandler::ShouldFlipTextureVertically() { return g_shouldFlipVertically; }
 
 msys::ITextureFormatHandler::ITextureFormatHandler(util::IAssetManager &assetManager) : util::IAssetFormatHandler {assetManager} {}
 
 bool msys::ITextureFormatHandler::LoadData() { return LoadData(m_inputTextureInfo); }
+
+void msys::ITextureFormatHandler::Flip(const InputTextureInfo &texInfo)
+{
+	auto targetType = gli::texture::target_type::TARGET_2D;
+	auto formatType = static_cast<gli::texture::format_type>(texInfo.format);
+	gli::texture::extent_type extent {texInfo.width, texInfo.height, 1};
+	gli::texture::size_type layers = texInfo.layerCount;
+	gli::texture::size_type faces = 1;
+	gli::texture::size_type levels = texInfo.mipmapCount;
+	gli::texture tex {targetType, formatType, extent, layers, faces, levels};
+	uint32_t face = 0;
+	for(uint32_t layer = 0u; layer < layers; ++layer) {
+		for(uint32_t mipLevel = 0u; mipLevel < levels; ++mipLevel) {
+			void *ptr;
+			size_t size;
+			if(!GetDataPtr(layer, mipLevel, &ptr, size))
+				continue;
+			gli::texture gliView {tex, targetType, formatType, layer, layer, face, face, mipLevel, mipLevel};
+			auto *gliData = gliView.data(0, 0, 0);
+			auto gliSize = gliView.size(0);
+			if(!gliData || gliSize != size)
+				continue;
+			// Flip using gli, then copy the flipped data back.
+			// TODO: Flipping could be done without a copy
+			memcpy(gliData, ptr, size);
+			gli::flip(gliView);
+			memcpy(ptr, gliData, size);
+		}
+	}
+}

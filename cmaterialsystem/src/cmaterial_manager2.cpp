@@ -19,6 +19,10 @@
 #include "shaders/source2/c_shader_generate_tangent_space_normal_map.hpp"
 #include "shaders/source2/c_shader_decompose_metalness_reflectance.hpp"
 #include "shaders/source2/c_shader_decompose_pbr.hpp"
+#include "texturemanager/load/texture_format_handler.hpp"
+
+void msys::CMaterialManager::SetFlipTexturesVerticallyOnLoad(bool flip) { ITextureFormatHandler ::SetFlipTexturesVertically(flip); }
+bool msys::CMaterialManager::ShouldFlipTextureVerticallyOnLoad() { return ITextureFormatHandler::ShouldFlipTextureVertically(); }
 
 std::shared_ptr<msys::CMaterialManager> msys::CMaterialManager::Create(prosper::IPrContext &context)
 {

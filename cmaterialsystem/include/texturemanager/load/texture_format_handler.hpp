@@ -16,8 +16,14 @@
 namespace msys {
 	class DLLCMATSYS ITextureFormatHandler : public util::IAssetFormatHandler {
 	  public:
+		static void SetFlipTexturesVertically(bool flip);
+		static bool ShouldFlipTextureVertically();
 		struct InputTextureInfo {
-			enum class Flags : uint32_t { None = 0u, CubemapBit = 1u, SrgbBit = CubemapBit << 1u };
+			enum class Flags : uint32_t {
+				None = 0u,
+				CubemapBit = 1u,
+				SrgbBit = CubemapBit << 1u,
+			};
 			uint32_t width = 0;
 			uint32_t height = 0;
 			prosper::Format format = prosper::Format::Unknown;
@@ -34,8 +40,10 @@ namespace msys {
 		const InputTextureInfo &GetInputTextureInfo() const { return m_inputTextureInfo; }
 	  protected:
 		ITextureFormatHandler(util::IAssetManager &assetManager);
+		void Flip(const InputTextureInfo &texInfo);
 		virtual bool LoadData(InputTextureInfo &texInfo) = 0;
 		InputTextureInfo m_inputTextureInfo;
+		bool m_flipTextureVertically = false;
 	};
 };
 REGISTER_BASIC_BITWISE_OPERATORS(msys::ITextureFormatHandler::InputTextureInfo::Flags)

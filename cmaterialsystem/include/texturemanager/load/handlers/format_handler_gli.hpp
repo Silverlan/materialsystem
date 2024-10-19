@@ -13,6 +13,9 @@ namespace msys {
 	  public:
 		TextureFormatHandlerGli(util::IAssetManager &assetManager) : ITextureFormatHandler {assetManager} {}
 		virtual bool GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize) override;
+		void SetTexture(gli::texture &&tex);
+
+		void Flip(const InputTextureInfo &texInfo);
 	  protected:
 		virtual bool LoadData(InputTextureInfo &texInfo) override;
 	  private:

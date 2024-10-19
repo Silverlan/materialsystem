@@ -136,6 +136,7 @@ bool msys::TextureFormatHandlerVtf::LoadData(InputTextureInfo &texInfo)
 	default:
 		return false; // Unsupported format
 	}
+
 	auto cubemap = texture->GetFaceCount() == 6;
 	texInfo.flags |= InputTextureInfo::Flags::SrgbBit;
 	umath::set_flag(texInfo.flags, InputTextureInfo::Flags::CubemapBit, cubemap);
@@ -152,6 +153,9 @@ bool msys::TextureFormatHandlerVtf::LoadData(InputTextureInfo &texInfo)
 	if(texture->GetFlag(VTFImageFlag::TEXTUREFLAGS_NOMIP))
 		texInfo.mipmapCount = 1u;
 	m_texture = std::move(texture);
+
+	if(ShouldFlipTextureVertically())
+		Flip(texInfo);
 	return true;
 }
 #endif

@@ -18,7 +18,7 @@ bool msys::TextureFormatHandlerUimg::GetDataPtr(uint32_t layer, uint32_t mipmapI
 
 bool msys::TextureFormatHandlerUimg::LoadData(InputTextureInfo &texInfo)
 {
-	auto imgBuf = uimg::load_image(*m_file);
+	auto imgBuf = uimg::load_image(*m_file, uimg::PixelFormat::LDR, ShouldFlipTextureVertically());
 	if(!imgBuf)
 		return false;
 	m_imgBuf = imgBuf;

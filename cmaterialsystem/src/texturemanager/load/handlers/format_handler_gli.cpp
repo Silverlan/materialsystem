@@ -4,6 +4,7 @@
 
 #include "texturemanager/load/handlers/format_handler_gli.hpp"
 #include <sharedutils/util_ifile.hpp>
+#include <gli/gli.hpp>
 
 bool msys::TextureFormatHandlerGli::GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize)
 {
@@ -15,6 +16,8 @@ bool msys::TextureFormatHandlerGli::GetDataPtr(uint32_t layer, uint32_t mipmapId
 	return *outPtr != nullptr;
 }
 
+void msys::TextureFormatHandlerGli::SetTexture(gli::texture &&tex) { m_texture = std::move(tex); }
+
 bool msys::TextureFormatHandlerGli::LoadData(InputTextureInfo &texInfo)
 {
 	auto sz = m_file->GetSize();
@@ -25,6 +28,11 @@ bool msys::TextureFormatHandlerGli::LoadData(InputTextureInfo &texInfo)
 	m_texture = gli::load(static_cast<char *>(static_cast<void *>(data.data())), data.size());
 	if(m_texture.empty())
 		return false;
+	if(ShouldFlipTextureVertically()) {
+		m_texture = gli::flip(m_texture);
+		if(m_texture.empty())
+			return false;
+	}
 	texInfo.flags |= InputTextureInfo::Flags::SrgbBit;
 	auto isCubemap = m_texture.faces() == 6;
 	umath::set_flag(texInfo.flags, InputTextureInfo::Flags::CubemapBit, isCubemap);
