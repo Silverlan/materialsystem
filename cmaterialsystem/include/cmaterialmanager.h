@@ -12,6 +12,12 @@
 #include <queue>
 #include <prosper_context_object.hpp>
 
+#ifdef __linux__
+#ifndef DISABLE_VMAT_SUPPORT
+import source2;
+#endif
+#endif
+
 class Texture;
 #pragma warning(push)
 #pragma warning(disable : 4251)
