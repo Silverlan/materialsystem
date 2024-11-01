@@ -71,7 +71,7 @@ class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
 	msys::MaterialHandle GetHandle();
 	virtual void SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo);
 	const util::ShaderInfo *GetShaderInfo() const;
-	void UpdateTextures();
+	void UpdateTextures(bool forceUpdate = false);
 	const std::string &GetShaderIdentifier() const;
 	void SetName(const std::string &name);
 	const std::string &GetName();

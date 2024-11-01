@@ -112,8 +112,10 @@ void Material::SetUserData(void *data) { m_userData = data; }
 
 bool Material::IsTranslucent() const { return m_alphaMode == AlphaMode::Blend; }
 
-void Material::UpdateTextures()
+void Material::UpdateTextures(bool forceUpdate)
 {
+	if(forceUpdate)
+		umath::set_flag(m_stateFlags, StateFlags::TexturesUpdated, false);
 	if(umath::is_flag_set(m_stateFlags, StateFlags::TexturesUpdated))
 		return;
 	GetTextureInfo(DIFFUSE_MAP_IDENTIFIER);

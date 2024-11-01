@@ -62,6 +62,7 @@ class DLLCMATSYS CMaterial : public Material {
 	virtual void SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo) override;
 	virtual void Reset() override;
 	virtual void Assign(const Material &other) override;
+	void ClearDescriptorSets();
 	using Material::Initialize;
 
 	void SetSpriteSheetAnimation(const SpriteSheetAnimation &animInfo);
@@ -77,7 +78,6 @@ class DLLCMATSYS CMaterial : public Material {
 	virtual void Initialize(const std::shared_ptr<ds::Block> &data) override;
 	virtual void OnTexturesUpdated() override;
 	void LoadTexture(const std::shared_ptr<ds::Block> &data, TextureInfo &texInfo, TextureLoadFlags flags = TextureLoadFlags::None, const std::shared_ptr<CallbackInfo> &callbackInfo = nullptr);
-	void ClearDescriptorSets();
 	void InitializeTextures(const std::shared_ptr<ds::Block> &data, const std::function<void(void)> &onAllTexturesLoaded = nullptr, const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded = nullptr, TextureLoadFlags loadFlags = TextureLoadFlags::None);
 	friend msys::CMaterialManager;
 	msys::TextureManager &GetTextureManager();
