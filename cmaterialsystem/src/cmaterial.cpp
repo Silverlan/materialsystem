@@ -82,7 +82,6 @@ std::shared_ptr<Material> CMaterial::Copy() const
 	auto *ccpy = static_cast<CMaterial *>(cpy.get());
 	ccpy->m_primaryShader = m_primaryShader;
 	ccpy->m_sampler = m_sampler;
-	ccpy->m_settingsBuffer = m_settingsBuffer;
 	ccpy->m_spriteSheetAnimation = m_spriteSheetAnimation;
 	ccpy->m_stateFlags = m_stateFlags;
 	return cpy;
