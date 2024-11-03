@@ -197,6 +197,7 @@ void CMaterial::SetDescriptorSetGroup(prosper::Shader &shader, const std::shared
 {
 	auto it = FindShaderDescriptorSetGroup(shader);
 	if(it != m_descriptorSetGroups.end()) {
+		GetContext().KeepResourceAliveUntilPresentationComplete(it->second);
 		it->second = descSetGroup;
 		return;
 	}
