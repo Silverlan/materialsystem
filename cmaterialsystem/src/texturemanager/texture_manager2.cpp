@@ -116,7 +116,7 @@ void msys::TextureManager::Test()
 	uint32_t numComplete = 0;
 	auto t = std::chrono::high_resolution_clock::now();
 	for(;;) {
-		GetLoader().Poll([&numComplete, &t](const util::AssetLoadJob &job, util::AssetLoadResult result) {
+		GetLoader().Poll([&numComplete, &t](const util::AssetLoadJob &job, util::AssetLoadResult result, std::optional<std::string> errMsg) {
 			switch(result) {
 			case util::AssetLoadResult::Succeeded:
 				{
@@ -133,7 +133,9 @@ void msys::TextureManager::Test()
 				}
 			default:
 				{
-					std::cout << job.identifier << " has failed!" << std::endl;
+					std::string msg = job.identifier + " has failed: ";
+					msg += errMsg ? *errMsg : "Unknown error";
+					std::cout << msg << std::endl;
 					break;
 				}
 			}
