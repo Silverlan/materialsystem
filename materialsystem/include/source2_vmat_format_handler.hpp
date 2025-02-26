@@ -9,10 +9,8 @@
 #include "matsysdefinitions.h"
 #include <sharedutils/asset_loader/asset_format_handler.hpp>
 
-namespace source2::resource {
-	class Resource;
-	class Material;
-};
+import source2;
+
 namespace ds {
 	class Block;
 	class Settings;

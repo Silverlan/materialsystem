@@ -20,10 +20,7 @@ namespace VTFLib {
 #endif
 
 #ifndef DISABLE_VMAT_SUPPORT
-namespace source2::resource {
-	class Resource;
-	class Material;
-};
+import source2;
 #endif
 
 class Material;
