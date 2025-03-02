@@ -9,7 +9,14 @@
 #include "matsysdefinitions.h"
 #include <sharedutils/asset_loader/asset_format_handler.hpp>
 
+#ifdef _WIN32
+namespace source2::resource {
+	class Resource;
+	class Material;
+};
+#else
 import source2;
+#endif
 
 namespace ds {
 	class Block;
