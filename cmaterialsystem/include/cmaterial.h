@@ -50,7 +50,7 @@ class DLLCMATSYS CMaterial : public Material {
 	void SetTexture(const std::string &identifier, const std::string &texture);
 	void SetTexture(const std::string &identifier, prosper::Texture &texture);
 	const std::shared_ptr<prosper::IDescriptorSetGroup> &GetDescriptorSetGroup(prosper::Shader &shader) const;
-	virtual TextureInfo *GetTextureInfo(const std::string &key) override;
+	virtual TextureInfo *GetTextureInfo(const std::string_view &key) override;
 	bool IsInitialized() const;
 	virtual std::shared_ptr<Material> Copy() const override;
 	void SetDescriptorSetGroup(prosper::Shader &shader, const std::shared_ptr<prosper::IDescriptorSetGroup> &descSetGroup);
@@ -108,7 +108,7 @@ class DLLCMATSYS CMaterial : public Material {
 	std::unordered_map<util::WeakHandle<prosper::Shader>, std::shared_ptr<prosper::IDescriptorSetGroup>, ShaderHash, ShaderEqualFn>::const_iterator FindShaderDescriptorSetGroup(prosper::Shader &shader) const;
 	std::shared_ptr<CallbackInfo> InitializeCallbackInfo(const std::function<void(void)> &onAllTexturesLoaded, const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded);
 
-	uint32_t GetMipmapMode(const std::shared_ptr<ds::Block> &data) const;
+	uint32_t GetMipmapMode(const ds::Block &block) const;
 	prosper::IPrContext &GetContext();
 	void LoadTexture(const std::shared_ptr<ds::Block> &data, const std::shared_ptr<ds::Texture> &texture, TextureLoadFlags flags = TextureLoadFlags::None, const std::shared_ptr<CallbackInfo> &callbackInfo = nullptr);
 	void InitializeSampler();

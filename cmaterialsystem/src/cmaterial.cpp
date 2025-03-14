@@ -135,7 +135,7 @@ void CMaterial::InitializeSampler()
 		samplerInfo.borderColor = static_cast<prosper::BorderColor>(intVal);
 	}
 	if(bUseCustomSampler == true) {
-		auto mipmapMode = static_cast<TextureMipmapMode>(GetMipmapMode(m_data));
+		auto mipmapMode = static_cast<TextureMipmapMode>(GetMipmapMode(*m_data));
 		msys::setup_sampler_mipmap_mode(samplerInfo, mipmapMode);
 		m_sampler = GetContext().CreateSampler(samplerInfo);
 	}
@@ -203,12 +203,7 @@ void CMaterial::SetDescriptorSetGroup(prosper::Shader &shader, const std::shared
 	}
 	m_descriptorSetGroups.insert(std::make_pair(shader.GetHandle(), descSetGroup));
 }
-uint32_t CMaterial::GetMipmapMode(const std::shared_ptr<ds::Block> &data) const
-{
-	auto mipmapMode = TextureMipmapMode::Load;
-	data->GetInt("mipmap_load_mode", reinterpret_cast<std::underlying_type<decltype(mipmapMode)>::type *>(&mipmapMode));
-	return umath::to_integral(mipmapMode);
-}
+uint32_t CMaterial::GetMipmapMode(const ds::Block &block) const { return umath::to_integral(GetProperty<TextureMipmapMode>(block, "mipmap_load_mode", TextureMipmapMode::Load)); }
 void CMaterial::SetLoaded(bool b) { Material::SetLoaded(b); }
 void CMaterial::SetSpriteSheetAnimation(const SpriteSheetAnimation &animInfo) { m_spriteSheetAnimation = animInfo; }
 void CMaterial::ClearSpriteSheetAnimation() { m_spriteSheetAnimation = {}; }
@@ -217,16 +212,12 @@ SpriteSheetAnimation *CMaterial::GetSpriteSheetAnimation()
 {
 	if(m_spriteSheetAnimation.has_value() == false) {
 		// Lazy initialization
-		auto &data = GetDataBlock();
-		if(data) {
-			auto &anim = data->GetValue("animation");
-			if(anim && typeid(*anim) == typeid(ds::String)) {
-				auto animFilePath = static_cast<ds::String &>(*anim).GetString();
-				auto f = filemanager::open_file("materials/" + animFilePath + ".psd", filemanager::FileMode::Read | filemanager::FileMode::Binary);
-				m_spriteSheetAnimation = SpriteSheetAnimation {};
-				if(f == nullptr || m_spriteSheetAnimation->Load(f) == false)
-					m_spriteSheetAnimation = {};
-			}
+		std::string animFilePath;
+		if(GetProperty<std::string>("animation", &animFilePath)) {
+			auto f = filemanager::open_file("materials/" + animFilePath + ".psd", filemanager::FileMode::Read | filemanager::FileMode::Binary);
+			m_spriteSheetAnimation = SpriteSheetAnimation {};
+			if(f == nullptr || m_spriteSheetAnimation->Load(f) == false)
+				m_spriteSheetAnimation = {};
 		}
 	}
 	return m_spriteSheetAnimation.has_value() ? &*m_spriteSheetAnimation : nullptr;
@@ -235,7 +226,7 @@ void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data, TextureInfo 
 {
 	if(texInfo.texture == nullptr) // Texture hasn't been initialized yet
 	{
-		auto mipmapMode = static_cast<TextureMipmapMode>(GetMipmapMode(data));
+		auto mipmapMode = static_cast<TextureMipmapMode>(GetMipmapMode(*data));
 		auto &textureManager = GetTextureManager();
 		auto &context = GetContext();
 
@@ -367,7 +358,7 @@ void CMaterial::LoadTexture(TextureInfo &texInfo, bool precache)
 {
 	if(texInfo.name.empty() || texInfo.texture != nullptr)
 		return;
-	auto mipmapMode = static_cast<TextureMipmapMode>(GetMipmapMode(GetDataBlock()));
+	auto mipmapMode = static_cast<TextureMipmapMode>(GetMipmapMode(*m_data));
 	auto &textureManager = GetTextureManager();
 	auto loadInfo = std::make_unique<msys::TextureLoadInfo>();
 	loadInfo->mipmapMode = mipmapMode;
@@ -377,7 +368,7 @@ void CMaterial::LoadTexture(TextureInfo &texInfo, bool precache)
 		textureManager.PreloadAsset(texInfo.name);
 }
 
-TextureInfo *CMaterial::GetTextureInfo(const std::string &key)
+TextureInfo *CMaterial::GetTextureInfo(const std::string_view &key)
 {
 	LoadTextures(false);
 	return Material::GetTextureInfo(key);
@@ -388,12 +379,12 @@ void CMaterial::LoadTextures(bool precache, bool force)
 	if(precache) {
 		if(!force && (umath::is_flag_set(m_stateFlags, StateFlags::TexturesLoaded) || umath::is_flag_set(m_stateFlags, StateFlags::TexturesPrecached)))
 			return;
-		LoadTextures(*GetDataBlock(), precache, force);
+		LoadTextures(*m_data, precache, force);
 		return;
 	}
 	if(!force && umath::is_flag_set(m_stateFlags, StateFlags::TexturesLoaded))
 		return;
-	LoadTextures(*GetDataBlock(), precache, force);
+	LoadTextures(*m_data, precache, force);
 	UpdateTextures();
 	auto &shaderHandler = static_cast<msys::CMaterialManager &>(m_manager).GetShaderHandler();
 	if(shaderHandler)

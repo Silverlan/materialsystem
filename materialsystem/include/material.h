@@ -13,13 +13,52 @@
 #include <sharedutils/def_handle.h>
 #include <sharedutils/functioncallback.h>
 #include <sharedutils/alpha_mode.hpp>
+#include <sharedutils/util_debug.h>
 #include <mathutil/umath.h>
 #include <mathutil/uvec.h>
+#include <datasystem_color.h>
+#include <datasystem_vector.h>
+#include <udm.hpp>
 
 class Material;
 namespace msys {
 	using MaterialHandle = std::shared_ptr<Material>;
 	class MaterialManager;
+
+	template<typename T>
+	concept is_property_type = (udm::is_udm_type<T>() && (!udm::is_non_trivial_type(udm::type_to_enum<T>()) || std::is_same_v<T, udm::String> || std::is_same_v<T, udm::Utf8String>)) || std::is_enum_v<T>;
+
+	enum class PropertyType : uint8_t {
+		None = 0,
+		Value,
+		Texture,
+		Block,
+		Count,
+	};
+
+	constexpr udm::Type to_udm_type(ds::ValueType type)
+	{
+		switch(type) {
+		case ds::ValueType::String:
+			return udm::Type::String;
+		case ds::ValueType::Int:
+			return udm::Type::Int32;
+		case ds::ValueType::Float:
+			return udm::Type::Float;
+		case ds::ValueType::Bool:
+			return udm::Type::Boolean;
+		case ds::ValueType::Color:
+			return udm::Type::Vector3;
+		case ds::ValueType::Vector2:
+			return udm::Type::Vector2;
+		case ds::ValueType::Vector3:
+			return udm::Type::Vector3;
+		case ds::ValueType::Vector4:
+			return udm::Type::Vector4;
+		default:
+			return udm::Type::Invalid;
+		}
+	}
 };
 
 using MaterialIndex = uint32_t;
@@ -78,8 +117,12 @@ class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
 	bool IsTranslucent() const;
 	bool IsError() const;
 	void SetErrorFlag(bool set);
-	virtual TextureInfo *GetTextureInfo(const std::string &key);
-	const TextureInfo *GetTextureInfo(const std::string &key) const;
+	virtual TextureInfo *GetTextureInfo(const std::string_view &key);
+	const TextureInfo *GetTextureInfo(const std::string_view &key) const;
+
+	const Material *GetBaseMaterial() const;
+	Material *GetBaseMaterial();
+	void SetBaseMaterial(Material *baseMaterial);
 
 	const TextureInfo *GetDiffuseMap() const;
 	TextureInfo *GetDiffuseMap();
@@ -110,7 +153,27 @@ class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
 	void SetBloomColorFactor(const Vector4 &bloomColorFactor);
 	std::optional<Vector4> GetBloomColorFactor() const;
 
-	const std::shared_ptr<ds::Block> &GetDataBlock() const;
+	const std::shared_ptr<ds::Block> &GetPropertyDataBlock() const { return m_data; }
+	bool HasPropertyBlock(const std::string_view &name) const;
+	std::shared_ptr<ds::Block> GetPropertyBlock(const std::string_view &path) const;
+	msys::PropertyType GetPropertyType(const std::string_view &key) const;
+
+	void SetTextureProperty(const std::string_view &strPath, const std::string_view &tex);
+
+	void ClearProperty(const std::string_view &key, bool clearBlocksIfEmpty = true);
+	template<typename T>
+	    requires(msys::is_property_type<T>)
+	void SetProperty(const std::string_view &key, const T &value);
+	template<typename TTarget>
+	    requires(msys::is_property_type<TTarget>)
+	bool GetProperty(const std::string_view &key, TTarget *outValue) const;
+	template<typename TTarget>
+	    requires(msys::is_property_type<TTarget>)
+	TTarget GetProperty(const std::string_view &key, const TTarget &defVal) const;
+	ds::ValueType GetPropertyValueType(const std::string_view &strPath) const;
+
+	std::pair<std::shared_ptr<ds::Block>, std::string_view> ResolvePropertyPath(const std::string_view &strPath) const;
+
 	virtual void SetLoaded(bool b);
 	CallbackHandle CallOnLoaded(const std::function<void(void)> &f) const;
 	bool IsValid() const;
@@ -146,6 +209,18 @@ class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
 	Material(msys::MaterialManager &manager);
 	Material(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data);
 	Material(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data);
+
+	void ClearProperty(ds::Block &block, const std::string_view &key, bool clearBlocksIfEmpty);
+	template<typename T>
+	    requires(msys::is_property_type<T>)
+	void SetProperty(ds::Block &block, const std::string_view &key, const T &value);
+	template<typename TTarget>
+	    requires(msys::is_property_type<TTarget>)
+	bool GetProperty(const ds::Block &block, const std::string_view &key, TTarget *outValue) const;
+	template<typename TTarget>
+	    requires(msys::is_property_type<TTarget>)
+	TTarget GetProperty(const ds::Block &block, const std::string_view &key, const TTarget &defVal) const;
+
 	virtual void Initialize(const std::shared_ptr<ds::Block> &data);
 	virtual void OnTexturesUpdated();
 	void SetIndex(MaterialIndex index) { m_index = index; }
@@ -167,10 +242,116 @@ class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
 	void *m_userData2 = nullptr;
 	AlphaMode m_alphaMode = AlphaMode::Opaque;
 	MaterialIndex m_index = std::numeric_limits<MaterialIndex>::max();
+
+	std::shared_ptr<Material> m_baseMaterial;
 };
 REGISTER_BASIC_ARITHMETIC_OPERATORS(Material::StateFlags)
 #pragma warning(pop)
 
 DLLMATSYS std::ostream &operator<<(std::ostream &out, const Material &o);
+
+template<typename T>
+    requires(msys::is_property_type<T>)
+void Material::SetProperty(const std::string_view &strPath, const T &value)
+{
+	auto [block, key] = ResolvePropertyPath(strPath);
+	if(block == nullptr)
+		return;
+	SetProperty<T>(*block, key, value);
+	return;
+}
+template<typename TTarget>
+    requires(msys::is_property_type<TTarget>)
+bool Material::GetProperty(const std::string_view &strPath, TTarget *outValue) const
+{
+	auto [block, key] = ResolvePropertyPath(strPath);
+	if(block == nullptr)
+		return false;
+	if(GetProperty<TTarget>(*block, key, outValue))
+		return true;
+	if(m_baseMaterial)
+		return m_baseMaterial->GetProperty(strPath, outValue);
+	return false;
+}
+template<typename TTarget>
+    requires(msys::is_property_type<TTarget>)
+TTarget Material::GetProperty(const std::string_view &strPath, const TTarget &defVal) const
+{
+	TTarget val;
+	if(GetProperty<TTarget>(strPath, &val))
+		return val;
+	return defVal;
+}
+
+template<typename T>
+    requires(msys::is_property_type<T>)
+void Material::SetProperty(ds::Block &block, const std::string_view &key, const T &value)
+{
+	block.AddValue(std::string {key}, value);
+}
+template<typename TTarget>
+    requires(msys::is_property_type<TTarget>)
+bool Material::GetProperty(const ds::Block &block, const std::string_view &key, TTarget *outValue) const
+{
+	auto &dsBase = block.GetValue(key);
+	if(dsBase == nullptr || !dsBase->IsValue())
+		return false;
+	auto &dsVal = *static_cast<ds::Value *>(dsBase.get());
+	constexpr auto targetType = udm::type_to_enum<TTarget>();
+	auto sourceType = msys::to_udm_type(dsVal.GetType());
+	auto res = udm::visit(sourceType, [&](auto tag) -> bool {
+		using TSource = typename decltype(tag)::type;
+		if constexpr(msys::is_property_type<TSource>) {
+			if constexpr(udm::is_convertible<TSource, TTarget>()) {
+				if constexpr(std::is_same_v<TSource, udm::String>) {
+					UTIL_ASSERT(dsVal.GetType() == ds::ValueType::String);
+					*outValue = udm::convert<TSource, TTarget>(static_cast<ds::String *>(&dsVal)->GetValue());
+				}
+				else if constexpr(std::is_same_v<TSource, udm::Int32>) {
+					UTIL_ASSERT(dsVal.GetType() == ds::ValueType::Int);
+					*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Int *>(&dsVal)->GetValue());
+				}
+				else if constexpr(std::is_same_v<TSource, udm::Float>) {
+					UTIL_ASSERT(dsVal.GetType() == ds::ValueType::Float);
+					*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Float *>(&dsVal)->GetValue());
+				}
+				else if constexpr(std::is_same_v<TSource, udm::Boolean>) {
+					UTIL_ASSERT(dsVal.GetType() == ds::ValueType::Bool);
+					*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Bool *>(&dsVal)->GetValue());
+				}
+				else if constexpr(std::is_same_v<TSource, udm::Vector3>) {
+					auto dsValType = dsVal.GetType();
+					UTIL_ASSERT(dsValType == ds::ValueType::Color || dsValType == ds::ValueType::Vector3);
+					if(dsValType == ds::ValueType::Color)
+						*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Color *>(&dsVal)->GetValue().ToVector3());
+					else
+						*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Vector *>(&dsVal)->GetValue());
+				}
+				else if constexpr(std::is_same_v<TSource, udm::Vector2>) {
+					UTIL_ASSERT(dsVal.GetType() == ds::ValueType::Vector2);
+					*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Vector2 *>(&dsVal)->GetValue());
+				}
+				else if constexpr(std::is_same_v<TSource, udm::Vector4>) {
+					UTIL_ASSERT(dsVal.GetType() == ds::ValueType::Vector4);
+					*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Vector4 *>(&dsVal)->GetValue());
+				}
+				else
+					return false;
+				return true;
+			}
+		}
+		return false;
+	});
+	return res;
+}
+template<typename TTarget>
+    requires(msys::is_property_type<TTarget>)
+TTarget Material::GetProperty(const ds::Block &block, const std::string_view &key, const TTarget &defVal) const
+{
+	TTarget val;
+	if(GetProperty<TTarget>(block, key, &val))
+		return val;
+	return defVal;
+}
 
 #endif

@@ -136,13 +136,7 @@ void Material::UpdateTextures(bool forceUpdate)
 	m_texAlpha = GetTextureInfo(ALPHA_MAP_IDENTIFIER);
 	m_texRma = GetTextureInfo(RMA_MAP_IDENTIFIER);
 
-	auto &data = GetDataBlock();
-	if(data->IsString("alpha_mode")) {
-		auto e = magic_enum::enum_cast<AlphaMode>(data->GetString("alpha_mode"));
-		m_alphaMode = e.has_value() ? *e : AlphaMode::Opaque;
-	}
-	else
-		m_alphaMode = static_cast<AlphaMode>(data->GetInt("alpha_mode", umath::to_integral(AlphaMode::Opaque)));
+	m_alphaMode = GetProperty<AlphaMode>("alpha_mode", AlphaMode::Opaque);
 
 	++m_updateIndex;
 	OnTexturesUpdated();
@@ -316,9 +310,8 @@ bool Material::Save(std::string &outErr)
 }
 bool Material::SaveLegacy(std::shared_ptr<VFilePtrInternalReal> f) const
 {
-	auto &rootData = GetDataBlock();
 	std::stringstream ss;
-	ss << rootData->ToString(GetShaderIdentifier());
+	ss << m_data->ToString(GetShaderIdentifier());
 
 	f->WriteString(ss.str());
 	return true;
@@ -427,37 +420,114 @@ TextureInfo *Material::GetRMAMap()
 }
 
 AlphaMode Material::GetAlphaMode() const { return m_alphaMode; }
-float Material::GetAlphaCutoff() const
+float Material::GetAlphaCutoff() const { return GetProperty<float>("alpha_cutoff", 0.5f); }
+
+bool Material::HasPropertyBlock(const std::string_view &name) const { return GetPropertyBlock(name) != nullptr; }
+
+std::shared_ptr<ds::Block> Material::GetPropertyBlock(const std::string_view &name) const
 {
-	auto &data = GetDataBlock();
-	return data->GetFloat("alpha_cutoff", 0.5f);
+	if(name.empty())
+		return m_data;
+	auto path = util::FilePath(name);
+	auto data = m_data;
+	for(auto &segment : path) {
+		data = data->GetBlock(std::string {segment});
+		if(data == nullptr)
+			return nullptr;
+	}
+	return data;
 }
 
-void Material::SetColorFactor(const Vector4 &colorFactor)
+msys::PropertyType Material::GetPropertyType(const std::string_view &key) const
 {
-	auto &data = GetDataBlock();
-	data->AddValue("vector4", "color_factor", std::to_string(colorFactor.r) + ' ' + std::to_string(colorFactor.g) + ' ' + std::to_string(colorFactor.b) + ' ' + std::to_string(colorFactor.a));
+	auto dsVal = m_data->GetDataValue(std::string {key});
+	if(!dsVal) {
+		if(m_baseMaterial)
+			return m_baseMaterial->GetPropertyType(key);
+		return msys::PropertyType::None;
+	}
+	if(dsVal->IsBlock())
+		return msys::PropertyType::Block;
+	if(typeid(*dsVal) == typeid(ds::Texture))
+		return msys::PropertyType::Texture;
+	return msys::PropertyType::Value;
 }
-Vector4 Material::GetColorFactor() const
+
+void Material::ClearProperty(ds::Block &block, const std::string_view &key, bool clearBlocksIfEmpty)
 {
-	auto &data = GetDataBlock();
-	auto colFactor = data->GetValue("color_factor");
-	if(colFactor == nullptr || typeid(*colFactor) != typeid(ds::Vector4))
-		return {1.f, 1.f, 1.f, 1.f};
-	return static_cast<ds::Vector4 &>(*colFactor).GetValue();
+	if(key.find_first_of('/') != std::string::npos) {
+		auto path = util::FilePath(key);
+		auto data = std::static_pointer_cast<ds::Block>(block.shared_from_this());
+		auto parentBlock = data;
+		std::shared_ptr<ds::Block> secondToLastBlock;
+		std::string_view lastSegment;
+		for(auto &segment : path) {
+			if(data == nullptr)
+				return;
+			secondToLastBlock = data;
+			parentBlock = data;
+			data = data->GetBlock(std::string {segment});
+			lastSegment = segment;
+		}
+		if(secondToLastBlock) {
+			ClearProperty(*secondToLastBlock, std::string {lastSegment}, clearBlocksIfEmpty);
+			if(clearBlocksIfEmpty && secondToLastBlock->IsEmpty())
+				parentBlock->RemoveValue(std::string {lastSegment});
+		}
+		return;
+	}
+	block.RemoveValue(std::string {key});
 }
-void Material::SetBloomColorFactor(const Vector4 &bloomColorFactor)
+void Material::ClearProperty(const std::string_view &key, bool clearBlocksIfEmpty) { ClearProperty(*m_data, key, clearBlocksIfEmpty); }
+ds::ValueType Material::GetPropertyValueType(const std::string_view &strPath) const
 {
-	auto &data = GetDataBlock();
-	data->AddValue("vector4", "bloom_color_factor", std::to_string(bloomColorFactor.r) + ' ' + std::to_string(bloomColorFactor.g) + ' ' + std::to_string(bloomColorFactor.b) + ' ' + std::to_string(bloomColorFactor.a));
+	auto [block, key] = ResolvePropertyPath(strPath);
+	if(block == nullptr)
+		return ds::ValueType::Invalid; // No path segments
+	auto &dsVal = block->GetValue(key);
+	if(dsVal && dsVal->IsValue())
+		return static_cast<ds::Value &>(*dsVal).GetType();
+	if(m_baseMaterial)
+		return m_baseMaterial->GetPropertyValueType(strPath);
+	return ds::ValueType::Invalid;
 }
+void Material::SetTextureProperty(const std::string_view &strPath, const std::string_view &tex)
+{
+	auto [block, key] = ResolvePropertyPath(strPath);
+	if(block == nullptr)
+		return;
+	block->AddValue(std::string {key}, std::string {tex});
+}
+
+std::pair<std::shared_ptr<ds::Block>, std::string_view> Material::ResolvePropertyPath(const std::string_view &strPath) const
+{
+	if(strPath.find('/') == std::string::npos)
+		return {m_data, strPath}; // Fast exit if no path segments
+	auto path = util::FilePath(strPath);
+	auto data = m_data;
+	std::shared_ptr<ds::Block> secondToLastBlock;
+	std::string_view lastSegment;
+	for(auto &segment : path) {
+		if(data == nullptr)
+			return {};
+		secondToLastBlock = data;
+		data = data->GetBlock(std::string {segment});
+		lastSegment = segment;
+	}
+	if(!secondToLastBlock)
+		return {m_data, strPath}; // No path segments
+	return {secondToLastBlock, lastSegment};
+}
+
+void Material::SetColorFactor(const Vector4 &colorFactor) { SetProperty("color_factor", colorFactor); }
+Vector4 Material::GetColorFactor() const { return GetProperty<Vector4>("color_factor", {1.f, 1.f, 1.f, 1.f}); }
+void Material::SetBloomColorFactor(const Vector4 &bloomColorFactor) { SetProperty("bloom_color_factor", bloomColorFactor); }
 std::optional<Vector4> Material::GetBloomColorFactor() const
 {
-	auto &data = GetDataBlock();
-	auto colFactor = data->GetValue("bloom_color_factor");
-	if(colFactor == nullptr || typeid(*colFactor) != typeid(ds::Vector4))
+	Vector4 bloomColor;
+	if(!GetProperty<Vector4>("bloom_color_factor", &bloomColor))
 		return {};
-	return static_cast<ds::Vector4 &>(*colFactor).GetValue();
+	return bloomColor;
 }
 
 void Material::SetName(const std::string &name) { m_name = name; }
@@ -475,9 +545,13 @@ const std::string &Material::GetShaderIdentifier() const
 	return m_shader ? *m_shader : empty;
 }
 
-const TextureInfo *Material::GetTextureInfo(const std::string &key) const { return const_cast<Material *>(this)->GetTextureInfo(key); }
+const Material *Material::GetBaseMaterial() const { return const_cast<Material *>(this)->GetBaseMaterial(); }
+Material *Material::GetBaseMaterial() { return m_baseMaterial.get(); }
+void Material::SetBaseMaterial(Material *baseMaterial) { m_baseMaterial = baseMaterial ? baseMaterial->shared_from_this() : nullptr; }
 
-TextureInfo *Material::GetTextureInfo(const std::string &key)
+const TextureInfo *Material::GetTextureInfo(const std::string_view &key) const { return const_cast<Material *>(this)->GetTextureInfo(key); }
+
+TextureInfo *Material::GetTextureInfo(const std::string_view &key)
 {
 	if(!m_data)
 		return nullptr;
@@ -490,12 +564,6 @@ TextureInfo *Material::GetTextureInfo(const std::string &key)
 		return nullptr;
 	auto &datTex = static_cast<ds::Texture &>(val);
 	return &const_cast<TextureInfo &>(datTex.GetValue());
-}
-
-const std::shared_ptr<ds::Block> &Material::GetDataBlock() const
-{
-	static std::shared_ptr<ds::Block> nptr = nullptr;
-	return (m_data != nullptr) ? m_data : nptr;
 }
 
 msys::MaterialHandle Material::GetHandle() { return shared_from_this(); }
