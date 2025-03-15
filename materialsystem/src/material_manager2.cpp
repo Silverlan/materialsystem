@@ -103,6 +103,7 @@ bool msys::PmatFormatHandler::LoadData(MaterialProcessor &processor, MaterialLoa
 	shader = firstEl.key;
 	if(!udm_to_data_block(firstEl.property, *root))
 		return false;
+	firstEl.property["base_material"](baseMaterial);
 	data = root;
 	return true;
 }
@@ -161,6 +162,8 @@ bool msys::MaterialProcessor::Load()
 	auto mat = static_cast<MaterialManager &>(matHandler.GetAssetManager()).CreateMaterialObject(matHandler.shader, matHandler.data);
 	mat->SetLoaded(true);
 	mat->SetName(identifier);
+	if(!matHandler.baseMaterial.empty())
+		mat->SetBaseMaterial(matHandler.baseMaterial);
 	material = mat;
 	return true;
 }

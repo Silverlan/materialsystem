@@ -34,6 +34,12 @@ decltype(Material::WRINKLE_STRETCH_MAP_IDENTIFIER) Material::WRINKLE_STRETCH_MAP
 decltype(Material::WRINKLE_COMPRESS_MAP_IDENTIFIER) Material::WRINKLE_COMPRESS_MAP_IDENTIFIER = "wrinkle_compress_map";
 decltype(Material::EXPONENT_MAP_IDENTIFIER) Material::EXPONENT_MAP_IDENTIFIER = "exponent_map";
 
+Material::BaseMaterial::~BaseMaterial()
+{
+	if(onBaseTexturesUpdated.IsValid())
+		onBaseTexturesUpdated.Remove();
+}
+
 std::shared_ptr<Material> Material::Create(msys::MaterialManager &manager)
 {
 	auto mat = std::shared_ptr<Material> {new Material {manager}};
@@ -68,6 +74,7 @@ void Material::Assign(const Material &other)
 	m_data = other.m_data;
 	m_shaderInfo = other.m_shaderInfo;
 	m_shader = other.m_shader ? std::make_unique<std::string>(*other.m_shader) : nullptr;
+	m_baseMaterial = m_baseMaterial ? std::make_unique<BaseMaterial>(*m_baseMaterial) : nullptr;
 	// m_index = other.m_index;
 
 	if(IsValid())
@@ -87,6 +94,7 @@ void Material::Reset()
 	m_texParallax = nullptr;
 	m_texRma = nullptr;
 	m_texAlpha = nullptr;
+	m_baseMaterial = nullptr;
 }
 
 void Material::Initialize(const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data)
@@ -105,7 +113,13 @@ void Material::Initialize(const std::string &shader, const std::shared_ptr<ds::B
 	Initialize(m_data);
 }
 
-void Material::Initialize(const std::shared_ptr<ds::Block> &data) {}
+void Material::Initialize(const std::shared_ptr<ds::Block> &data)
+{
+	m_baseMaterial = {};
+	std::string baseMaterial;
+	if(data->GetString("base_material", &baseMaterial))
+		SetBaseMaterial(baseMaterial);
+}
 
 void *Material::GetUserData() { return m_userData; }
 void Material::SetUserData(void *data) { m_userData = data; }
@@ -142,7 +156,34 @@ void Material::UpdateTextures(bool forceUpdate)
 	OnTexturesUpdated();
 }
 
-void Material::OnTexturesUpdated() {}
+void Material::CallEventListeners(Event event)
+{
+	auto itLs = m_eventListeners.find(event);
+	if(itLs == m_eventListeners.end())
+		return;
+	auto &listeners = itLs->second;
+	for(auto it = listeners.begin(); it != listeners.end();) {
+		auto &listener = *it;
+		if(listener.IsValid() == false) {
+			it = listeners.erase(it);
+			continue;
+		}
+		listener();
+		++it;
+	}
+}
+
+CallbackHandle Material::AddEventListener(Event event, const std::function<void(void)> &f)
+{
+	auto it = m_eventListeners.find(event);
+	if(it == m_eventListeners.end())
+		it = m_eventListeners.emplace(event, std::vector<CallbackHandle> {}).first;
+	auto &vec = it->second;
+	vec.emplace_back(FunctionCallback<void>::Create(f));
+	return vec.back();
+}
+
+void Material::OnTexturesUpdated() { CallEventListeners(Event::OnTexturesUpdated); }
 
 void Material::SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo)
 {
@@ -242,6 +283,8 @@ bool Material::Save(udm::AssetData outData, std::string &outErr)
 	outData.SetAssetType(PMAT_IDENTIFIER);
 	outData.SetAssetVersion(PMAT_VERSION);
 	dataBlockToUdm(udm["properties"], *m_data);
+	if(m_baseMaterial)
+		udm["base_material"] = m_baseMaterial->name;
 	return true;
 }
 extern const std::array<std::string, 5> g_knownMaterialFormats;
@@ -442,8 +485,9 @@ msys::PropertyType Material::GetPropertyType(const std::string_view &key) const
 {
 	auto dsVal = m_data->GetDataValue(std::string {key});
 	if(!dsVal) {
-		if(m_baseMaterial)
-			return m_baseMaterial->GetPropertyType(key);
+		auto *baseMaterial = GetBaseMaterial();
+		if(baseMaterial)
+			return baseMaterial->GetPropertyType(key);
 		return msys::PropertyType::None;
 	}
 	if(dsVal->IsBlock())
@@ -487,8 +531,9 @@ ds::ValueType Material::GetPropertyValueType(const std::string_view &strPath) co
 	auto &dsVal = block->GetValue(key);
 	if(dsVal && dsVal->IsValue())
 		return static_cast<ds::Value &>(*dsVal).GetType();
-	if(m_baseMaterial)
-		return m_baseMaterial->GetPropertyValueType(strPath);
+	auto *baseMaterial = GetBaseMaterial();
+	if(baseMaterial)
+		return baseMaterial->GetPropertyValueType(strPath);
 	return ds::ValueType::Invalid;
 }
 void Material::SetTextureProperty(const std::string_view &strPath, const std::string_view &tex)
@@ -546,8 +591,41 @@ const std::string &Material::GetShaderIdentifier() const
 }
 
 const Material *Material::GetBaseMaterial() const { return const_cast<Material *>(this)->GetBaseMaterial(); }
-Material *Material::GetBaseMaterial() { return m_baseMaterial.get(); }
-void Material::SetBaseMaterial(Material *baseMaterial) { m_baseMaterial = baseMaterial ? baseMaterial->shared_from_this() : nullptr; }
+void Material::UpdateBaseMaterial()
+{
+	if(m_baseMaterial->material)
+		return;
+	auto baseMat = m_manager.LoadAsset(m_baseMaterial->name);
+	if(baseMat) {
+		m_baseMaterial->material = baseMat->shared_from_this();
+		m_baseMaterial->onBaseTexturesUpdated = baseMat->AddEventListener(Event::OnTexturesUpdated, [this]() { OnBaseMaterialChanged(); });
+	}
+}
+Material *Material::GetBaseMaterial()
+{
+	if(!m_baseMaterial)
+		return nullptr;
+	UpdateBaseMaterial();
+	return m_baseMaterial ? m_baseMaterial->material.get() : nullptr;
+}
+void Material::SetBaseMaterial(const std::string &baseMaterial)
+{
+	m_baseMaterial = std::make_unique<BaseMaterial>();
+	m_baseMaterial->name = baseMaterial;
+	m_manager.PreloadAsset(m_baseMaterial->name);
+}
+void Material::SetBaseMaterial(Material *baseMaterial)
+{
+	m_baseMaterial = nullptr;
+	if(!baseMaterial)
+		return;
+	m_baseMaterial = std::make_unique<BaseMaterial>();
+	m_baseMaterial->material = baseMaterial->shared_from_this();
+	m_baseMaterial->onBaseTexturesUpdated = baseMaterial->AddEventListener(Event::OnTexturesUpdated, [this]() { OnBaseMaterialChanged(); });
+	m_baseMaterial->name = baseMaterial->GetName();
+}
+
+void Material::OnBaseMaterialChanged() {}
 
 const TextureInfo *Material::GetTextureInfo(const std::string_view &key) const { return const_cast<Material *>(this)->GetTextureInfo(key); }
 

@@ -44,6 +44,7 @@ namespace msys {
 
 		std::shared_ptr<ds::Block> data;
 		std::string shader;
+		std::string baseMaterial;
 	};
 	class DLLMATSYS PmatFormatHandler : public MaterialFormatHandler {
 	  public:

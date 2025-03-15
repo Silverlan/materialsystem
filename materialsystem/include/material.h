@@ -100,7 +100,18 @@ class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
 	static const std::string WRINKLE_COMPRESS_MAP_IDENTIFIER;
 	static const std::string EXPONENT_MAP_IDENTIFIER;
 
-	enum class StateFlags : uint32_t { None = 0u, Loaded = 1u, ExecutingOnLoadCallbacks = Loaded << 1u, Error = ExecutingOnLoadCallbacks << 1u, TexturesUpdated = Error << 1u };
+	enum class StateFlags : uint32_t {
+		None = 0u,
+		Loaded = 1u,
+		ExecutingOnLoadCallbacks = Loaded << 1u,
+		Error = ExecutingOnLoadCallbacks << 1u,
+		TexturesUpdated = Error << 1u,
+	};
+
+	enum class Event : uint8_t {
+		OnTexturesUpdated = 0,
+		Count,
+	};
 
 	static std::shared_ptr<Material> Create(msys::MaterialManager &manager);
 	static std::shared_ptr<Material> Create(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data);
@@ -123,6 +134,7 @@ class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
 	const Material *GetBaseMaterial() const;
 	Material *GetBaseMaterial();
 	void SetBaseMaterial(Material *baseMaterial);
+	void SetBaseMaterial(const std::string &baseMaterial);
 
 	const TextureInfo *GetDiffuseMap() const;
 	TextureInfo *GetDiffuseMap();
@@ -176,6 +188,7 @@ class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
 
 	virtual void SetLoaded(bool b);
 	CallbackHandle CallOnLoaded(const std::function<void(void)> &f) const;
+	CallbackHandle AddEventListener(Event event, const std::function<void(void)> &f);
 	bool IsValid() const;
 	msys::MaterialManager &GetManager() const;
 	std::optional<std::string> GetAbsolutePath() const;
@@ -209,6 +222,9 @@ class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
 	Material(msys::MaterialManager &manager);
 	Material(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data);
 	Material(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data);
+	virtual void OnBaseMaterialChanged();
+	void CallEventListeners(Event event);
+	void UpdateBaseMaterial();
 
 	void ClearProperty(ds::Block &block, const std::string_view &key, bool clearBlocksIfEmpty);
 	template<typename T>
@@ -231,6 +247,7 @@ class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
 	std::shared_ptr<ds::Block> m_data;
 	StateFlags m_stateFlags = StateFlags::None;
 	mutable std::vector<CallbackHandle> m_callOnLoaded;
+	std::unordered_map<Event, std::vector<CallbackHandle>> m_eventListeners;
 	msys::MaterialManager &m_manager;
 	TextureInfo *m_texDiffuse = nullptr;
 	TextureInfo *m_texNormal = nullptr;
@@ -243,7 +260,13 @@ class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
 	AlphaMode m_alphaMode = AlphaMode::Opaque;
 	MaterialIndex m_index = std::numeric_limits<MaterialIndex>::max();
 
-	std::shared_ptr<Material> m_baseMaterial;
+	struct BaseMaterial {
+		~BaseMaterial();
+		std::string name;
+		std::shared_ptr<Material> material;
+		CallbackHandle onBaseTexturesUpdated;
+	};
+	std::unique_ptr<BaseMaterial> m_baseMaterial;
 };
 REGISTER_BASIC_ARITHMETIC_OPERATORS(Material::StateFlags)
 #pragma warning(pop)
@@ -269,8 +292,9 @@ bool Material::GetProperty(const std::string_view &strPath, TTarget *outValue) c
 		return false;
 	if(GetProperty<TTarget>(*block, key, outValue))
 		return true;
-	if(m_baseMaterial)
-		return m_baseMaterial->GetProperty(strPath, outValue);
+	auto *baseMaterial = GetBaseMaterial();
+	if(baseMaterial)
+		return baseMaterial->GetProperty(strPath, outValue);
 	return false;
 }
 template<typename TTarget>

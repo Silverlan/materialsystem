@@ -75,6 +75,8 @@ class DLLCMATSYS CMaterial : public Material {
 	CMaterial(msys::MaterialManager &manager);
 	CMaterial(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shader, const std::shared_ptr<ds::Block> &data);
 	CMaterial(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data);
+	void ResetRenderResources();
+	virtual void OnBaseMaterialChanged() override;
 	virtual void Initialize(const std::shared_ptr<ds::Block> &data) override;
 	virtual void OnTexturesUpdated() override;
 	void LoadTexture(const std::shared_ptr<ds::Block> &data, TextureInfo &texInfo, TextureLoadFlags flags = TextureLoadFlags::None, const std::shared_ptr<CallbackInfo> &callbackInfo = nullptr);

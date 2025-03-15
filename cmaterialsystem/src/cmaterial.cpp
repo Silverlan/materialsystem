@@ -164,11 +164,12 @@ const std::shared_ptr<prosper::IDescriptorSetGroup> &CMaterial::GetDescriptorSet
 }
 bool CMaterial::IsInitialized() const { return (IsLoaded() && m_descriptorSetGroups.empty() == false) ? true : false; }
 void CMaterial::SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo) { Material::SetShaderInfo(shaderInfo); }
+void CMaterial::ResetRenderResources() { m_descriptorSetGroups.clear(); }
 void CMaterial::Reset()
 {
 	Material::Reset();
 	m_primaryShader = nullptr;
-	m_descriptorSetGroups.clear();
+	ResetRenderResources();
 	m_stateFlags = StateFlags::None;
 	// UpdatePrimaryShader();
 }
@@ -372,6 +373,15 @@ TextureInfo *CMaterial::GetTextureInfo(const std::string_view &key)
 {
 	LoadTextures(false);
 	return Material::GetTextureInfo(key);
+}
+
+void CMaterial::OnBaseMaterialChanged()
+{
+	Material::OnBaseMaterialChanged();
+	ResetRenderResources();
+	m_stateFlags = StateFlags::None;
+	LoadTextures(false, true);
+	UpdateTextures(true);
 }
 
 void CMaterial::LoadTextures(bool precache, bool force)
