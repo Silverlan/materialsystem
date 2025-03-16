@@ -36,6 +36,8 @@ namespace msys {
 		Count,
 	};
 
+	template<typename T>
+	concept is_underlying_property_udm_type = std::is_same_v<T, udm::String> || std::is_same_v<T, udm::Int32> || std::is_same_v<T, udm::Float> || std::is_same_v<T, udm::Boolean> || std::is_same_v<T, udm::Vector3> || std::is_same_v<T, udm::Vector2> || std::is_same_v<T, udm::Vector4>;
 	constexpr udm::Type to_udm_type(ds::ValueType type)
 	{
 		switch(type) {
@@ -58,6 +60,46 @@ namespace msys {
 		default:
 			return udm::Type::Invalid;
 		}
+	}
+
+	constexpr ds::ValueType to_ds_type(udm::Type type)
+	{
+		switch(type) {
+		case udm::Type::String:
+		case udm::Type::Utf8String:
+			return ds::ValueType::String;
+		case udm::Type::Int8:
+		case udm::Type::UInt8:
+		case udm::Type::Int16:
+		case udm::Type::UInt16:
+		case udm::Type::Int32:
+		case udm::Type::UInt32:
+		case udm::Type::Int64:
+		case udm::Type::UInt64:
+			return ds::ValueType::Int;
+		case udm::Type::Half:
+		case udm::Type::Float:
+		case udm::Type::Double:
+			return ds::ValueType::Float;
+		case udm::Type::Boolean:
+			return ds::ValueType::Bool;
+		case udm::Type::Vector2:
+		case udm::Type::Vector2i:
+			return ds::ValueType::Vector2;
+		case udm::Type::Vector3:
+		case udm::Type::Vector3i:
+			return ds::ValueType::Vector3;
+		case udm::Type::Vector4:
+		case udm::Type::Vector4i:
+			return ds::ValueType::Vector4;
+		case udm::Type::Quaternion:
+		case udm::Type::EulerAngles:
+			return ds::ValueType::Vector3;
+		case udm::Type::Srgba:
+		case udm::Type::HdrColor:
+			return ds::ValueType::Vector4;
+		}
+		return ds::ValueType::Invalid;
 	}
 };
 
@@ -311,7 +353,20 @@ template<typename T>
     requires(msys::is_property_type<T>)
 void Material::SetProperty(ds::Block &block, const std::string_view &key, const T &value)
 {
-	block.AddValue(std::string {key}, value);
+	if constexpr(std::is_same_v<T, Quat>)
+		return SetProperty(block, key, EulerAngles {value});
+	else {
+		constexpr auto udmType = udm::type_to_enum<T>();
+		constexpr auto dsType = msys::to_ds_type(udmType);
+		constexpr auto normalizedUdmType = msys::to_udm_type(dsType);
+		udm::visit(normalizedUdmType, [&](auto tag) {
+			using TNorm = typename decltype(tag)::type;
+			if constexpr(msys::is_underlying_property_udm_type<TNorm> && udm::is_convertible<T, TNorm>()) {
+				auto normValue = udm::convert<T, TNorm>(value);
+				block.AddValue(std::string {key}, normValue);
+			}
+		});
+	}
 }
 template<typename TTarget>
     requires(msys::is_property_type<TTarget>)
