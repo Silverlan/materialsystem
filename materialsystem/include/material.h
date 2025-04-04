@@ -42,6 +42,7 @@ namespace msys {
 	{
 		switch(type) {
 		case ds::ValueType::String:
+		case ds::ValueType::Texture:
 			return udm::Type::String;
 		case ds::ValueType::Int:
 			return udm::Type::Int32;
@@ -60,6 +61,7 @@ namespace msys {
 		default:
 			return udm::Type::Invalid;
 		}
+		static_assert(umath::to_integral(ds::ValueType::Count) == 11, "Update this function when new types are added!");
 	}
 
 	constexpr ds::ValueType to_ds_type(udm::Type type)
@@ -99,6 +101,7 @@ namespace msys {
 		case udm::Type::HdrColor:
 			return ds::ValueType::Vector4;
 		}
+		static_assert(umath::to_integral(ds::ValueType::Count) == 11, "Update this function when new types are added!");
 		return ds::ValueType::Invalid;
 	}
 };
@@ -248,7 +251,7 @@ class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
 
 	virtual void Assign(const Material &other);
 
-	virtual std::shared_ptr<Material> Copy() const;
+	virtual std::shared_ptr<Material> Copy(bool copyData = true) const;
 
 	// Returns true if all textures associated with this material have been fully loaded
 	bool IsLoaded() const;
@@ -383,7 +386,7 @@ bool Material::GetProperty(const ds::Block &block, const std::string_view &key, 
 		if constexpr(msys::is_property_type<TSource>) {
 			if constexpr(udm::is_convertible<TSource, TTarget>()) {
 				if constexpr(std::is_same_v<TSource, udm::String>) {
-					UTIL_ASSERT(dsVal.GetType() == ds::ValueType::String);
+					UTIL_ASSERT(dsVal.GetType() == ds::ValueType::String || dsVal.GetType() == ds::ValueType::Texture);
 					*outValue = udm::convert<TSource, TTarget>(static_cast<ds::String *>(&dsVal)->GetValue());
 				}
 				else if constexpr(std::is_same_v<TSource, udm::Int32>) {

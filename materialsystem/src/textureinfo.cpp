@@ -46,6 +46,7 @@ ds::Texture::Texture(ds::Settings &dataSettings, const TextureInfo &value) : Val
 ds::Texture *ds::Texture::Copy() { return new ds::Texture(*m_dataSettings, m_value); }
 const TextureInfo &ds::Texture::GetValue() const { return const_cast<Texture *>(this)->GetValue(); }
 TextureInfo &ds::Texture::GetValue() { return m_value; }
+ds::ValueType ds::Texture::GetType() const { return ds::ValueType::Texture; }
 
 std::string ds::Texture::GetString() const
 {

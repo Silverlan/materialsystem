@@ -9,6 +9,7 @@
 #include "cmaterial.h"
 #include "texture_type.h"
 #include "texturemanager/load/texture_loader.hpp"
+#include "material_property_block_view.hpp"
 #include "sprite_sheet_animation.hpp"
 #include "cmaterial_manager2.hpp"
 #include <prosper_util.hpp>
@@ -74,16 +75,19 @@ CMaterial::~CMaterial()
 	}
 }
 
-std::shared_ptr<Material> CMaterial::Copy() const
+std::shared_ptr<Material> CMaterial::Copy(bool copyData) const
 {
-	auto cpy = Material::Copy();
+	auto cpy = Material::Copy(copyData);
 	if(!cpy)
 		return cpy;
 	auto *ccpy = static_cast<CMaterial *>(cpy.get());
 	ccpy->m_primaryShader = m_primaryShader;
 	ccpy->m_sampler = m_sampler;
-	ccpy->m_spriteSheetAnimation = m_spriteSheetAnimation;
+	if(copyData)
+		ccpy->m_spriteSheetAnimation = m_spriteSheetAnimation;
 	ccpy->m_stateFlags = m_stateFlags;
+	if(!copyData)
+		umath::set_flag(ccpy->m_stateFlags, StateFlags::TexturesLoaded, false);
 	return cpy;
 }
 
@@ -223,11 +227,10 @@ SpriteSheetAnimation *CMaterial::GetSpriteSheetAnimation()
 	}
 	return m_spriteSheetAnimation.has_value() ? &*m_spriteSheetAnimation : nullptr;
 }
-void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data, TextureInfo &texInfo, TextureLoadFlags loadFlags, const std::shared_ptr<CallbackInfo> &callbackInfo)
+void CMaterial::LoadTexture(TextureMipmapMode mipmapMode, TextureInfo &texInfo, TextureLoadFlags loadFlags, const std::shared_ptr<CallbackInfo> &callbackInfo)
 {
 	if(texInfo.texture == nullptr) // Texture hasn't been initialized yet
 	{
-		auto mipmapMode = static_cast<TextureMipmapMode>(GetMipmapMode(*data));
 		auto &textureManager = GetTextureManager();
 		auto &context = GetContext();
 
@@ -265,6 +268,11 @@ void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data, TextureInfo 
 	}
 	else if(callbackInfo != nullptr && umath::is_flag_set(loadFlags, TextureLoadFlags::LoadInstantly))
 		callbackInfo->onload(nullptr);
+}
+void CMaterial::LoadTexture(const std::shared_ptr<ds::Block> &data, TextureInfo &texInfo, TextureLoadFlags loadFlags, const std::shared_ptr<CallbackInfo> &callbackInfo)
+{
+	auto mipmapMode = static_cast<TextureMipmapMode>(GetMipmapMode(*data));
+	LoadTexture(mipmapMode, texInfo, loadFlags, callbackInfo);
 }
 void CMaterial::ClearDescriptorSets()
 {
@@ -449,24 +457,33 @@ void CMaterial::InitializeTextures(const std::shared_ptr<ds::Block> &data, const
 		InitializeSampler();
 		ClearDescriptorSets();
 	}
-	const auto &typeTexture = typeid(ds::Texture);
-	auto *values = data->GetData();
-	for(auto &it : *values) {
-		auto &value = it.second;
-		if(!value->IsBlock()) {
-			auto &type = typeid(*value);
-			if(type == typeTexture) {
-				++info->count;
-				LoadTexture(data, std::static_pointer_cast<ds::Texture>(value), loadFlags, info);
+
+	std::function<void(CMaterial &, const util::Path &)> loadTextures = nullptr;
+	loadTextures = [this, &loadTextures, &info, &loadFlags](CMaterial &mat, const util::Path &path) {
+		auto mipmapMode = GetProperty<TextureMipmapMode>(util::FilePath(path, "mipmap_load_mode").GetString(), TextureMipmapMode::Load);
+		for(auto &name : msys::MaterialPropertyBlockView {mat, path}) {
+			auto propType = mat.GetPropertyType(name);
+			switch(propType) {
+			case msys::PropertyType::Block:
+				loadTextures(mat, util::FilePath(path, name));
+				break;
+			case msys::PropertyType::Texture:
+				{
+					std::string texName;
+					if(!mat.GetProperty(util::FilePath(path, name).GetString(), &texName))
+						continue;
+					auto *texInfo = mat.GetTextureInfo(name);
+					if(!texInfo)
+						continue;
+					++info->count;
+
+					LoadTexture(mipmapMode, *texInfo, loadFlags, info);
+					break;
+				}
 			}
-			else
-				continue;
 		}
-		else {
-			auto dataBlock = std::static_pointer_cast<ds::Block>(value);
-			InitializeTextures(dataBlock, info, loadFlags);
-		}
-	}
+	};
+	loadTextures(*this, {});
 }
 
 std::shared_ptr<CMaterial::CallbackInfo> CMaterial::InitializeCallbackInfo(const std::function<void(void)> &onAllTexturesLoaded, const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded)

@@ -29,6 +29,7 @@ namespace ds {
 #pragma warning(push)
 #pragma warning(disable : 4251)
 struct SpriteSheetAnimation;
+enum class TextureMipmapMode : int32_t;
 namespace msys {
 	class TextureManager;
 };
@@ -52,7 +53,7 @@ class DLLCMATSYS CMaterial : public Material {
 	const std::shared_ptr<prosper::IDescriptorSetGroup> &GetDescriptorSetGroup(prosper::Shader &shader) const;
 	virtual TextureInfo *GetTextureInfo(const std::string_view &key) override;
 	bool IsInitialized() const;
-	virtual std::shared_ptr<Material> Copy() const override;
+	virtual std::shared_ptr<Material> Copy(bool copyData = true) const override;
 	void SetDescriptorSetGroup(prosper::Shader &shader, const std::shared_ptr<prosper::IDescriptorSetGroup> &descSetGroup);
 	prosper::Shader *GetPrimaryShader();
 	std::shared_ptr<prosper::ISampler> GetSampler();
@@ -80,6 +81,7 @@ class DLLCMATSYS CMaterial : public Material {
 	virtual void Initialize(const std::shared_ptr<ds::Block> &data) override;
 	virtual void OnTexturesUpdated() override;
 	void LoadTexture(const std::shared_ptr<ds::Block> &data, TextureInfo &texInfo, TextureLoadFlags flags = TextureLoadFlags::None, const std::shared_ptr<CallbackInfo> &callbackInfo = nullptr);
+	void LoadTexture(TextureMipmapMode mipmapMode, TextureInfo &texInfo, TextureLoadFlags flags = TextureLoadFlags::None, const std::shared_ptr<CallbackInfo> &callbackInfo = nullptr);
 	void InitializeTextures(const std::shared_ptr<ds::Block> &data, const std::function<void(void)> &onAllTexturesLoaded = nullptr, const std::function<void(std::shared_ptr<Texture>)> &onTextureLoaded = nullptr, TextureLoadFlags loadFlags = TextureLoadFlags::None);
 	friend msys::CMaterialManager;
 	msys::TextureManager &GetTextureManager();

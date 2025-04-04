@@ -27,6 +27,7 @@ namespace ds {
 		virtual Texture *Copy() override;
 		const TextureInfo &GetValue() const;
 		TextureInfo &GetValue();
+		virtual ValueType GetType() const override;
 
 		virtual std::string GetString() const override;
 		virtual std::string GetTypeString() const override;

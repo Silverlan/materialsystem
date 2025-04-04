@@ -541,7 +541,7 @@ void Material::SetTextureProperty(const std::string_view &strPath, const std::st
 	auto [block, key] = ResolvePropertyPath(strPath);
 	if(block == nullptr)
 		return;
-	block->AddValue(std::string {key}, std::string {tex});
+	block->AddValue("texture", std::string {key}, std::string {tex});
 }
 
 std::pair<std::shared_ptr<ds::Block>, std::string_view> Material::ResolvePropertyPath(const std::string_view &strPath) const
@@ -631,30 +631,38 @@ const TextureInfo *Material::GetTextureInfo(const std::string_view &key) const {
 
 TextureInfo *Material::GetTextureInfo(const std::string_view &key)
 {
-	if(!m_data)
-		return nullptr;
-	auto &base = m_data->GetValue(key);
-	if(base == nullptr || base->IsBlock())
-		return nullptr;
-	auto &val = static_cast<ds::Value &>(*base);
-	auto &type = typeid(val);
-	if(type != typeid(ds::Texture))
-		return nullptr;
-	auto &datTex = static_cast<ds::Texture &>(val);
-	return &const_cast<TextureInfo &>(datTex.GetValue());
+	TextureInfo *texInfo = nullptr;
+	if(m_data) {
+		auto &base = m_data->GetValue(key);
+		if(base != nullptr && !base->IsBlock()) {
+			auto &val = static_cast<ds::Value &>(*base);
+			auto &type = typeid(val);
+			if(type == typeid(ds::Texture)) {
+				auto &datTex = static_cast<ds::Texture &>(val);
+				return &const_cast<TextureInfo &>(datTex.GetValue());
+			}
+		}
+	}
+	if(m_baseMaterial && m_baseMaterial->material)
+		return m_baseMaterial->material->GetTextureInfo(key);
+	return nullptr;
 }
 
 msys::MaterialHandle Material::GetHandle() { return shared_from_this(); }
 
-std::shared_ptr<Material> Material::Copy() const
+std::shared_ptr<Material> Material::Copy(bool copyData) const
 {
 	std::shared_ptr<Material> r = nullptr;
 	if(!IsValid())
 		r = GetManager().CreateMaterial("pbr", nullptr);
-	else if(m_shaderInfo.expired() == false)
-		r = GetManager().CreateMaterial(m_shaderInfo->GetIdentifier(), std::shared_ptr<ds::Block>(m_data->Copy()));
-	else
-		r = GetManager().CreateMaterial(*m_shader, std::shared_ptr<ds::Block>(m_data->Copy()));
+	else if(m_shaderInfo.expired() == false) {
+		auto data = copyData ? std::shared_ptr<ds::Block>(m_data->Copy()) : std::make_shared<ds::Block>(m_data->GetDataSettings());
+		r = GetManager().CreateMaterial(m_shaderInfo->GetIdentifier(), data);
+	}
+	else {
+		auto data = copyData ? std::shared_ptr<ds::Block>(m_data->Copy()) : std::make_shared<ds::Block>(m_data->GetDataSettings());
+		r = GetManager().CreateMaterial(*m_shader, data);
+	}
 	if(IsLoaded())
 		r->SetLoaded(true);
 	r->m_stateFlags = m_stateFlags;
