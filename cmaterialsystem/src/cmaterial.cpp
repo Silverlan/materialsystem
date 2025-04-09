@@ -254,6 +254,8 @@ void CMaterial::LoadTexture(TextureMipmapMode mipmapMode, TextureInfo &texInfo, 
 				vkTex->SetSampler(*m_sampler);
 			texInfo.texture = tex;
 		}
+		else if(callbackInfo && callbackInfo->onload.IsValid())
+			callbackInfo->onload.Call<void, std::shared_ptr<Texture>>(nullptr);
 
 		if(texInfo.texture) {
 			auto cb = static_cast<Texture *>(texInfo.texture.get())->CallOnVkTextureChanged([this]() {
