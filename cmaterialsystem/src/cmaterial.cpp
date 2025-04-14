@@ -182,6 +182,16 @@ void CMaterial::Assign(const Material &other)
 	Material::Assign(other);
 	UpdatePrimaryShader();
 }
+void CMaterial::SetPrimaryShader(prosper::Shader &shader)
+{
+	auto &context = GetContext();
+	auto &shaderManager = context.GetShaderManager();
+	m_shader = std::make_unique<std::string>(shader.GetIdentifier());
+	m_shaderInfo = shaderManager.PreRegisterShader(shader.GetIdentifier());
+	m_primaryShader = &shader;
+	context.KeepResourceAliveUntilPresentationComplete(m_settingsBuffer);
+	m_settingsBuffer = nullptr;
+}
 void CMaterial::UpdatePrimaryShader()
 {
 	if(m_shader == nullptr && m_shaderInfo.expired()) {

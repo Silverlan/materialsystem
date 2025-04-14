@@ -56,6 +56,7 @@ class DLLCMATSYS CMaterial : public Material {
 	virtual std::shared_ptr<Material> Copy(bool copyData = true) const override;
 	void SetDescriptorSetGroup(prosper::Shader &shader, const std::shared_ptr<prosper::IDescriptorSetGroup> &descSetGroup);
 	prosper::Shader *GetPrimaryShader();
+	void SetPrimaryShader(prosper::Shader &shader);
 	std::shared_ptr<prosper::ISampler> GetSampler();
 	void SetSettingsBuffer(prosper::IBuffer &buffer);
 	prosper::IBuffer *GetSettingsBuffer();
