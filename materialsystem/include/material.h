@@ -229,7 +229,7 @@ class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
 	TTarget GetProperty(const std::string_view &key, const TTarget &defVal) const;
 	ds::ValueType GetPropertyValueType(const std::string_view &strPath) const;
 
-	std::pair<std::shared_ptr<ds::Block>, std::string_view> ResolvePropertyPath(const std::string_view &strPath) const;
+	std::pair<std::shared_ptr<ds::Block>, std::string> ResolvePropertyPath(const std::string_view &strPath) const;
 
 	virtual void SetLoaded(bool b);
 	CallbackHandle CallOnLoaded(const std::function<void(void)> &f) const;

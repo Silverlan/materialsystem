@@ -544,10 +544,10 @@ void Material::SetTextureProperty(const std::string_view &strPath, const std::st
 	block->AddValue("texture", std::string {key}, std::string {tex});
 }
 
-std::pair<std::shared_ptr<ds::Block>, std::string_view> Material::ResolvePropertyPath(const std::string_view &strPath) const
+std::pair<std::shared_ptr<ds::Block>, std::string> Material::ResolvePropertyPath(const std::string_view &strPath) const
 {
 	if(strPath.find('/') == std::string::npos)
-		return {m_data, strPath}; // Fast exit if no path segments
+		return {m_data, std::string {strPath}}; // Fast exit if no path segments
 	auto path = util::FilePath(strPath);
 	auto data = m_data;
 	std::shared_ptr<ds::Block> secondToLastBlock;
@@ -560,8 +560,8 @@ std::pair<std::shared_ptr<ds::Block>, std::string_view> Material::ResolvePropert
 		lastSegment = segment;
 	}
 	if(!secondToLastBlock)
-		return {m_data, strPath}; // No path segments
-	return {secondToLastBlock, lastSegment};
+		return {m_data, std::string {strPath}}; // No path segments
+	return {secondToLastBlock, std::string {lastSegment}};
 }
 
 void Material::SetColorFactor(const Vector4 &colorFactor) { SetProperty("color_factor", colorFactor); }
