@@ -10,6 +10,7 @@
 #include "texturemanager/load/handlers/format_handler_uimg.hpp"
 #include "texturemanager/load/handlers/format_handler_vtex.hpp"
 #include "texturemanager/load/handlers/format_handler_vtf.hpp"
+#include "texturemanager/load/handlers/format_handler_svg.hpp"
 #include "texturemanager/load/texture_processor.hpp"
 #include "texturemanager/texture.h"
 #include <sharedutils/util.h>
@@ -57,6 +58,8 @@ msys::TextureManager::TextureManager(prosper::IPrContext &context) : m_context {
 	RegisterFormatHandler("gif", uimgHandler);
 	RegisterFormatHandler("hdr", uimgHandler);
 	RegisterFormatHandler("pic", uimgHandler);
+
+	RegisterFormatHandler("svg", [](util::IAssetManager &assetManager) -> std::unique_ptr<msys::ITextureFormatHandler> { return std::make_unique<msys::TextureFormatHandlerSvg>(assetManager); });
 
 	static_cast<TextureLoader &>(GetLoader()).SetAllowMultiThreadedGpuResourceAllocation(context.SupportsMultiThreadedResourceAllocation());
 }
