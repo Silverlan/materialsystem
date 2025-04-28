@@ -17,6 +17,7 @@ struct DLLMATSYS TextureInfo {
 	unsigned int width;
 	unsigned int height;
 	std::shared_ptr<void> texture;
+	std::shared_ptr<void> userData;
 };
 
 namespace ds {

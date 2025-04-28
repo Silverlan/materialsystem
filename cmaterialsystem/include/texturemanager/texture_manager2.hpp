@@ -29,11 +29,15 @@ namespace util {
 namespace ufile {
 	struct IFile;
 };
+namespace udm {
+	struct Property;
+};
 enum class TextureMipmapMode : int32_t;
 namespace msys {
 	struct DLLCMATSYS TextureLoadInfo : public util::AssetLoadInfo {
 		TextureLoadInfo(util::AssetLoadFlags flags = util::AssetLoadFlags::None);
 		TextureMipmapMode mipmapMode;
+		std::shared_ptr<udm::Property> textureData;
 	};
 	class TextureLoader;
 	class ITextureFormatHandler;

@@ -382,11 +382,17 @@ void CMaterial::LoadTexture(TextureInfo &texInfo, bool precache)
 	auto mipmapMode = static_cast<TextureMipmapMode>(GetMipmapMode(*m_data));
 	auto &textureManager = GetTextureManager();
 	auto loadInfo = std::make_unique<msys::TextureLoadInfo>();
+	loadInfo->textureData = std::static_pointer_cast<udm::Property>(texInfo.userData);
 	loadInfo->mipmapMode = mipmapMode;
+	if(loadInfo->textureData) {
+		auto cache = true;
+		if((*loadInfo->textureData)["cache"](cache) && !cache)
+			loadInfo->flags = util::AssetLoadFlags::IgnoreCache | util::AssetLoadFlags ::DontCache;
+	}
 	if(!precache)
 		texInfo.texture = textureManager.LoadAsset(texInfo.name, std::move(loadInfo));
 	else
-		textureManager.PreloadAsset(texInfo.name);
+		textureManager.PreloadAsset(texInfo.name, std::move(loadInfo));
 }
 
 TextureInfo *CMaterial::GetTextureInfo(const std::string_view &key)

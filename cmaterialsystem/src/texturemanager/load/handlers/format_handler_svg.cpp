@@ -3,8 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "texturemanager/load/handlers/format_handler_svg.hpp"
-#include <lunasvg.h>
 #include <util_image.hpp>
+#include <udm.hpp>
 #include <prosper_util_image_buffer.hpp>
 #include <fsys/ifile.hpp>
 
@@ -18,18 +18,31 @@ bool msys::TextureFormatHandlerSvg::GetDataPtr(uint32_t layer, uint32_t mipmapId
 }
 bool msys::TextureFormatHandlerSvg::LoadData(InputTextureInfo &texInfo)
 {
-	std::vector<uint8_t> data;
-	data.resize(m_file->GetSize());
-	if(m_file->Read(data.data(), data.size()) != data.size())
-		return false;
-	auto document = lunasvg::Document::loadFromData(reinterpret_cast<char *>(data.data()), data.size());
-	if(document == nullptr)
-		return false;
-	auto bitmap = document->renderToBitmap();
-	if(bitmap.isNull())
-		return false;
-	bitmap.convertToRGBA();
-	auto imgBuf = uimg::ImageBuffer::Create(bitmap.data(), bitmap.width(), bitmap.height(), uimg::Format::RGBA8, false);
+	uimg::SvgImageInfo svgInfo {};
+	if(texInfo.textureData) {
+		udm::LinkedPropertyWrapper prop {*texInfo.textureData};
+		prop["width"] >> svgInfo.width;
+		prop["height"] >> svgInfo.height;
+
+		if(!(prop["styleSheet"] >> svgInfo.styleSheet)) {
+			std::stringstream ss;
+			auto styleSheet = prop["styleSheet"];
+			for(auto &pair : styleSheet.ElIt()) {
+				auto &className = pair.key;
+				ss << className << "{";
+				for(auto &kvPair : pair.property.ElIt()) {
+					auto &key = kvPair.key;
+					std::string value;
+					if(!(kvPair.property >> value))
+						continue;
+					ss << key << ":" << value << ";";
+				}
+				ss << "}";
+			}
+			svgInfo.styleSheet = ss.str();
+		}
+	}
+	auto imgBuf = uimg::load_svg(*m_file, svgInfo);
 	if(!imgBuf)
 		return false;
 	m_imgBuf = imgBuf;

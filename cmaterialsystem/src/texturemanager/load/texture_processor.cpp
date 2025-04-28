@@ -247,3 +247,4 @@ bool msys::TextureProcessor::GenerateMipmaps(prosper::IPrContext &context)
 	context.FlushSetupCommandBuffer();
 	return true;
 }
+void msys::TextureProcessor::SetTextureData(const std::shared_ptr<udm::Property> &textureData) { GetHandler().SetTextureData(textureData); }

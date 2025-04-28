@@ -68,6 +68,7 @@ namespace msys {
 
 		std::shared_ptr<ds::Settings> CreateDataSettings() const;
 		virtual std::shared_ptr<Material> CreateMaterial(const std::string &shader, const std::shared_ptr<ds::Block> &data);
+		virtual std::shared_ptr<Material> CreateMaterial(const udm::AssetData &data, std::string &outErr);
 		std::shared_ptr<Material> CreateMaterial(const std::string &identifier, const std::string &shader, const std::shared_ptr<ds::Block> &data);
 	  protected:
 		friend MaterialProcessor;

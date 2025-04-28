@@ -12,7 +12,6 @@ pr_add_dependency(${PROJ_NAME} lz4 TARGET)
 pr_add_dependency(${PROJ_NAME} zlib TARGET)
 pr_add_dependency(${PROJ_NAME} png_static TARGET)
 pr_add_dependency(${PROJ_NAME} VTFLib13 TARGET)
-pr_add_dependency(${PROJ_NAME} lunasvg TARGET)
 pr_add_external_dependency(${PROJ_NAME} gli HEADER_ONLY PUBLIC)
 
 set(BASE_DIR "${CMAKE_CURRENT_LIST_DIR}/")

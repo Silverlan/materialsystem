@@ -13,6 +13,9 @@
 
 #undef AddJob
 
+namespace udm {
+	struct Property;
+};
 namespace msys {
 	class DLLCMATSYS ITextureFormatHandler : public util::IAssetFormatHandler {
 	  public:
@@ -33,10 +36,12 @@ namespace msys {
 			std::array<prosper::ComponentSwizzle, 4> swizzle = {prosper::ComponentSwizzle::R, prosper::ComponentSwizzle::G, prosper::ComponentSwizzle::B, prosper::ComponentSwizzle::A};
 
 			std::optional<prosper::Format> conversionFormat {};
+			std::shared_ptr<udm::Property> textureData;
 		};
 
 		bool LoadData();
 		virtual bool GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize) = 0;
+		void SetTextureData(const std::shared_ptr<udm::Property> &textureData);
 		const InputTextureInfo &GetInputTextureInfo() const { return m_inputTextureInfo; }
 	  protected:
 		ITextureFormatHandler(util::IAssetManager &assetManager);

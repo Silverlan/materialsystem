@@ -70,6 +70,7 @@ void msys::TextureManager::InitializeProcessor(util::IAssetProcessor &processor)
 {
 	auto &txProcessor = static_cast<TextureProcessor &>(processor);
 	txProcessor.mipmapMode = static_cast<TextureLoadInfo &>(*txProcessor.loadInfo).mipmapMode;
+	txProcessor.SetTextureData(static_cast<TextureLoadInfo &>(*txProcessor.loadInfo).textureData);
 }
 
 util::AssetObject msys::TextureManager::InitializeAsset(const util::Asset &asset, const util::AssetLoadJob &job)

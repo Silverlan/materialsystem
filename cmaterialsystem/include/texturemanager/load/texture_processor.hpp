@@ -30,6 +30,9 @@ namespace util {
 	class AssetFormatLoader;
 	class IAssetFormatHandler;
 };
+namespace udm {
+	struct Property;
+};
 namespace msys {
 	class TextureLoader;
 	struct TextureAsset;
@@ -51,6 +54,7 @@ namespace msys {
 		bool CopyBuffersToImage(prosper::IPrContext &context);
 		bool ConvertImageFormat(prosper::IPrContext &context, prosper::Format targetFormat);
 		bool GenerateMipmaps(prosper::IPrContext &context);
+		void SetTextureData(const std::shared_ptr<udm::Property> &textureData);
 
 		bool PrepareImage(prosper::IPrContext &context);
 		bool FinalizeImage(prosper::IPrContext &context);

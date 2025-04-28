@@ -13,6 +13,8 @@ msys::ITextureFormatHandler::ITextureFormatHandler(util::IAssetManager &assetMan
 
 bool msys::ITextureFormatHandler::LoadData() { return LoadData(m_inputTextureInfo); }
 
+void msys::ITextureFormatHandler::SetTextureData(const std::shared_ptr<udm::Property> &textureData) { m_inputTextureInfo.textureData = textureData; }
+
 void msys::ITextureFormatHandler::Flip(const InputTextureInfo &texInfo)
 {
 	auto targetType = gli::texture::target_type::TARGET_2D;

@@ -62,15 +62,23 @@ bool msys::udm_to_data_block(udm::LinkedPropertyWrapper &udmDataRoot, ds::Block 
 				}
 			case udm::Type::Element:
 				{
-					auto childBlock = block.AddBlock(key);
-					for(auto udmChild : prop.ElIt())
-						udmToDataSys(std::string {udmChild.key}, udmChild.property, *childBlock, texture);
+					if(texture) {
+						auto texPath = prop["texture"]->ToValue<std::string>("");
+						auto dsVal = block.AddValue("texture", key, texPath);
+						auto *dsTex = dynamic_cast<ds::Texture *>(dsVal.get());
+						if(dsTex)
+							dsTex->GetValue().userData = prop->Copy(true);
+					}
+					else {
+						auto childBlock = block.AddBlock(key);
+						for(auto udmChild : prop.ElIt())
+							udmToDataSys(std::string {udmChild.key}, udmChild.property, *childBlock, texture);
+					}
 					break;
 				}
 			}
 			static_assert(umath::to_integral(udm::Type::Count) == 36u);
 		}
-		prop.GetValuePtr<float>();
 	};
 	auto udmTextures = udmDataRoot["textures"];
 	for(auto udmTex : udmTextures.ElIt())
@@ -262,6 +270,34 @@ util::AssetObject msys::MaterialManager::InitializeAsset(const util::Asset &asse
 }
 std::shared_ptr<ds::Settings> msys::MaterialManager::CreateDataSettings() const { return ds::create_data_settings({}); }
 std::shared_ptr<Material> msys::MaterialManager::CreateMaterialObject(const std::string &shader, const std::shared_ptr<ds::Block> &data) { return Material::Create(*this, shader, data); }
+std::shared_ptr<Material> msys::MaterialManager::CreateMaterial(const udm::AssetData &assetData, std::string &outErr)
+{
+	auto dataSettings = CreateDataSettings();
+	auto root = std::make_shared<ds::Block>(*dataSettings);
+	auto data = assetData.GetData();
+	auto it = data.begin_el();
+	if(it == data.end_el()) {
+		outErr = "Empty material data";
+		return nullptr;
+	}
+	auto &firstEl = *it;
+	auto shader = firstEl.key;
+	if(!udm_to_data_block(firstEl.property, *root)) {
+		outErr = "Failed to convert material data";
+		return nullptr;
+	}
+	std::string baseMaterial;
+	firstEl.property["base_material"](baseMaterial);
+	auto mat = CreateMaterialObject(std::string {shader}, root);
+	auto asset = std::make_shared<util::Asset>();
+	asset->assetObject = mat;
+	auto index = AddToIndex(asset);
+	mat->SetIndex(index);
+	mat->SetLoaded(true);
+	if(!baseMaterial.empty())
+		mat->SetBaseMaterial(baseMaterial);
+	return mat;
+}
 std::shared_ptr<Material> msys::MaterialManager::CreateMaterial(const std::string &shader, const std::shared_ptr<ds::Block> &data)
 {
 	auto mat = CreateMaterialObject(shader, data);
