@@ -15,9 +15,9 @@ void PNGInfo::Release()
 
 static void ReadPNGDataFromFile(png_structp png_ptr, png_bytep outBytes, png_size_t byteCountToRead)
 {
-	if(png_ptr->io_ptr == NULL)
+	if(png_get_io_ptr(png_ptr) == NULL)
 		return;
-	VFilePtr &fp = *static_cast<VFilePtr *>(png_ptr->io_ptr);
+	VFilePtr &fp = *static_cast<VFilePtr *>(png_get_io_ptr(png_ptr));
 	fp->Read(&outBytes[0], byteCountToRead);
 }
 
