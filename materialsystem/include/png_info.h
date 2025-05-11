@@ -8,7 +8,6 @@
 #include "matsysdefinitions.h"
 #include <cinttypes>
 #include <png.h>
-#include <pngstruct.h>
 #include <memory>
 
 struct DLLMATSYS PNGInfo {
