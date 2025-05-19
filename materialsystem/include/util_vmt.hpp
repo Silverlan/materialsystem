@@ -37,6 +37,8 @@ bool vmt_parameter_to_numeric_type(const VTFLib::Nodes::CVMTNode *node, T &outRe
 			outResult = static_cast<T>(v);
 			return true;
 		}
+	default:
+		break;
 	}
 	return false;
 }
@@ -114,6 +116,8 @@ void get_vmt_data(const std::shared_ptr<ds::Block> &root, ds::Settings &dataSett
 			root->AddData(key, std::make_shared<TData>(dataSettings, std::to_string(v)));
 			break;
 		}
+	default:
+		break;
 	}
 }
 

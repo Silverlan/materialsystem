@@ -100,6 +100,8 @@ namespace msys {
 		case udm::Type::Srgba:
 		case udm::Type::HdrColor:
 			return ds::ValueType::Vector4;
+		default:
+			break;
 		}
 		static_assert(umath::to_integral(ds::ValueType::Count) == 11, "Update this function when new types are added!");
 		return ds::ValueType::Invalid;

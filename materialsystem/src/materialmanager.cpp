@@ -79,7 +79,7 @@ Material *MaterialManager::CreateMaterial(const std::string *identifier, const s
 			return mat;
 	}
 	else
-		matId = "__anonymous" + (m_unnamedIdx++);
+		matId = "__anonymous" + std::to_string(m_unnamedIdx++);
 	if(root == nullptr) {
 		auto dataSettings = ds::create_data_settings(ENUM_VARS);
 		root = std::make_shared<ds::Block>(*dataSettings);
