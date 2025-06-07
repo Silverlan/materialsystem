@@ -344,9 +344,10 @@ bool Material::Save(std::string &outErr)
 	if(result == false)
 		absFileName = mdlName;
 	else {
-		auto path = util::Path::CreateFile(absFileName);
-		path.MakeRelative(util::get_program_path());
-		absFileName = path.GetString();
+		if(!filemanager::find_relative_path(absFileName, absFileName)) {
+			outErr = "Unable to determine relative path!";
+			return false;
+		}
 		absolutePath = true;
 	}
 	return Save(absFileName, outErr, absolutePath);
