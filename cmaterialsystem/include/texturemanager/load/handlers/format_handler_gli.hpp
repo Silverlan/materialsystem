@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: © 2021 Silverlan <opensource@pragma-engine.com>
+// SPDX-FileCopyrightText: (c) 2021 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
 #ifndef __MSYS_TEXTURE_FORMAT_HANDLER_GLI_HPP__

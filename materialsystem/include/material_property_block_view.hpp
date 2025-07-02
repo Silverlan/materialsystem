@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: © 2025 Silverlan <opensource@pragma-engine.com>
+// SPDX-FileCopyrightText: (c) 2025 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
 #ifndef __MSYS_MATERIAL_PROPERTY_BLOCK_VIEW_HPP__

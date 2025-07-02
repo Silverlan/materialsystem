@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: © 2020 Silverlan <opensource@pragma-engine.com>
+// SPDX-FileCopyrightText: (c) 2020 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
 #ifndef __C_SHADER_SSBUMPMAP_TO_NORMALMAP_HPP__

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: © 2020 Silverlan <opensource@pragma-engine.com>
+// SPDX-FileCopyrightText: (c) 2020 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
 #include "shaders/source2/c_shader_decompose_metalness_reflectance.hpp"
