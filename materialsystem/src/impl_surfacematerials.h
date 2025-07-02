@@ -1,6 +1,5 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+// SPDX-FileCopyrightText: © 2019 Silverlan <opensource@pragma-engine.com>
+// SPDX-License-Identifier: MIT
 
 // TODO: Match these with pr_source/src/mdl.cpp
 {"default", "concrete"}, {"default_silent", "concrete"}, {"floatingstandable", "concrete"}, {"item", "concrete"}, {"ladder", "metal"}, {"no_decal", "concrete"}, {"player", "concrete"}, {"player_control_clip", "concrete"}, {"baserock", "rock"}, {"boulder", "rock"}, {"brick", "rock"},

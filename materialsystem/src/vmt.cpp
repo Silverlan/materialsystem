@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: © 2020 Silverlan <opensource@pragma-engine.com>
+// SPDX-License-Identifier: MIT
+
 #include "materialmanager.h"
 #include "detail_mode.hpp"
 #include <sharedutils/util_string.h>
