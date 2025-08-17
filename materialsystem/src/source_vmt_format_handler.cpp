@@ -385,6 +385,7 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 		std::string surfaceMaterial = "concrete";
 		std::unordered_map<std::string, std::string> translateMaterial = {
 #include "impl_surfacematerials.h"
+
 		};
 		auto it = translateMaterial.find(*surfaceProp);
 		if(it != translateMaterial.end())

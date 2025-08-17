@@ -19,10 +19,7 @@ void msys::ShaderSSBumpMapToNormalMap::InitializeShaderResources()
 	AddDefaultVertexAttributes();
 	AddDescriptorSetGroup(DESCRIPTOR_SET_TEXTURE);
 }
-void msys::ShaderSSBumpMapToNormalMap::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx)
-{
-	ShaderGraphics::InitializeGfxPipeline(pipelineInfo, pipelineIdx);
-}
+void msys::ShaderSSBumpMapToNormalMap::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx) { ShaderGraphics::InitializeGfxPipeline(pipelineInfo, pipelineIdx); }
 
 void msys::ShaderSSBumpMapToNormalMap::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass, uint32_t pipelineIdx)
 {
