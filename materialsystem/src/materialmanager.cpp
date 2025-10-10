@@ -149,7 +149,7 @@ Material *MaterialManager::FindMaterial(const std::string &identifier, std::stri
 	auto it = m_nameToMaterialIndex.find(ToMaterialIdentifier(internalMatId));
 	if(it == m_nameToMaterialIndex.end())
 		return nullptr;
-	return m_materials.at(it->second).get();
+	return const_cast<Material*>(m_materials.at(it->second).get());
 }
 Material *MaterialManager::FindMaterial(const std::string &identifier) const
 {
@@ -393,7 +393,7 @@ void MaterialManager::SetErrorMaterial(Material *mat)
 		//m_error = mat->GetHandle();
 	}
 }
-Material *MaterialManager::GetErrorMaterial() const { return m_error.get(); }
+Material *MaterialManager::GetErrorMaterial() const { return const_cast<Material*>(m_error.get()); }
 const std::vector<MaterialHandle> &MaterialManager::GetMaterials() const { return m_materials; }
 uint32_t MaterialManager::Clear()
 {
@@ -435,5 +435,3 @@ uint32_t MaterialManager::ClearUnused()
 	}
 	return n;
 }
-
-DEFINE_BASE_HANDLE(DLLMATSYS, Material, Material);

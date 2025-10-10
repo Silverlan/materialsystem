@@ -9,7 +9,6 @@
 #include <optional>
 #include <sharedutils/util_path.hpp>
 #include <sharedutils/util_weak_handle.hpp>
-#include <sharedutils/def_handle.h>
 #include <sharedutils/functioncallback.h>
 #include <sharedutils/alpha_mode.hpp>
 #include <sharedutils/util_debug.h>

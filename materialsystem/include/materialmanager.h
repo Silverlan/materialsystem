@@ -6,6 +6,7 @@
 
 #include "matsysdefinitions.h"
 #include "material.h"
+#include "sharedutils/util_shared_handle.hpp"
 #include <optional>
 
 #pragma warning(push)
@@ -30,7 +31,7 @@ import source2;
 #endif
 
 class Material;
-DECLARE_BASE_HANDLE(DLLMATSYS, Material, Material);
+using MaterialHandle = util::TSharedHandle<Material>;
 
 class VFilePtrInternal;
 class DLLMATSYS MaterialManager {
