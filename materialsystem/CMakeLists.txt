@@ -20,9 +20,8 @@ pr_add_external_dependency(${PROJ_NAME} zlib LIBRARY PRIVATE)
 pr_add_external_dependency(${PROJ_NAME} libpng LIBRARY PRIVATE)
 pr_add_external_dependency(${PROJ_NAME} libpng_build HEADER_ONLY PRIVATE)
 
-set(BASE_DIR "${CMAKE_CURRENT_LIST_DIR}/")
-pr_add_headers(${PROJ_NAME} "materialsystem/include/" BASE_DIRS "${BASE_DIR}")
-pr_add_sources(${PROJ_NAME} "materialsystem/src/" BASE_DIRS "${BASE_DIR}")
+pr_init_module(${PROJ_NAME})
+pr_add_headers(${PROJ_NAME} "include/")
 
 pr_add_compile_definitions(${PROJ_NAME} -DMATSYS_DLL)
 
