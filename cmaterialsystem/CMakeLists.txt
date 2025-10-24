@@ -11,7 +11,7 @@ pr_add_dependency(${PROJ_NAME} materialsystem TARGET PUBLIC)
 pr_add_dependency(${PROJ_NAME} lz4 TARGET)
 pr_add_dependency(${PROJ_NAME} VTFLib13 TARGET)
 
-pr_add_third_party_dependency(${PROJ_NAME} gli PUBLIC)
+pr_add_dependency(${PROJ_NAME} gli TARGET)
 pr_add_external_dependency(${PROJ_NAME} zlib LIBRARY PRIVATE)
 pr_add_external_dependency(${PROJ_NAME} libpng LIBRARY PRIVATE)
 pr_add_external_dependency(${PROJ_NAME} libpng_build HEADER_ONLY PRIVATE)

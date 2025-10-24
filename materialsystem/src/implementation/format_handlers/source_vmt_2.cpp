@@ -4,8 +4,8 @@
 module;
 
 #ifndef DISABLE_VMT_SUPPORT
+#define ENABLE_VKV_PARSER
 #ifdef ENABLE_VKV_PARSER
-#include "util_vmt.hpp"
 #include <VKVParser/library.h>
 #endif
 #endif

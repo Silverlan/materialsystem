@@ -3,7 +3,7 @@
 
 module;
 
-#include <gli/gli.hpp>
+#include <functional>
 
 module pragma.cmaterialsystem;
 
