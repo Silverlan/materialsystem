@@ -3,6 +3,7 @@
 
 module;
 
+#include "matsysdefinitions.hpp"
 #include <string>
 
 export module pragma.materialsystem:vmat;
@@ -10,7 +11,7 @@ export module pragma.materialsystem:vmat;
 export import pragma.util;
 
 export namespace vmat {
-	util::Path get_vmat_texture_path(const std::string &strPath, std::string *optOutInputPath = nullptr)
+	DLLMATSYS util::Path get_vmat_texture_path(const std::string &strPath, std::string *optOutInputPath = nullptr)
 	{
 		::util::Path path {strPath};
 		path.RemoveFileExtension();

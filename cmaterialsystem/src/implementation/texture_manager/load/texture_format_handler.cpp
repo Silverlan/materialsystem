@@ -3,9 +3,12 @@
 
 module;
 
+#include <cstring>
+
 module pragma.cmaterialsystem;
 
 import :texture_manager.texture_format_handler;
+import gli;
 
 static bool g_shouldFlipVertically = false;
 void msys::ITextureFormatHandler::SetFlipTexturesVertically(bool flip) { g_shouldFlipVertically = flip; }

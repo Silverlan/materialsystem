@@ -4,11 +4,11 @@
 module;
 
 #include "cmatsysdefinitions.hpp"
-#include <gli/load.hpp>
 
 export module pragma.cmaterialsystem:texture_manager.format_handlers.gli;
 
 export import :texture_manager.texture_format_handler;
+export import gli;
 
 export namespace msys {
 	class DLLCMATSYS TextureFormatHandlerGli : public ITextureFormatHandler {

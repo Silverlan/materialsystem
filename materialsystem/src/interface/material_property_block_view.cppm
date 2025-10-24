@@ -56,8 +56,8 @@ export namespace msys {
 				return tmp;
 			}
 
-			friend bool operator==(const Iterator &a, const Iterator &b) { return a.it_ == b.it_; }
-			friend bool operator!=(const Iterator &a, const Iterator &b) { return a.it_ != b.it_; }
+			bool operator==(const Iterator &b) const { return it_ == b.it_; }
+			bool operator!=(const Iterator &b) const { return it_ != b.it_; }
 		  private:
 			map_iterator it_;
 		};

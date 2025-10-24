@@ -5,14 +5,14 @@ module;
 
 #include "cmatsysdefinitions.hpp"
 #include <string>
-#include <gli/gli.hpp>
-#include <gli/texture2d.hpp>
+#include <memory>
 #ifndef DISABLE_VTF_SUPPORT
 #include <VTFFile.h>
 #endif
 
 export module pragma.cmaterialsystem:texture_manager.texture_queue;
 
+export import gli;
 export import pragma.image;
 export import pragma.materialsystem;
 export import pragma.prosper;
