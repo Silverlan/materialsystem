@@ -3,6 +3,11 @@
 
 module;
 
+#include <vector>
+#include <functional>
+
+#include <memory>
+
 #include "sharedutils/magic_enum.hpp"
 #include <sstream>
 #include <cassert>

@@ -11,6 +11,7 @@ module;
 export module pragma.cmaterialsystem:format_handlers.source2_vmat;
 
 export import pragma.materialsystem;
+import source2;
 
 #ifndef DISABLE_VMAT_SUPPORT
 export namespace msys {

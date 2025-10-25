@@ -3,6 +3,10 @@
 
 module;
 
+#include <optional>
+#include <functional>
+#include <unordered_map>
+
 #include <array>
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>

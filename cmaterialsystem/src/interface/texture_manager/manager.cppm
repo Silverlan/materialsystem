@@ -14,6 +14,8 @@ module;
 #include <condition_variable>
 #include "cmatsysdefinitions.hpp"
 
+#include <functional>
+
 export module pragma.cmaterialsystem:texture_manager.manager;
 
 export import :texture_manager.texture;

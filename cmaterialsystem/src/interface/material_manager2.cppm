@@ -7,6 +7,9 @@ module;
 #include <memory>
 #include <string>
 
+#include <functional>
+#include <queue>
+
 export module pragma.cmaterialsystem:material_manager2;
 
 export import :material;

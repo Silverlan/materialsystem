@@ -8,6 +8,8 @@ module;
 #include <optional>
 #include <array>
 
+#include <memory>
+
 export module pragma.cmaterialsystem:texture_manager.format_handlers.vtf;
 
 export import :texture_manager.texture_format_handler;

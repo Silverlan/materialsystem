@@ -3,6 +3,8 @@
 
 module;
 
+#include <string>
+
 module pragma.materialsystem;
 
 import :enums;

@@ -314,121 +314,123 @@ export {
 
 	DLLMATSYS std::ostream &operator<<(std::ostream &out, const msys::Material &o);
 
-	template<typename T>
-		requires(msys::is_property_type<T>)
-	void msys::Material::SetProperty(const std::string_view &strPath, const T &value)
-	{
-		auto [block, key] = ResolvePropertyPath(strPath);
-		if(block == nullptr)
+	namespace msys {
+		template<typename T>
+			requires(is_property_type<T>)
+		void Material::SetProperty(const std::string_view &strPath, const T &value)
+		{
+			auto [block, key] = ResolvePropertyPath(strPath);
+			if(block == nullptr)
+				return;
+			SetProperty<T>(*block, key, value);
 			return;
-		SetProperty<T>(*block, key, value);
-		return;
-	}
-	template<typename TTarget>
-		requires(msys::is_property_type<TTarget>)
-	bool msys::Material::GetProperty(const std::string_view &strPath, TTarget *outValue) const
-	{
-		auto [block, key] = ResolvePropertyPath(strPath);
-		if(block == nullptr)
-			return false;
-		if(GetProperty<TTarget>(*block, key, outValue))
-			return true;
-		auto *baseMaterial = GetBaseMaterial();
-		if(baseMaterial)
-			return baseMaterial->GetProperty(strPath, outValue);
-		return false;
-	}
-	template<typename TTarget>
-		requires(msys::is_property_type<TTarget>)
-	TTarget msys::Material::GetProperty(const std::string_view &strPath, const TTarget &defVal) const
-	{
-		TTarget val;
-		if(GetProperty<TTarget>(strPath, &val))
-			return val;
-		return defVal;
-	}
-
-	template<typename T>
-		requires(msys::is_property_type<T>)
-	void msys::Material::SetProperty(ds::Block &block, const std::string_view &key, const T &value)
-	{
-		if constexpr(std::is_same_v<T, Quat>)
-			return SetProperty(block, key, EulerAngles {value});
-		else {
-			constexpr auto udmType = udm::type_to_enum<T>();
-			constexpr auto dsType = msys::to_ds_type(udmType);
-			constexpr auto normalizedUdmType = msys::to_udm_type(dsType);
-			udm::visit(normalizedUdmType, [&](auto tag) {
-				using TNorm = typename decltype(tag)::type;
-				if constexpr(msys::is_underlying_property_udm_type<TNorm> && udm::is_convertible<T, TNorm>()) {
-					auto normValue = udm::convert<T, TNorm>(value);
-					block.AddValue(std::string {key}, normValue);
-				}
-			});
 		}
-	}
-	template<typename TTarget>
-		requires(msys::is_property_type<TTarget>)
-	bool msys::Material::GetProperty(const ds::Block &block, const std::string_view &key, TTarget *outValue) const
-	{
-		auto &dsBase = block.GetValue(key);
-		if(dsBase == nullptr || !dsBase->IsValue())
+		template<typename TTarget>
+			requires(is_property_type<TTarget>)
+		bool Material::GetProperty(const std::string_view &strPath, TTarget *outValue) const
+		{
+			auto [block, key] = ResolvePropertyPath(strPath);
+			if(block == nullptr)
+				return false;
+			if(GetProperty<TTarget>(*block, key, outValue))
+				return true;
+			auto *baseMaterial = GetBaseMaterial();
+			if(baseMaterial)
+				return baseMaterial->GetProperty(strPath, outValue);
 			return false;
-		auto &dsVal = *static_cast<ds::Value *>(dsBase.get());
-		constexpr auto targetType = udm::type_to_enum<TTarget>();
-		auto sourceType = msys::to_udm_type(dsVal.GetType());
-		auto res = udm::visit(sourceType, [&](auto tag) -> bool {
-			using TSource = typename decltype(tag)::type;
-			if constexpr(msys::is_property_type<TSource>) {
-				if constexpr(udm::is_convertible<TSource, TTarget>()) {
-					if constexpr(std::is_same_v<TSource, udm::String>) {
-						assert(dsVal.GetType() == ds::ValueType::String || dsVal.GetType() == ds::ValueType::Texture);
-						*outValue = udm::convert<TSource, TTarget>(static_cast<ds::String *>(&dsVal)->GetValue());
+		}
+		template<typename TTarget>
+			requires(is_property_type<TTarget>)
+		TTarget Material::GetProperty(const std::string_view &strPath, const TTarget &defVal) const
+		{
+			TTarget val;
+			if(GetProperty<TTarget>(strPath, &val))
+				return val;
+			return defVal;
+		}
+
+		template<typename T>
+			requires(is_property_type<T>)
+		void Material::SetProperty(ds::Block &block, const std::string_view &key, const T &value)
+		{
+			if constexpr(std::is_same_v<T, Quat>)
+				return SetProperty(block, key, EulerAngles {value});
+			else {
+				constexpr auto udmType = udm::type_to_enum<T>();
+				constexpr auto dsType = to_ds_type(udmType);
+				constexpr auto normalizedUdmType = to_udm_type(dsType);
+				udm::visit(normalizedUdmType, [&](auto tag) {
+					using TNorm = typename decltype(tag)::type;
+					if constexpr(is_underlying_property_udm_type<TNorm> && udm::is_convertible<T, TNorm>()) {
+						auto normValue = udm::convert<T, TNorm>(value);
+						block.AddValue(std::string {key}, normValue);
 					}
-					else if constexpr(std::is_same_v<TSource, udm::Int32>) {
-						assert(dsVal.GetType() == ds::ValueType::Int);
-						*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Int *>(&dsVal)->GetValue());
-					}
-					else if constexpr(std::is_same_v<TSource, udm::Float>) {
-						assert(dsVal.GetType() == ds::ValueType::Float);
-						*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Float *>(&dsVal)->GetValue());
-					}
-					else if constexpr(std::is_same_v<TSource, udm::Boolean>) {
-						assert(dsVal.GetType() == ds::ValueType::Bool);
-						*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Bool *>(&dsVal)->GetValue());
-					}
-					else if constexpr(std::is_same_v<TSource, udm::Vector3>) {
-						auto dsValType = dsVal.GetType();
-						assert(dsValType == ds::ValueType::Color || dsValType == ds::ValueType::Vector3);
-						if(dsValType == ds::ValueType::Color)
-							*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Color *>(&dsVal)->GetValue().ToVector3());
-						else
-							*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Vector *>(&dsVal)->GetValue());
-					}
-					else if constexpr(std::is_same_v<TSource, udm::Vector2>) {
-						assert(dsVal.GetType() == ds::ValueType::Vector2);
-						*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Vector2 *>(&dsVal)->GetValue());
-					}
-					else if constexpr(std::is_same_v<TSource, udm::Vector4>) {
-						assert(dsVal.GetType() == ds::ValueType::Vector4);
-						*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Vector4 *>(&dsVal)->GetValue());
-					}
-					else
-						return false;
-					return true;
-				}
+				});
 			}
-			return false;
-		});
-		return res;
-	}
-	template<typename TTarget>
-		requires(msys::is_property_type<TTarget>)
-	TTarget msys::Material::GetProperty(const ds::Block &block, const std::string_view &key, const TTarget &defVal) const
-	{
-		TTarget val;
-		if(GetProperty<TTarget>(block, key, &val))
-			return val;
-		return defVal;
+		}
+		template<typename TTarget>
+			requires(is_property_type<TTarget>)
+		bool Material::GetProperty(const ds::Block &block, const std::string_view &key, TTarget *outValue) const
+		{
+			auto &dsBase = block.GetValue(key);
+			if(dsBase == nullptr || !dsBase->IsValue())
+				return false;
+			auto &dsVal = *static_cast<ds::Value *>(dsBase.get());
+			constexpr auto targetType = udm::type_to_enum<TTarget>();
+			auto sourceType = to_udm_type(dsVal.GetType());
+			auto res = udm::visit(sourceType, [&](auto tag) -> bool {
+				using TSource = typename decltype(tag)::type;
+				if constexpr(is_property_type<TSource>) {
+					if constexpr(udm::is_convertible<TSource, TTarget>()) {
+						if constexpr(std::is_same_v<TSource, udm::String>) {
+							assert(dsVal.GetType() == ds::ValueType::String || dsVal.GetType() == ds::ValueType::Texture);
+							*outValue = udm::convert<TSource, TTarget>(static_cast<ds::String *>(&dsVal)->GetValue());
+						}
+						else if constexpr(std::is_same_v<TSource, udm::Int32>) {
+							assert(dsVal.GetType() == ds::ValueType::Int);
+							*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Int *>(&dsVal)->GetValue());
+						}
+						else if constexpr(std::is_same_v<TSource, udm::Float>) {
+							assert(dsVal.GetType() == ds::ValueType::Float);
+							*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Float *>(&dsVal)->GetValue());
+						}
+						else if constexpr(std::is_same_v<TSource, udm::Boolean>) {
+							assert(dsVal.GetType() == ds::ValueType::Bool);
+							*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Bool *>(&dsVal)->GetValue());
+						}
+						else if constexpr(std::is_same_v<TSource, udm::Vector3>) {
+							auto dsValType = dsVal.GetType();
+							assert(dsValType == ds::ValueType::Color || dsValType == ds::ValueType::Vector3);
+							if(dsValType == ds::ValueType::Color)
+								*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Color *>(&dsVal)->GetValue().ToVector3());
+							else
+								*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Vector *>(&dsVal)->GetValue());
+						}
+						else if constexpr(std::is_same_v<TSource, udm::Vector2>) {
+							assert(dsVal.GetType() == ds::ValueType::Vector2);
+							*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Vector2 *>(&dsVal)->GetValue());
+						}
+						else if constexpr(std::is_same_v<TSource, udm::Vector4>) {
+							assert(dsVal.GetType() == ds::ValueType::Vector4);
+							*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Vector4 *>(&dsVal)->GetValue());
+						}
+						else
+							return false;
+						return true;
+					}
+				}
+				return false;
+			});
+			return res;
+		}
+		template<typename TTarget>
+			requires(is_property_type<TTarget>)
+		TTarget Material::GetProperty(const ds::Block &block, const std::string_view &key, const TTarget &defVal) const
+		{
+			TTarget val;
+			if(GetProperty<TTarget>(block, key, &val))
+				return val;
+			return defVal;
+		}
 	}
 }

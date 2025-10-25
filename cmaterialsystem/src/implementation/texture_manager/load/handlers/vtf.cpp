@@ -4,15 +4,16 @@
 module;
 
 #include <memory>
+#ifndef DISABLE_VTF_SUPPORT
+#include <VTFFile.h>
+#include <Proc.h>
+#endif
 
 module pragma.cmaterialsystem;
 
 import :texture_manager.format_handlers.vtf;
 
 #ifndef DISABLE_VTF_SUPPORT
-#include <VTFFile.h>
-#include <Proc.h>
-
 static msys::detail::VulkanImageData vtf_format_to_vulkan_format(VTFImageFormat format)
 {
 	msys::detail::VulkanImageData vkImgData {};

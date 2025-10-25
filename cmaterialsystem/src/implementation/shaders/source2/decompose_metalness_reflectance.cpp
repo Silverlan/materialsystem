@@ -3,6 +3,9 @@
 
 module;
 
+#include <cinttypes>
+#include <memory>
+
 #include <vector>
 #include <string>
 

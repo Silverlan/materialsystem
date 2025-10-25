@@ -3,6 +3,8 @@
 
 module;
 
+#include <memory>
+
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include <VTFLib.h>
@@ -172,7 +174,7 @@ bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Blo
 						vlUInt resSize;
 						auto *ptr = fVtf.GetResourceData(tagVTFResourceEntryType::VTF_RSRC_SHEET, resSize);
 						if(ptr) {
-							DataStream ds {ptr, resSize};
+							util::DataStream ds {ptr, resSize};
 							ds->SetOffset(0);
 							auto version = ds->Read<int32_t>();
 							assert(version == 0 || version == 1);

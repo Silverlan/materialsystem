@@ -8,6 +8,8 @@ module;
 #include <memory>
 #include <string_view>
 
+#include <optional>
+
 export module pragma.cmaterialsystem:material;
 
 export import :sprite_sheet_animation;

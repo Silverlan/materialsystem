@@ -3,6 +3,9 @@
 
 module;
 
+#include <cinttypes>
+#include <memory>
+
 #include <array>
 
 module pragma.cmaterialsystem;

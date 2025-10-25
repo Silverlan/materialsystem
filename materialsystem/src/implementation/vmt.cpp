@@ -3,6 +3,9 @@
 
 module;
 
+#include <vector>
+#include <unordered_map>
+
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #endif

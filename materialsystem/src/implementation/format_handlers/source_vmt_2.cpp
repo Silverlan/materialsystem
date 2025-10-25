@@ -3,6 +3,8 @@
 
 module;
 
+#include <optional>
+
 #ifndef DISABLE_VMT_SUPPORT
 #define ENABLE_VKV_PARSER
 #ifdef ENABLE_VKV_PARSER

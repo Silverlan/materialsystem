@@ -3,6 +3,8 @@
 
 module;
 
+#include <optional>
+
 #include <memory>
 #include <unordered_map>
 #include <utility>

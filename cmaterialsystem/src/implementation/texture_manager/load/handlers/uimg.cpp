@@ -3,6 +3,10 @@
 
 module;
 
+#include <cstring>
+
+#include <cinttypes>
+
 module pragma.cmaterialsystem;
 
 import :texture_manager.format_handlers.uimg;

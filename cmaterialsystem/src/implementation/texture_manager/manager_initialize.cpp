@@ -3,6 +3,11 @@
 
 module;
 
+#include <optional>
+
+#include <vector>
+#include <functional>
+
 #include <memory>
 #include <VTFFile.h>
 

@@ -10,6 +10,9 @@ module;
 #include <VMTFile.h>
 #endif
 
+#include <memory>
+#include <string>
+
 export module pragma.cmaterialsystem:material_manager;
 
 export import :material;

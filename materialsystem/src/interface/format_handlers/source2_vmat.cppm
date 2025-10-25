@@ -4,6 +4,7 @@
 module;
 
 #include <string>
+#include <cinttypes>
 
 #ifndef DISABLE_VMAT_SUPPORT
 #include "matsysdefinitions.hpp"

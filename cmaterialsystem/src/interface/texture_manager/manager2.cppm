@@ -6,6 +6,8 @@ module;
 #include "cmatsysdefinitions.hpp"
 #include <unordered_set>
 
+#include <memory>
+
 export module pragma.cmaterialsystem:texture_manager.manager2;
 
 export import :texture_manager.texture;

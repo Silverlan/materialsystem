@@ -3,6 +3,8 @@
 
 module;
 
+#include <mutex>
+
 #include <memory>
 #include <functional>
 #include <string>

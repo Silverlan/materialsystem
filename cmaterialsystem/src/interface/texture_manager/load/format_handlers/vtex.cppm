@@ -6,6 +6,10 @@ module;
 #include "cmatsysdefinitions.hpp"
 #include <vector>
 
+#include <cinttypes>
+
+#include <memory>
+
 export module pragma.cmaterialsystem:texture_manager.format_handlers.vtex;
 
 export import :texture_manager.texture_format_handler;

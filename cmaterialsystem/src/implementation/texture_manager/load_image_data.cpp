@@ -6,6 +6,7 @@ module;
 #include <functional>
 #include <string>
 #include <memory>
+#include <VTFFile.h>
 
 module pragma.cmaterialsystem;
 

@@ -5,6 +5,8 @@ module;
 
 #include "cmatsysdefinitions.hpp"
 
+#include <memory>
+
 export module pragma.cmaterialsystem:texture_manager.format_handlers.svg;
 
 export import :texture_manager.texture_format_handler;
