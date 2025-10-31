@@ -4,11 +4,6 @@
 module;
 
 #include "cmatsysdefinitions.hpp"
-#include <queue>
-#include <memory>
-#include <string>
-#include <optional>
-#include <functional>
 
 export module pragma.cmaterialsystem:texture_manager.texture;
 

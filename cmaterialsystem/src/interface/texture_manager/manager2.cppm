@@ -4,9 +4,7 @@
 module;
 
 #include "cmatsysdefinitions.hpp"
-#include <unordered_set>
 
-#include <memory>
 
 export module pragma.cmaterialsystem:texture_manager.manager2;
 

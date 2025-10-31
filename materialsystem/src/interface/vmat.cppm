@@ -4,7 +4,6 @@
 module;
 
 #include "matsysdefinitions.hpp"
-#include <string>
 
 export module pragma.materialsystem:vmat;
 

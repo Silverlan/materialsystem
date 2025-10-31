@@ -4,8 +4,6 @@
 module;
 
 #include "cmatsysdefinitions.hpp"
-#include <cstring>
-#include <cinttypes>
 
 export module pragma.cmaterialsystem:texture_manager.format_handlers.gli;
 

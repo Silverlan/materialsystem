@@ -4,8 +4,6 @@
 module;
 
 #include "cmatsysdefinitions.hpp"
-#include <string>
-#include <memory>
 
 export module pragma.cmaterialsystem:shaders.source2.generate_tangent_space_normal_map;
 

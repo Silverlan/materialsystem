@@ -5,10 +5,7 @@ module;
 
 #include "cmatsysdefinitions.hpp"
 #include <VTFFile.h>
-#include <optional>
-#include <array>
 
-#include <memory>
 
 export module pragma.cmaterialsystem:texture_manager.format_handlers.vtf;
 

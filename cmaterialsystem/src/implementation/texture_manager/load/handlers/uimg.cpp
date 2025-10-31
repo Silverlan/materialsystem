@@ -3,9 +3,7 @@
 
 module;
 
-#include <cstring>
 
-#include <cinttypes>
 
 module pragma.cmaterialsystem;
 

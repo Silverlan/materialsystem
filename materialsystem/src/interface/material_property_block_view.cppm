@@ -4,12 +4,6 @@
 module;
 
 #include "matsysdefinitions.hpp"
-#include <unordered_map>
-#include <unordered_set>
-#include <memory>
-#include <string>
-#include <string_view>
-#include <vector>
 
 export module pragma.materialsystem:material_property_block_view;
 

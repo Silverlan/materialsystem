@@ -4,10 +4,6 @@
 module;
 
 #include "matsysdefinitions.hpp"
-#include <vector>
-#include <functional>
-#include <memory>
-#include <string>
 
 export module pragma.materialsystem:util;
 

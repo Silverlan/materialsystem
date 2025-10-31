@@ -3,7 +3,6 @@
 
 module;
 
-#include <memory>
 #ifndef DISABLE_VTF_SUPPORT
 #include <VTFFile.h>
 #include <Proc.h>

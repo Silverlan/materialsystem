@@ -4,11 +4,7 @@
 module;
 
 #include "cmatsysdefinitions.hpp"
-#include <memory>
-#include <string>
 
-#include <functional>
-#include <queue>
 
 export module pragma.cmaterialsystem:material_manager2;
 

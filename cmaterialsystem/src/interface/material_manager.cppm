@@ -4,14 +4,10 @@
 module;
 
 #include "cmatsysdefinitions.hpp"
-#include <functional>
-#include <queue>
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #endif
 
-#include <memory>
-#include <string>
 
 export module pragma.cmaterialsystem:material_manager;
 

@@ -3,11 +3,6 @@
 
 module;
 
-#include <memory>
-#include <string>
-#include <functional>
-#include <unordered_set>
-#include <queue>
 
 module pragma.cmaterialsystem;
 

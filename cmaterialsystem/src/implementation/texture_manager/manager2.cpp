@@ -3,10 +3,6 @@
 
 module;
 
-#include <memory>
-#include <chrono>
-#include <functional>
-#include <iostream>
 
 module pragma.cmaterialsystem;
 

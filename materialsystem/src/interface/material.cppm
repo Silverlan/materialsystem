@@ -5,12 +5,7 @@ module;
 
 #include "matsysdefinitions.hpp"
 #include <cassert>
-#include <optional>
-#include <string>
-#include <functional>
-#include <memory>
 
-#include <tuple>
 
 export module pragma.materialsystem:material;
 

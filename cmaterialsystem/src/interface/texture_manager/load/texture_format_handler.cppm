@@ -4,10 +4,6 @@
 module;
 
 #include "cmatsysdefinitions.hpp"
-#include <cinttypes>
-#include <array>
-#include <optional>
-#include <memory>
 
 export module pragma.cmaterialsystem:texture_manager.texture_format_handler;
 

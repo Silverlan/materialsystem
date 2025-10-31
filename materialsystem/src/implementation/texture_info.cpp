@@ -3,10 +3,7 @@
 
 module;
 
-#include <cinttypes>
 
-#include <cstring>
-#include <string>
 
 module pragma.materialsystem;
 
@@ -35,12 +32,12 @@ ds::Texture::Texture(ds::Settings &dataSettings, const std::string &value, bool 
 	uint32_t width;
 	uint32_t height;
 	if(read_image_size(str, width, height) == true) {
-		m_value.texture = NULL;
+		m_value.texture = nullptr;
 		m_value.width = width;
 		m_value.height = height;
 	}
 	else {
-		m_value.texture = NULL;
+		m_value.texture = nullptr;
 		m_value.width = 0;
 		m_value.height = 0;
 	}

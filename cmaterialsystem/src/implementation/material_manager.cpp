@@ -7,11 +7,6 @@ module;
 #include <VMTFile.h>
 #include <VTFFile.h>
 #endif
-#include <memory>
-#include <string>
-#include <functional>
-#include <iostream>
-#include <unordered_set>
 #include <VTFFormat.h>
 
 module pragma.cmaterialsystem;

@@ -3,18 +3,8 @@
 
 module;
 
-#include <unordered_map>
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <thread>
-#include <mutex>
-#include <queue>
-#include <atomic>
-#include <condition_variable>
 #include "cmatsysdefinitions.hpp"
 
-#include <functional>
 
 export module pragma.cmaterialsystem:texture_manager.manager;
 

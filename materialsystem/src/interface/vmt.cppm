@@ -8,11 +8,6 @@ module;
 #ifdef ENABLE_VKV_PARSER
 #include <VKVParser/library.h>
 #endif
-#include <string>
-#include <optional>
-#include <memory>
-#include <functional>
-#include <array>
 
 export module pragma.materialsystem:vmt;
 

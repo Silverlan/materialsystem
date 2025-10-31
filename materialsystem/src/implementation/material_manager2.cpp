@@ -3,9 +3,6 @@
 
 module;
 
-#include <string>
-#include <memory>
-#include <functional>
 
 module pragma.materialsystem;
 

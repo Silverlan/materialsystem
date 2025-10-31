@@ -3,14 +3,11 @@
 
 module;
 
-#include <memory>
 
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include <VTFLib.h>
 #endif
-#include <string>
-#include <iostream>
 
 module pragma.cmaterialsystem;
 

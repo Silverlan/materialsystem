@@ -4,8 +4,6 @@
 module;
 
 #include "matsysdefinitions.hpp"
-#include <string>
-#include <memory>
 
 export module pragma.materialsystem:texture_info;
 

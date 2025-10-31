@@ -3,7 +3,6 @@
 
 module;
 
-#include <memory>
 #include <png.h>
 
 module pragma.materialsystem;

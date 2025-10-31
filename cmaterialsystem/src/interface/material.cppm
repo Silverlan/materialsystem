@@ -4,11 +4,7 @@
 module;
 
 #include "cmatsysdefinitions.hpp"
-#include <functional>
-#include <memory>
-#include <string_view>
 
-#include <optional>
 
 export module pragma.cmaterialsystem:material;
 

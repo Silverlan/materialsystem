@@ -3,12 +3,7 @@
 
 module;
 
-#include <vector>
-#include <functional>
 
-#include <algorithm>
-#include <memory>
-#include <string>
 
 module pragma.cmaterialsystem;
 

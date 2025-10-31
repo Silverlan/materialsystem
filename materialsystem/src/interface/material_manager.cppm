@@ -4,11 +4,6 @@
 module;
 
 #include "matsysdefinitions.hpp"
-#include <optional>
-#include <string>
-#include <memory>
-#include <functional>
-#include <vector>
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #endif

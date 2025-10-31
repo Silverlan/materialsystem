@@ -4,8 +4,6 @@
 module;
 
 #include "cmatsysdefinitions.hpp"
-#include <string>
-#include <memory>
 
 export module pragma.cmaterialsystem:shaders.source2.decompose_pbr;
 

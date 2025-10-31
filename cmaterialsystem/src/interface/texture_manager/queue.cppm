@@ -4,8 +4,6 @@
 module;
 
 #include "cmatsysdefinitions.hpp"
-#include <string>
-#include <memory>
 #ifndef DISABLE_VTF_SUPPORT
 #include <VTFFile.h>
 #endif

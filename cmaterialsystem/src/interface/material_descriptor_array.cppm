@@ -4,10 +4,6 @@
 module;
 
 #include "cmatsysdefinitions.hpp"
-#include <array>
-#include <optional>
-#include <unordered_map>
-#include <memory>
 
 export module pragma.cmaterialsystem:material_descriptor_array_manager;
 

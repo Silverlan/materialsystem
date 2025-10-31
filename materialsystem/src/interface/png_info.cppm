@@ -4,9 +4,7 @@
 module;
 
 #include "matsysdefinitions.hpp"
-#include <cinttypes>
 #include <png.h>
-#include <memory>
 
 export module pragma.materialsystem:png_info;
 

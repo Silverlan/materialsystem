@@ -3,15 +3,10 @@
 
 module;
 
-#include <vector>
-#include <unordered_map>
 
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #endif
-#include <memory>
-#include <string>
-#include <cmath>
 
 module pragma.materialsystem;
 

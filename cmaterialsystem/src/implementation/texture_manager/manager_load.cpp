@@ -3,13 +3,8 @@
 
 module;
 
-#include <condition_variable>
 
-#include <thread>
 
-#include <memory>
-#include <functional>
-#include <string>
 
 module pragma.cmaterialsystem;
 
@@ -57,9 +52,9 @@ bool TextureManager::Load(prosper::IPrContext &context, const std::string &cache
 		text = *outTexture;
 	if(umath::is_flag_set(loadFlags, msys::TextureLoadFlags::Reload) == false) {
 		text = cachedTexture;
-		if(text != NULL) {
+		if(text != nullptr) {
 			auto bReloadInternalTex = false;
-			if(outTexture != NULL) {
+			if(outTexture != nullptr) {
 				if(static_cast<msys::Texture *>(text.get())->HasValidVkTexture() == false && bLoading == false)
 					bReloadInternalTex = true;
 				else

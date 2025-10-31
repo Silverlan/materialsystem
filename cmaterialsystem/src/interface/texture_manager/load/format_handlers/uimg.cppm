@@ -5,9 +5,7 @@ module;
 
 #include "cmatsysdefinitions.hpp"
 
-#include <cinttypes>
 
-#include <memory>
 
 export module pragma.cmaterialsystem:texture_manager.format_handlers.uimg;
 

@@ -4,9 +4,6 @@
 module;
 
 #include "matsysdefinitions.hpp"
-#include <string>
-#include <cinttypes>
-#include <limits>
 
 export module pragma.materialsystem:enums;
 

@@ -4,8 +4,6 @@
 module;
 
 #include "cmatsysdefinitions.hpp"
-#include <vector>
-#include <memory>
 
 export module pragma.cmaterialsystem:sprite_sheet_animation;
 

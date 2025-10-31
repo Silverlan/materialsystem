@@ -3,10 +3,6 @@
 
 module;
 
-#include <cstring>
-#include <memory>
-#include <string>
-#include <functional>
 
 module pragma.cmaterialsystem;
 
