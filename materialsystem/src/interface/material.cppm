@@ -154,7 +154,7 @@ export {
 			void UpdateTextures(bool forceUpdate = false);
 			const std::string &GetShaderIdentifier() const;
 			void SetName(const std::string &name);
-			const std::string &GetName();
+			const std::string &GetName() const;
 			bool IsTranslucent() const;
 			bool IsError() const;
 			void SetErrorFlag(bool set);

@@ -576,7 +576,7 @@ std::optional<Vector4> msys::Material::GetBloomColorFactor() const
 }
 
 void msys::Material::SetName(const std::string &name) { m_name = name; }
-const std::string &msys::Material::GetName() { return m_name; }
+const std::string &msys::Material::GetName() const { return m_name; }
 
 bool msys::Material::IsError() const { return umath::is_flag_set(m_stateFlags, StateFlags::Error); }
 void msys::Material::SetErrorFlag(bool set) { umath::set_flag(m_stateFlags, StateFlags::Error, set); }
