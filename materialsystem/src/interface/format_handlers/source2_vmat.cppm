@@ -3,7 +3,6 @@
 
 module;
 
-
 #ifndef DISABLE_VMAT_SUPPORT
 #include "definitions.hpp"
 #endif

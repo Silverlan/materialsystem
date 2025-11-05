@@ -3,8 +3,6 @@
 
 module;
 
-
-
 module pragma.cmaterialsystem;
 
 import :material_descriptor_array_manager;

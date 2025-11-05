@@ -11,7 +11,7 @@ export import pragma.filesystem;
 
 export {
 	struct DLLCMATSYS SpriteSheetAnimation {
-	#if 0
+#if 0
 		static constexpr auto SAMPLE_COUNT = 1'024;
 		struct DLLCMATSYS SampleData
 		{
@@ -20,7 +20,7 @@ export {
 			float interpFactor = 0.f;
 		};
 		std::array<SampleData,SAMPLE_COUNT> GenerateSamples() const;
-	#endif
+#endif
 		struct DLLCMATSYS Sequence {
 			struct DLLCMATSYS Frame {
 				Vector2 uvStart {};
@@ -41,7 +41,7 @@ export {
 
 			uint32_t GetFrameOffset() const;
 			float GetDuration() const;
-		private:
+		  private:
 			friend SpriteSheetAnimation;
 			void SetFrameOffset(uint32_t offset);
 			uint32_t m_frameOffset = 0;

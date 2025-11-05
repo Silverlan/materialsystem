@@ -3,8 +3,6 @@
 
 module;
 
-
-
 module pragma.cmaterialsystem;
 
 import :shaders.source2.decompose_metalness_reflectance;

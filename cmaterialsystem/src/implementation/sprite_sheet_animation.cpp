@@ -3,8 +3,6 @@
 
 module;
 
-
-
 module pragma.cmaterialsystem;
 
 import :sprite_sheet_animation;

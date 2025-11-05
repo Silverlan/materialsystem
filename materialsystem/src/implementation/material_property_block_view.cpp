@@ -3,9 +3,6 @@
 
 module;
 
-
-
-
 module pragma.materialsystem;
 
 import :material_property_block_view;

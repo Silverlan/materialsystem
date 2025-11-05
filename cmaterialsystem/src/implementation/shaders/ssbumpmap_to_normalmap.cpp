@@ -3,8 +3,6 @@
 
 module;
 
-
-
 module pragma.cmaterialsystem;
 
 import :shaders.ssbumpmap_to_normalmap;

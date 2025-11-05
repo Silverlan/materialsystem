@@ -3,7 +3,6 @@
 
 module;
 
-
 module pragma.materialsystem;
 
 import :format_handlers;
@@ -256,7 +255,7 @@ void msys::MaterialManager::SetErrorMaterial(Material *mat)
 		m_error = mat->GetHandle();
 	}
 }
-msys::Material *msys::MaterialManager::GetErrorMaterial() const { return const_cast<Material*>(m_error.get()); }
+msys::Material *msys::MaterialManager::GetErrorMaterial() const { return const_cast<Material *>(m_error.get()); }
 void msys::MaterialManager::InitializeProcessor(util::IAssetProcessor &processor) {}
 util::AssetObject msys::MaterialManager::InitializeAsset(const util::Asset &asset, const util::AssetLoadJob &job)
 {

@@ -6,4 +6,3 @@ module;
 export module pragma.materialsystem:format_handlers;
 export import :format_handlers.source_vmt;
 export import :format_handlers.source2_vmat;
-

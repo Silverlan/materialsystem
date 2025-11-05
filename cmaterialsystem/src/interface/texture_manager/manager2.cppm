@@ -5,7 +5,6 @@ module;
 
 #include "definitions.hpp"
 
-
 export module pragma.cmaterialsystem:texture_manager.manager2;
 
 export import :texture_manager.texture;

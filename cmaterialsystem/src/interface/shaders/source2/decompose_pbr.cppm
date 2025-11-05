@@ -27,11 +27,11 @@ export {
 
 				enum class Flags : uint32_t { None = 0, TreatAlphaAsTransparency = 1, SpecularWorkflow = TreatAlphaAsTransparency << 1u, TreatAlphaAsSSS = SpecularWorkflow << 1u };
 
-	#pragma pack(push, 1)
+#pragma pack(push, 1)
 				struct PushConstants {
 					Flags flags = Flags::None;
 				};
-	#pragma pack(pop)
+#pragma pack(pop)
 
 				struct DLLCMATSYS DecomposedImageSet {
 					std::shared_ptr<prosper::IImage> rmaMap = nullptr;

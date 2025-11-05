@@ -10,7 +10,4 @@
   {"ice", "ice"}, {"snow", "snow"}, {"alienflesh", "flesh"}, {"antlion", "concrete"}, {"armorflesh", "flesh"}, {"bloodyflesh", "flesh"}, {"flesh", "flesh"}, {"foliage", "plant"}, {"watermelon", "flesh"}, {"zombieflesh", "flesh"}, {"asphalt", "concrete"}, {"glass", "glass"},
   {"glassbottle", "glass"}, {"combine_glass", "glass"}, {"tile", "concrete"}, {"paper", "cloth"}, {"papercup", "cloth"}, {"cardboard", "cloth"}, {"plaster", "plastic"}, {"plastic_barrel", "plastic"}, {"plastic_barrel_buoyant", "plastic"}, {"plastic_box", "plastic"}, {"plastic", "plastic"},
   {"rubber", "plastic"}, {"rubbertire", "plastic"}, {"slidingrubbertire", "plastic"}, {"slidingrubbertire_front", "plastic"}, {"slidingrubbertire_rear", "plastic"}, {"jeeptire", "plastic"}, {"brakingrubbertire", "plastic"}, {"carpet", "carpet"}, {"ceiling_tile", "concrete"},
-  {"computer", "plastic"},
-{
-	"pottery", "plant"
-}
+  {"computer", "plastic"}, {"pottery", "plant"}

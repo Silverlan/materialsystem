@@ -3,8 +3,6 @@
 
 module;
 
-
-
 module pragma.materialsystem;
 
 import :texture_info;
@@ -64,7 +62,7 @@ bool ds::Texture::GetBool() const { return true; }
 ::Vector3 ds::Texture::GetVector() const { return {}; }
 ::Vector2 ds::Texture::GetVector2() const { return {}; }
 ::Vector4 ds::Texture::GetVector4() const { return {}; }
-auto *_ = new ds::__reg_datatype("texture", [](ds::Settings &dataSettings, const std::string &value) -> ds::Value * { return new ds::Texture(dataSettings, value); });                                                                                                  \
+auto *_ = new ds::__reg_datatype("texture", [](ds::Settings &dataSettings, const std::string &value) -> ds::Value * { return new ds::Texture(dataSettings, value); });
 std::string ds::Texture::GetTypeString() const { return "texture"; }
 
 /*ds::Cubemap::Cubemap(ds::Settings &dataSettings,const std::string &value)

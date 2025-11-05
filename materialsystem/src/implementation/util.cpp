@@ -3,8 +3,6 @@
 
 module;
 
-
-
 module pragma.materialsystem;
 
 import :util;
@@ -48,4 +46,7 @@ std::string translate_image_path(const std::string &imgFile, msys::TextureType &
 		*optOutFound = bFoundType;
 	return path;
 }
-std::string translate_image_path(const std::string &imgFile, msys::TextureType &type, const std::function<VFilePtr(const std::string &)> &fileHandler, bool *optOutFound) { return translate_image_path(imgFile, type, MaterialManager::GetRootMaterialLocation() + '/', fileHandler, optOutFound); }
+std::string translate_image_path(const std::string &imgFile, msys::TextureType &type, const std::function<VFilePtr(const std::string &)> &fileHandler, bool *optOutFound)
+{
+	return translate_image_path(imgFile, type, MaterialManager::GetRootMaterialLocation() + '/', fileHandler, optOutFound);
+}

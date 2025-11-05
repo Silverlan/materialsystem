@@ -10,8 +10,8 @@ export module pragma.materialsystem:texture_info;
 export import pragma.datasystem;
 
 export {
-	#pragma warning(push)
-	#pragma warning(disable : 4251)
+#pragma warning(push)
+#pragma warning(disable : 4251)
 	struct DLLMATSYS TextureInfo {
 		TextureInfo();
 		TextureInfo(const TextureInfo &other);
@@ -24,7 +24,7 @@ export {
 
 	namespace ds {
 		class DLLMATSYS Texture : public Value {
-		public:
+		  public:
 			Texture(ds::Settings &dataSettings, const std::string &value);
 			Texture(ds::Settings &dataSettings, const TextureInfo &value);
 			virtual Texture *Copy() override;
@@ -41,9 +41,9 @@ export {
 			virtual ::Vector3 GetVector() const override;
 			virtual ::Vector2 GetVector2() const override;
 			virtual ::Vector4 GetVector4() const override;
-		protected:
+		  protected:
 			Texture(ds::Settings &dataSettings, const std::string &value, bool bCubemap);
-		private:
+		  private:
 			TextureInfo m_value;
 		};
 
@@ -56,5 +56,5 @@ export {
 			virtual std::string GetTypeString() const override;
 		};*/
 	};
-	#pragma warning(pop)
+#pragma warning(pop)
 }

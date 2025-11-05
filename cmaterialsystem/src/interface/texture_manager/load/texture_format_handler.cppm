@@ -15,7 +15,7 @@ export import pragma.udm;
 export {
 	namespace msys {
 		class DLLCMATSYS ITextureFormatHandler : public util::IAssetFormatHandler {
-		public:
+		  public:
 			static void SetFlipTexturesVertically(bool flip);
 			static bool ShouldFlipTextureVertically();
 			struct InputTextureInfo {
@@ -40,7 +40,7 @@ export {
 			virtual bool GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize) = 0;
 			void SetTextureData(const std::shared_ptr<udm::Property> &textureData);
 			const InputTextureInfo &GetInputTextureInfo() const { return m_inputTextureInfo; }
-		protected:
+		  protected:
 			ITextureFormatHandler(util::IAssetManager &assetManager);
 			void Flip(const InputTextureInfo &texInfo);
 			virtual bool LoadData(InputTextureInfo &texInfo) = 0;

@@ -3,8 +3,6 @@
 
 module;
 
-
-
 module pragma.cmaterialsystem;
 
 import :texture_manager.manager;

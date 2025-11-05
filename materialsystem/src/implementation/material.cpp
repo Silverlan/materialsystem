@@ -51,10 +51,7 @@ std::shared_ptr<msys::Material> msys::Material::Create(msys::MaterialManager &ma
 	mat->Initialize(shader, data);
 	return mat;
 }
-msys::Material::Material(msys::MaterialManager &manager)
-	: m_data(nullptr), m_shader(nullptr), m_manager(manager),
-	m_handle {util::to_shared_handle(shared_from_this())}
-{}
+msys::Material::Material(msys::MaterialManager &manager) : m_data(nullptr), m_shader(nullptr), m_manager(manager), m_handle {util::to_shared_handle(shared_from_this())} {}
 
 msys::Material::Material(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data) : Material(manager) {}
 

@@ -3,7 +3,6 @@
 
 module;
 
-
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include <VTFLib.h>
@@ -143,7 +142,7 @@ msys::Material *MaterialManager::FindMaterial(const std::string &identifier, std
 	auto it = m_nameToMaterialIndex.find(ToMaterialIdentifier(internalMatId));
 	if(it == m_nameToMaterialIndex.end())
 		return nullptr;
-	return const_cast<msys::Material*>(m_materials.at(it->second).get());
+	return const_cast<msys::Material *>(m_materials.at(it->second).get());
 }
 msys::Material *MaterialManager::FindMaterial(const std::string &identifier) const
 {
@@ -390,28 +389,28 @@ void MaterialManager::SetErrorMaterial(msys::Material *mat)
 const std::vector<MaterialManager::ImageFormat> &MaterialManager::get_supported_image_formats()
 {
 	static std::vector<ImageFormat> s_supportedImageFormats = {
-		// Order of preference
-		{msys::TextureType::KTX, "ktx"},
-		{msys::TextureType::DDS, "dds"},
-		{msys::TextureType::PNG, "png"},
-		{msys::TextureType::TGA, "tga"},
-		{msys::TextureType::JPG, "jpg"},
-		{msys::TextureType::BMP, "bmp"},
-		{msys::TextureType::PSD, "psd"},
-		{msys::TextureType::GIF, "gif"},
-		{msys::TextureType::HDR, "hdr"},
-		{msys::TextureType::PIC, "pic"},
-  #ifndef DISABLE_VTF_SUPPORT
-		{msys::TextureType::VTF, "vtf"},
-  #endif
-  #ifndef DISABLE_VTEX_SUPPORT
-		{msys::TextureType::VTex, "vtex_c"},
-  #endif
-	  };
+	  // Order of preference
+	  {msys::TextureType::KTX, "ktx"},
+	  {msys::TextureType::DDS, "dds"},
+	  {msys::TextureType::PNG, "png"},
+	  {msys::TextureType::TGA, "tga"},
+	  {msys::TextureType::JPG, "jpg"},
+	  {msys::TextureType::BMP, "bmp"},
+	  {msys::TextureType::PSD, "psd"},
+	  {msys::TextureType::GIF, "gif"},
+	  {msys::TextureType::HDR, "hdr"},
+	  {msys::TextureType::PIC, "pic"},
+#ifndef DISABLE_VTF_SUPPORT
+	  {msys::TextureType::VTF, "vtf"},
+#endif
+#ifndef DISABLE_VTEX_SUPPORT
+	  {msys::TextureType::VTex, "vtex_c"},
+#endif
+	};
 	static_assert(umath::to_integral(msys::TextureType::Count) == 13, "Update this implementation when new texture types have been added!");
 	return s_supportedImageFormats;
 }
-msys::Material *MaterialManager::GetErrorMaterial() const { return const_cast<msys::Material*>(m_error.get()); }
+msys::Material *MaterialManager::GetErrorMaterial() const { return const_cast<msys::Material *>(m_error.get()); }
 const std::vector<msys::MaterialHandle> &MaterialManager::GetMaterials() const { return m_materials; }
 uint32_t MaterialManager::Clear()
 {

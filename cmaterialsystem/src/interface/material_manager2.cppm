@@ -5,7 +5,6 @@ module;
 
 #include "definitions.hpp"
 
-
 export module pragma.cmaterialsystem:material_manager2;
 
 export import :material;

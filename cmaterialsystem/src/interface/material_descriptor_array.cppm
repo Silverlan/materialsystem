@@ -12,8 +12,8 @@ export import pragma.prosper;
 
 export {
 	class DLLCMATSYS MaterialDescriptorArrayManager : public prosper::DescriptorArrayManager {
-	public:
-	#pragma pack(push, 1)
+	  public:
+#pragma pack(push, 1)
 		struct MaterialRenderInfoBufferData {
 			// Indices into global texture array
 			ArrayIndex albedoTextureArrayIndex = INVALID_ARRAY_INDEX;
@@ -22,14 +22,14 @@ export {
 
 			std::array<ArrayIndex, 2> padding;
 		};
-	#pragma pack(pop)
+#pragma pack(pop)
 
 		using DescriptorArrayManager::DescriptorArrayManager;
 		virtual ~MaterialDescriptorArrayManager() override;
 		std::optional<prosper::IBuffer::SubBufferIndex> RegisterMaterial(const msys::Material &mat, bool reInitialize = false);
 		const std::shared_ptr<prosper::IUniformResizableBuffer> &GetMaterialInfoBuffer() const;
 		friend DescriptorArrayManager;
-	private:
+	  private:
 		struct TextureData {
 			DescriptorArrayManager::ArrayIndex arrayIndex;
 			CallbackHandle onRemoveCallback;

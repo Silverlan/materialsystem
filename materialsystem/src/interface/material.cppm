@@ -6,7 +6,6 @@ module;
 #include "definitions.hpp"
 #include <cassert>
 
-
 export module pragma.materialsystem:material;
 
 export import :texture_info;
@@ -35,25 +34,25 @@ export {
 		constexpr udm::Type to_udm_type(ds::ValueType type)
 		{
 			switch(type) {
-				case ds::ValueType::String:
-				case ds::ValueType::Texture:
-					return udm::Type::String;
-				case ds::ValueType::Int:
-					return udm::Type::Int32;
-				case ds::ValueType::Float:
-					return udm::Type::Float;
-				case ds::ValueType::Bool:
-					return udm::Type::Boolean;
-				case ds::ValueType::Color:
-					return udm::Type::Vector3;
-				case ds::ValueType::Vector2:
-					return udm::Type::Vector2;
-				case ds::ValueType::Vector3:
-					return udm::Type::Vector3;
-				case ds::ValueType::Vector4:
-					return udm::Type::Vector4;
-				default:
-					return udm::Type::Invalid;
+			case ds::ValueType::String:
+			case ds::ValueType::Texture:
+				return udm::Type::String;
+			case ds::ValueType::Int:
+				return udm::Type::Int32;
+			case ds::ValueType::Float:
+				return udm::Type::Float;
+			case ds::ValueType::Bool:
+				return udm::Type::Boolean;
+			case ds::ValueType::Color:
+				return udm::Type::Vector3;
+			case ds::ValueType::Vector2:
+				return udm::Type::Vector2;
+			case ds::ValueType::Vector3:
+				return udm::Type::Vector3;
+			case ds::ValueType::Vector4:
+				return udm::Type::Vector4;
+			default:
+				return udm::Type::Invalid;
 			}
 			static_assert(umath::to_integral(ds::ValueType::Count) == 11, "Update this function when new types are added!");
 		}
@@ -61,41 +60,41 @@ export {
 		constexpr ds::ValueType to_ds_type(udm::Type type)
 		{
 			switch(type) {
-				case udm::Type::String:
-				case udm::Type::Utf8String:
-					return ds::ValueType::String;
-				case udm::Type::Int8:
-				case udm::Type::UInt8:
-				case udm::Type::Int16:
-				case udm::Type::UInt16:
-				case udm::Type::Int32:
-				case udm::Type::UInt32:
-				case udm::Type::Int64:
-				case udm::Type::UInt64:
-					return ds::ValueType::Int;
-				case udm::Type::Half:
-				case udm::Type::Float:
-				case udm::Type::Double:
-					return ds::ValueType::Float;
-				case udm::Type::Boolean:
-					return ds::ValueType::Bool;
-				case udm::Type::Vector2:
-				case udm::Type::Vector2i:
-					return ds::ValueType::Vector2;
-				case udm::Type::Vector3:
-				case udm::Type::Vector3i:
-					return ds::ValueType::Vector3;
-				case udm::Type::Vector4:
-				case udm::Type::Vector4i:
-					return ds::ValueType::Vector4;
-				case udm::Type::Quaternion:
-				case udm::Type::EulerAngles:
-					return ds::ValueType::Vector3;
-				case udm::Type::Srgba:
-				case udm::Type::HdrColor:
-					return ds::ValueType::Vector4;
-				default:
-					break;
+			case udm::Type::String:
+			case udm::Type::Utf8String:
+				return ds::ValueType::String;
+			case udm::Type::Int8:
+			case udm::Type::UInt8:
+			case udm::Type::Int16:
+			case udm::Type::UInt16:
+			case udm::Type::Int32:
+			case udm::Type::UInt32:
+			case udm::Type::Int64:
+			case udm::Type::UInt64:
+				return ds::ValueType::Int;
+			case udm::Type::Half:
+			case udm::Type::Float:
+			case udm::Type::Double:
+				return ds::ValueType::Float;
+			case udm::Type::Boolean:
+				return ds::ValueType::Bool;
+			case udm::Type::Vector2:
+			case udm::Type::Vector2i:
+				return ds::ValueType::Vector2;
+			case udm::Type::Vector3:
+			case udm::Type::Vector3i:
+				return ds::ValueType::Vector3;
+			case udm::Type::Vector4:
+			case udm::Type::Vector4i:
+				return ds::ValueType::Vector4;
+			case udm::Type::Quaternion:
+			case udm::Type::EulerAngles:
+				return ds::ValueType::Vector3;
+			case udm::Type::Srgba:
+			case udm::Type::HdrColor:
+				return ds::ValueType::Vector4;
+			default:
+				break;
 			}
 			static_assert(umath::to_integral(ds::ValueType::Count) == 11, "Update this function when new types are added!");
 			return ds::ValueType::Invalid;
@@ -105,7 +104,7 @@ export {
 #pragma warning(push)
 #pragma warning(disable : 4251)
 		class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
-		public:
+		  public:
 			static constexpr auto PMAT_IDENTIFIER = "PMAT";
 			static constexpr uint32_t PMAT_VERSION = 1;
 
@@ -204,13 +203,13 @@ export {
 
 			void ClearProperty(const std::string_view &key, bool clearBlocksIfEmpty = true);
 			template<typename T>
-				requires(msys::is_property_type<T>)
+			    requires(msys::is_property_type<T>)
 			void SetProperty(const std::string_view &key, const T &value);
 			template<typename TTarget>
-				requires(msys::is_property_type<TTarget>)
+			    requires(msys::is_property_type<TTarget>)
 			bool GetProperty(const std::string_view &key, TTarget *outValue) const;
 			template<typename TTarget>
-				requires(msys::is_property_type<TTarget>)
+			    requires(msys::is_property_type<TTarget>)
 			TTarget GetProperty(const std::string_view &key, const TTarget &defVal) const;
 			ds::ValueType GetPropertyValueType(const std::string_view &strPath) const;
 
@@ -247,7 +246,7 @@ export {
 			virtual void Reset();
 			void Initialize(const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data);
 			void Initialize(const std::string &shader, const std::shared_ptr<ds::Block> &data);
-		protected:
+		  protected:
 			friend msys::MaterialManager;
 			Material(msys::MaterialManager &manager);
 			Material(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data);
@@ -258,13 +257,13 @@ export {
 
 			void ClearProperty(ds::Block &block, const std::string_view &key, bool clearBlocksIfEmpty);
 			template<typename T>
-				requires(msys::is_property_type<T>)
+			    requires(msys::is_property_type<T>)
 			void SetProperty(ds::Block &block, const std::string_view &key, const T &value);
 			template<typename TTarget>
-				requires(msys::is_property_type<TTarget>)
+			    requires(msys::is_property_type<TTarget>)
 			bool GetProperty(const ds::Block &block, const std::string_view &key, TTarget *outValue) const;
 			template<typename TTarget>
-				requires(msys::is_property_type<TTarget>)
+			    requires(msys::is_property_type<TTarget>)
 			TTarget GetProperty(const ds::Block &block, const std::string_view &key, const TTarget &defVal) const;
 
 			virtual void Initialize(const std::shared_ptr<ds::Block> &data);
@@ -300,7 +299,7 @@ export {
 			std::unique_ptr<BaseMaterial> m_baseMaterial;
 		};
 		using namespace umath::scoped_enum::bitwise;
-		#pragma warning(pop)
+#pragma warning(pop)
 	}
 	namespace umath::scoped_enum::bitwise {
 		template<>
@@ -311,7 +310,7 @@ export {
 
 	namespace msys {
 		template<typename T>
-			requires(is_property_type<T>)
+		    requires(is_property_type<T>)
 		void Material::SetProperty(const std::string_view &strPath, const T &value)
 		{
 			auto [block, key] = ResolvePropertyPath(strPath);
@@ -321,7 +320,7 @@ export {
 			return;
 		}
 		template<typename TTarget>
-			requires(is_property_type<TTarget>)
+		    requires(is_property_type<TTarget>)
 		bool Material::GetProperty(const std::string_view &strPath, TTarget *outValue) const
 		{
 			auto [block, key] = ResolvePropertyPath(strPath);
@@ -335,7 +334,7 @@ export {
 			return false;
 		}
 		template<typename TTarget>
-			requires(is_property_type<TTarget>)
+		    requires(is_property_type<TTarget>)
 		TTarget Material::GetProperty(const std::string_view &strPath, const TTarget &defVal) const
 		{
 			TTarget val;
@@ -345,7 +344,7 @@ export {
 		}
 
 		template<typename T>
-			requires(is_property_type<T>)
+		    requires(is_property_type<T>)
 		void Material::SetProperty(ds::Block &block, const std::string_view &key, const T &value)
 		{
 			if constexpr(std::is_same_v<T, Quat>)
@@ -364,7 +363,7 @@ export {
 			}
 		}
 		template<typename TTarget>
-			requires(is_property_type<TTarget>)
+		    requires(is_property_type<TTarget>)
 		bool Material::GetProperty(const ds::Block &block, const std::string_view &key, TTarget *outValue) const
 		{
 			auto &dsBase = block.GetValue(key);
@@ -419,7 +418,7 @@ export {
 			return res;
 		}
 		template<typename TTarget>
-			requires(is_property_type<TTarget>)
+		    requires(is_property_type<TTarget>)
 		TTarget Material::GetProperty(const ds::Block &block, const std::string_view &key, const TTarget &defVal) const
 		{
 			TTarget val;

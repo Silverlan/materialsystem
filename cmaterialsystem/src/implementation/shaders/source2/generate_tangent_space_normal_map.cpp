@@ -3,8 +3,6 @@
 
 module;
 
-
-
 module pragma.cmaterialsystem;
 
 import :shaders.source2.generate_tangent_space_normal_map;

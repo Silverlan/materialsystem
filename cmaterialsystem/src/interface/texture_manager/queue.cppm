@@ -20,9 +20,9 @@ import source2;
 
 export {
 	class DLLCMATSYS TextureQueueItem {
-	protected:
+	  protected:
 		TextureQueueItem();
-	public:
+	  public:
 		TextureQueueItem(const TextureQueueItem &) = delete;
 		TextureQueueItem &operator=(const TextureQueueItem &) = delete;
 		virtual ~TextureQueueItem();
@@ -45,37 +45,37 @@ export {
 	};
 
 	class DLLCMATSYS TextureQueueItemPNG : public TextureQueueItem {
-	public:
+	  public:
 		TextureQueueItemPNG();
 		virtual ~TextureQueueItemPNG() override;
 		std::shared_ptr<uimg::ImageBuffer> pnginfo = nullptr;
 	};
 
 	class DLLCMATSYS TextureQueueItemStbi : public TextureQueueItem {
-	public:
+	  public:
 		TextureQueueItemStbi(msys::TextureType texType);
 		std::shared_ptr<uimg::ImageBuffer> imageBuffer = nullptr;
 	};
 
-	#ifndef DISABLE_VTF_SUPPORT
+#ifndef DISABLE_VTF_SUPPORT
 	class DLLCMATSYS TextureQueueItemVTF : public TextureQueueItem {
-	public:
+	  public:
 		TextureQueueItemVTF();
 		virtual ~TextureQueueItemVTF() override;
 		std::shared_ptr<VTFLib::CVTFFile> texture = nullptr;
 	};
-	#endif
-	#ifndef DISABLE_VTEX_SUPPORT
+#endif
+#ifndef DISABLE_VTEX_SUPPORT
 	class DLLCMATSYS TextureQueueItemVTex : public TextureQueueItem {
-	public:
+	  public:
 		TextureQueueItemVTex();
 		virtual ~TextureQueueItemVTex() override;
 		std::shared_ptr<source2::resource::Texture> texture = nullptr;
 		std::unique_ptr<fsys::File> fptr = nullptr;
 	};
-	#endif
+#endif
 	class DLLCMATSYS TextureQueueItemSurface : public TextureQueueItem {
-	public:
+	  public:
 		TextureQueueItemSurface(msys::TextureType type);
 		TextureQueueItemSurface(const TextureQueueItemSurface &) = delete;
 		TextureQueueItemSurface &operator=(const TextureQueueItemSurface &) = delete;

@@ -137,8 +137,7 @@ export {
 			else if constexpr(std::is_same_v<TInternal, int>)
 				value = std::to_string(translate(util::to_int(value)));
 			else {
-				[]<bool flag = false>() { static_assert(flag, "Unsupported type"); }
-				();
+				[]<bool flag = false>() { static_assert(flag, "Unsupported type"); }();
 			}
 		}
 		root->AddData(key, std::make_shared<TData>(dataSettings, value));

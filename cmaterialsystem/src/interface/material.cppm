@@ -5,7 +5,6 @@ module;
 
 #include "definitions.hpp"
 
-
 export module pragma.cmaterialsystem:material;
 
 export import :sprite_sheet_animation;
@@ -14,17 +13,17 @@ export import pragma.materialsystem;
 
 export {
 	namespace msys {
-		#pragma warning(push)
-		#pragma warning(disable : 4251)
+#pragma warning(push)
+#pragma warning(disable : 4251)
 		class CMaterialManager;
 		class DLLCMATSYS CMaterial : public Material {
-		public:
+		  public:
 			struct DLLCMATSYS CallbackInfo {
 				CallbackInfo(const std::function<void(std::shared_ptr<Texture>)> &onload = nullptr);
 				uint32_t count;
 				CallbackHandle onload {};
 			};
-		public:
+		  public:
 			enum class StateFlags : uint8_t { None = 0, TexturesInitialized = 1u, TexturesLoaded = TexturesInitialized << 1u, TexturesPrecached = TexturesLoaded << 1u };
 			static std::shared_ptr<CMaterial> Create(msys::MaterialManager &manager);
 			static std::shared_ptr<CMaterial> Create(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shader, const std::shared_ptr<ds::Block> &data);
@@ -57,7 +56,7 @@ export {
 			SpriteSheetAnimation *GetSpriteSheetAnimation();
 
 			void LoadTextures(bool precache, bool force = false);
-		protected:
+		  protected:
 			CMaterial(msys::MaterialManager &manager);
 			CMaterial(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shader, const std::shared_ptr<ds::Block> &data);
 			CMaterial(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data);
@@ -75,7 +74,7 @@ export {
 			void LoadTexture(TextureInfo &texInfo, bool precache);
 
 			bool HaveTexturesBeenInitialized() const;
-		private:
+		  private:
 			void UpdatePrimaryShader();
 			struct ShaderHash {
 				std::size_t operator()(const util::WeakHandle<prosper::Shader> &whShader) const;
@@ -103,7 +102,7 @@ export {
 			void InitializeSampler();
 			void InitializeTextures(const std::shared_ptr<ds::Block> &data, const std::shared_ptr<CallbackInfo> &info, TextureLoadFlags loadFlags);
 		};
-		#pragma warning(pop)
+#pragma warning(pop)
 		using namespace umath::scoped_enum::bitwise;
 	}
 	namespace umath::scoped_enum::bitwise {

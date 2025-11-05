@@ -3,7 +3,6 @@
 
 module;
 
-
 module pragma.materialsystem;
 
 import :format_handlers.source2_vmat;

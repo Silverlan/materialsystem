@@ -3,8 +3,6 @@
 
 module;
 
-
-
 #include <VTFFile.h>
 
 module pragma.cmaterialsystem;

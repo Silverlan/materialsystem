@@ -16,7 +16,7 @@ export {
 #pragma warning(push)
 #pragma warning(disable : 4251)
 		class DLLCMATSYS Texture final : public std::enable_shared_from_this<Texture> {
-		public:
+		  public:
 			friend TextureManager;
 			enum class Flags : uint32_t { None = 0u, Indexed = 1u, Loaded = Indexed << 1u, Error = Loaded << 1u, SRGB = Error << 1u, NormalMap = SRGB << 1u };
 			Texture(prosper::IPrContext &context, std::shared_ptr<prosper::Texture> texture = nullptr);
@@ -51,7 +51,7 @@ export {
 			void AddFlags(Flags flags);
 			Flags GetFlags() const;
 			void SetFlags(Flags flags);
-		private:
+		  private:
 			std::vector<CallbackHandle> m_onVkTextureChanged;
 			std::queue<CallbackHandle> m_onLoadCallbacks;
 			std::queue<CallbackHandle> m_onRemoveCallbacks;

@@ -3,7 +3,6 @@
 
 module;
 
-
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include <VTFLib.h>

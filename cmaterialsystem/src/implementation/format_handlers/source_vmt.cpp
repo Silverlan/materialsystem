@@ -3,7 +3,6 @@
 
 module;
 
-
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include <VTFLib.h>
@@ -19,7 +18,10 @@ import :material_manager2;
 
 // msvc compiler is unable to locate the | operator overload, so we have to use a workaround
 template<typename T>
-	static T bor(T v0, T v1) { return static_cast<T>(umath::to_integral(v0) | umath::to_integral(v1)); }
+static T bor(T v0, T v1)
+{
+	return static_cast<T>(umath::to_integral(v0) | umath::to_integral(v1));
+}
 
 #ifndef DISABLE_VMT_SUPPORT
 template<class T>
@@ -64,7 +66,7 @@ bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Blo
 				imgCreateInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
 				imgCreateInfo.postCreateLayout = prosper::ImageLayout::ColorAttachmentOptimal;
 				imgCreateInfo.tiling = prosper::ImageTiling::Optimal;
-				imgCreateInfo.usage = bor<prosper::ImageUsageFlags>(prosper::ImageUsageFlags::ColorAttachmentBit,prosper::ImageUsageFlags::TransferSrcBit);
+				imgCreateInfo.usage = bor<prosper::ImageUsageFlags>(prosper::ImageUsageFlags::ColorAttachmentBit, prosper::ImageUsageFlags::TransferSrcBit);
 
 				imgCreateInfo.width = umath::max(irisMap->GetWidth(), corneaMap->GetWidth());
 				imgCreateInfo.height = umath::max(irisMap->GetHeight(), corneaMap->GetHeight());

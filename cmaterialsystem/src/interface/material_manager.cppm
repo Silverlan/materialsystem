@@ -8,14 +8,13 @@ module;
 #include <VMTFile.h>
 #endif
 
-
 export module pragma.cmaterialsystem:material_manager;
 
 export import :material;
 
 export {
-	#pragma warning(push)
-	#pragma warning(disable : 4251)
+#pragma warning(push)
+#pragma warning(disable : 4251)
 	class DLLCMATSYS CMaterialManager : public MaterialManager, public prosper::ContextObject {
 	  private:
 		std::function<void(msys::Material *)> m_shaderHandler;
@@ -23,12 +22,12 @@ export {
 		std::unique_ptr<msys::TextureManager> m_textureManager = nullptr;
 		std::queue<msys::MaterialHandle> m_reloadShaderQueue;
 		virtual msys::Material *CreateMaterial(const std::string *identifier, const std::string &shader, std::shared_ptr<ds::Block> root = nullptr) override;
-	#ifndef DISABLE_VMT_SUPPORT
+#ifndef DISABLE_VMT_SUPPORT
 		virtual bool InitializeVMTData(VTFLib::CVMTFile &vmt, LoadInfo &info, ds::Block &rootData, ds::Settings &settings, const std::string &shader) override;
-	#endif
-	#ifndef DISABLE_VMAT_SUPPORT
+#endif
+#ifndef DISABLE_VMAT_SUPPORT
 		virtual bool InitializeVMatData(source2::resource::Resource &resource, source2::resource::Material &vmat, LoadInfo &info, ds::Block &rootData, ds::Settings &settings, const std::string &shader, VMatOrigin origin) override;
-	#endif
+#endif
 	  public:
 		CMaterialManager(prosper::IPrContext &context);
 		virtual ~CMaterialManager() override;
@@ -46,5 +45,5 @@ export {
 
 		void SetDownscaleImportedRMATextures(bool downscale);
 	};
-	#pragma warning(pop)
+#pragma warning(pop)
 }

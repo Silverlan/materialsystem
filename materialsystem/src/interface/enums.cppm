@@ -44,12 +44,12 @@ export {
 			GIF,
 			HDR,
 			PIC,
-		#ifndef DISABLE_VTF_SUPPORT
+#ifndef DISABLE_VTF_SUPPORT
 			VTF,
-		#endif
-		#ifndef DISABLE_VTEX_SUPPORT
+#endif
+#ifndef DISABLE_VTEX_SUPPORT
 			VTex,
-		#endif
+#endif
 
 			Count
 		};

@@ -5,17 +5,16 @@ module;
 
 #include "definitions.hpp"
 
-
 export module pragma.cmaterialsystem:texture_manager.manager;
 
 export import :texture_manager.texture;
 export import :texture_manager.texture_queue;
 
 export {
-	#pragma warning(push)
-	#pragma warning(disable : 4251)
+#pragma warning(push)
+#pragma warning(disable : 4251)
 	class DLLCMATSYS TextureManager {
-	public:
+	  public:
 		TextureManager(const TextureManager &) = delete;
 		TextureManager &operator=(const TextureManager &) = delete;
 		static const uint32_t MAX_TEXTURE_COUNT;
@@ -27,7 +26,7 @@ export {
 			std::shared_ptr<prosper::ISampler> sampler = nullptr;
 			msys::TextureLoadFlags flags = msys::TextureLoadFlags::None;
 		};
-	public:
+	  public:
 		static void SetupSamplerMipmapMode(prosper::util::SamplerCreateInfo &createInfo, msys::TextureMipmapMode mode);
 		TextureManager(prosper::IPrContext &context);
 		~TextureManager();
@@ -54,7 +53,7 @@ export {
 		uint32_t ClearUnused();
 		std::shared_ptr<prosper::ISampler> &GetTextureSampler();
 		const std::vector<std::shared_ptr<msys::Texture>> &GetTextures() const { return m_textures; }
-	private:
+	  private:
 		bool Load(prosper::IPrContext &context, const std::string &cacheName, VFilePtr optFile, const LoadInfo &loadInfo, std::shared_ptr<void> *outTexture, bool bAbsolutePath);
 
 		bool HasWork();
@@ -87,5 +86,5 @@ export {
 		void ReloadTexture(uint32_t texId, const LoadInfo &loadInfo);
 		VFilePtr OpenTextureFile(const std::string &fpath);
 	};
-	#pragma warning(pop)
+#pragma warning(pop)
 }

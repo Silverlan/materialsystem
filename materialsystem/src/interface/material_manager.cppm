@@ -22,7 +22,7 @@ import source2;
 
 export {
 	class DLLMATSYS MaterialManager {
-	public:
+	  public:
 		std::optional<std::string> FindMaterialPath(const std::string &material);
 		struct DLLMATSYS ImageFormat {
 			ImageFormat(msys::TextureType _type, std::string _extension) : type(_type), extension(_extension) {}
@@ -53,7 +53,7 @@ export {
 		static const std::vector<ImageFormat> &get_supported_image_formats();
 		static void SetRootMaterialLocation(const std::string &location);
 		static const std::string &GetRootMaterialLocation();
-	protected:
+	  protected:
 		std::vector<msys::MaterialHandle> m_materials;
 		std::unordered_map<std::string, msys::MaterialIndex> m_nameToMaterialIndex;
 		uint32_t m_unnamedIdx = 0;
@@ -79,18 +79,18 @@ export {
 		std::shared_ptr<ds::Settings> CreateDataSettings() const;
 		std::string ToMaterialIdentifier(const std::string &id) const;
 		void AddMaterial(const std::string &identifier, msys::Material &mat);
-	#ifndef DISABLE_VMT_SUPPORT
+#ifndef DISABLE_VMT_SUPPORT
 		bool LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info);
 		virtual bool InitializeVMTData(VTFLib::CVMTFile &vmt, LoadInfo &info, ds::Block &rootData, ds::Settings &settings, const std::string &shader);
-	#endif
-	#ifndef DISABLE_VMAT_SUPPORT
+#endif
+#ifndef DISABLE_VMAT_SUPPORT
 		enum class VMatOrigin : uint8_t { Source2 = 0, SteamVR, Dota2 };
 		bool LoadVMat(source2::resource::Resource &vmat, LoadInfo &info);
 		virtual bool InitializeVMatData(source2::resource::Resource &resource, source2::resource::Material &vmat, LoadInfo &info, ds::Block &rootData, ds::Settings &settings, const std::string &shader, VMatOrigin origin);
-	#endif
+#endif
 		bool LoadUdm(std::shared_ptr<VFilePtrInternal> &f, LoadInfo &loadInfo);
 	};
-	#pragma warning(pop)
+#pragma warning(pop)
 
 	//template<class TMaterial,typename... TARGS>
 	//	TMaterial *MaterialManager::CreateMaterial(TARGS ...args) {return TMaterial::Create(*this,std::forward<TARGS>(args)...);}
