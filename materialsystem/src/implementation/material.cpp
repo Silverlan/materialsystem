@@ -3,9 +3,6 @@
 
 module;
 
-
-
-#include "sharedutils/magic_enum.hpp"
 #include <cassert>
 
 module pragma.materialsystem;

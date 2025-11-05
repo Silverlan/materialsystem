@@ -4,7 +4,7 @@
 module;
 
 #ifndef DISABLE_VMAT_SUPPORT
-#include "cmatsysdefinitions.hpp"
+#include "definitions.hpp"
 #endif
 
 export module pragma.cmaterialsystem:format_handlers.source2_vmat;

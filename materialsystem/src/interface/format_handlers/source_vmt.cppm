@@ -4,7 +4,7 @@
 module;
 
 #ifndef DISABLE_VMT_SUPPORT
-#include "matsysdefinitions.hpp"
+#include "definitions.hpp"
 #include <VMTFile.h>
 #include <VTFLib.h>
 

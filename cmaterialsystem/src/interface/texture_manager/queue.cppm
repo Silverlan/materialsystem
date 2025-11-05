@@ -3,7 +3,7 @@
 
 module;
 
-#include "cmatsysdefinitions.hpp"
+#include "definitions.hpp"
 #ifndef DISABLE_VTF_SUPPORT
 #include <VTFFile.h>
 #endif

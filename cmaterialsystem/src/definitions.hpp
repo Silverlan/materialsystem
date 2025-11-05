@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#ifndef __CMATSYSDEFINITIONS_H__
-#define __CMATSYSDEFINITIONS_H__
+#pragma once
 
 #ifdef DLLCMATSYS_EX
 #ifdef __linux__
@@ -16,6 +15,4 @@
 #else
 #define DLLCMATSYS __declspec(dllimport)
 #endif
-#endif
-
 #endif

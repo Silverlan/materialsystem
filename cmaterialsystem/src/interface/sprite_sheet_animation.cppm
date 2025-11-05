@@ -3,7 +3,7 @@
 
 module;
 
-#include "cmatsysdefinitions.hpp"
+#include "definitions.hpp"
 
 export module pragma.cmaterialsystem:sprite_sheet_animation;
 

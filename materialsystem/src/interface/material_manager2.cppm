@@ -3,7 +3,7 @@
 
 module;
 
-#include "matsysdefinitions.hpp"
+#include "definitions.hpp"
 
 export module pragma.materialsystem:material_manager2;
 

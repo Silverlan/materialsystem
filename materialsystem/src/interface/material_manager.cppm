@@ -3,7 +3,7 @@
 
 module;
 
-#include "matsysdefinitions.hpp"
+#include "definitions.hpp"
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #endif

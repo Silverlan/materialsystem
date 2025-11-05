@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-#ifndef __MATSYSDEFINITIONS_H__
-#define __MATSYSDEFINITIONS_H__
+#pragma once
 
 #ifdef MATSYS_DLL
 #ifdef __linux__
@@ -24,6 +23,4 @@
 #else
 #define DLLMATSYS
 #endif
-#endif
-
 #endif

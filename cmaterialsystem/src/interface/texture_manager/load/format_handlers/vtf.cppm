@@ -3,7 +3,7 @@
 
 module;
 
-#include "cmatsysdefinitions.hpp"
+#include "definitions.hpp"
 #include <VTFFile.h>
 
 
