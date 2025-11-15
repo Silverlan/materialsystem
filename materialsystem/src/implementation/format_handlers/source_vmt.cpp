@@ -145,15 +145,15 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 		if((node = GetNode("$bumpmap", &rootNode)) != nullptr) {
 			auto bumpMap = GetStringValue(*node);
 			if(bumpMap) {
-				root->AddData(Material::DUDV_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *bumpMap));
+				root->AddData(material::DUDV_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *bumpMap));
 				hasDudv = true;
 			}
 		}
 		if(!hasDudv) {
 			std::string defaultDudvMap = "nature/water_coast01_dudv"; // Should be shipped with SFM or HL2
-			root->AddData(Material::DUDV_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, defaultDudvMap));
+			root->AddData(material::DUDV_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, defaultDudvMap));
 		}
-		AssignTextureValue(*root, *m_rootNode, "$normalmap", Material::NORMAL_MAP_IDENTIFIER);
+		AssignTextureValue(*root, *m_rootNode, "$normalmap", material::NORMAL_MAP_IDENTIFIER);
 
 		auto fog = root->AddBlock("fog");
 		AssignBooleanValue(*fog, rootNode, "$fogenable", "enabled", true);
@@ -212,7 +212,7 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 	if((node = GetNode("$selfillummask", &rootNode)) != nullptr) {
 		auto selfIllumMask = GetStringValue(*node);
 		if(selfIllumMask) {
-			root->AddData(Material::GLOW_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *selfIllumMask));
+			root->AddData(material::GLOW_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *selfIllumMask));
 			bHasGlowMap = true;
 			bHasGlow = true;
 		}
@@ -223,23 +223,23 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 		auto hdrCompressedTexture = GetStringValue(*node);
 		if(hdrCompressedTexture) {
 			hasDiffuseMap = true;
-			root->AddData(Material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *hdrCompressedTexture));
+			root->AddData(material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *hdrCompressedTexture));
 		}
 	}
 	if(hasDiffuseMap == false && (node = GetNode("$hdrbasetexture", &rootNode)) != nullptr) {
 		auto hdrBaseTexture = GetStringValue(*node);
 		if(hdrBaseTexture) {
 			hasDiffuseMap = true;
-			root->AddData(Material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *hdrBaseTexture));
+			root->AddData(material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *hdrBaseTexture));
 		}
 	}
 	if(hasDiffuseMap == false && (node = GetNode("$basetexture", &rootNode)) != nullptr) {
 		auto baseTexture = GetStringValue(*node);
 		if(baseTexture) {
-			root->AddData(Material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *baseTexture));
+			root->AddData(material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *baseTexture));
 
 			if(bHasGlowMap == false && (node = GetNode("$selfillum", &rootNode)) != nullptr) {
-				root->AddData(Material::GLOW_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *baseTexture));
+				root->AddData(material::GLOW_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *baseTexture));
 				root->AddValue("int", "glow_blend_diffuse_mode", "3");
 				root->AddValue("float", "glow_blend_diffuse_scale", "1");
 				root->AddValue("bool", "glow_alpha_only", "1");
@@ -307,8 +307,8 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 	}
 
 	// These are custom parameters; Used to make it easier to import PBR assets into Pragma
-	AssignTextureValue(*root, *m_rootNode, "$rmatexture", Material::RMA_MAP_IDENTIFIER);
-	AssignTextureValue(*root, *m_rootNode, "$emissiontexture", Material::EMISSION_MAP_IDENTIFIER);
+	AssignTextureValue(*root, *m_rootNode, "$rmatexture", material::RMA_MAP_IDENTIFIER);
+	AssignTextureValue(*root, *m_rootNode, "$emissiontexture", material::EMISSION_MAP_IDENTIFIER);
 	AssignFloatValue(*root, *m_rootNode, "$metalnessfactor", "metalness_factor", 0.f);
 	AssignFloatValue(*root, *m_rootNode, "$roughnessfactor", "roughness_factor", 0.f);
 	AssignFloatValue(*root, *m_rootNode, "$specularfactor", "specular_factor", 0.f);
@@ -328,11 +328,11 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 		}
 	}
 	if(shader == "worldvertextransition") {
-		if(AssignTextureValue(*root, *m_rootNode, "$basetexture2", Material::ALBEDO_MAP2_IDENTIFIER))
+		if(AssignTextureValue(*root, *m_rootNode, "$basetexture2", material::ALBEDO_MAP2_IDENTIFIER))
 			shaderName = "pbr_blend";
 	}
 	if(bWater == false)
-		AssignTextureValue(*root, *m_rootNode, "$bumpmap", Material::NORMAL_MAP_IDENTIFIER);
+		AssignTextureValue(*root, *m_rootNode, "$bumpmap", material::NORMAL_MAP_IDENTIFIER);
 	AssignTextureValue(*root, *m_rootNode, "$envmapmask", "specular_map");
 	if((node = GetNode("$additive", &rootNode)) != nullptr) {
 		root->AddValue("int", "alpha_mode", std::to_string(umath::to_integral(AlphaMode::Blend)));
@@ -353,7 +353,7 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 		if(val)
 			root->AddValue("float", "phong_shininess", std::to_string(*val * 2.f));
 	}
-	AssignTextureValue(*root, *m_rootNode, "$parallaxmap", Material::PARALLAX_MAP_IDENTIFIER);
+	AssignTextureValue(*root, *m_rootNode, "$parallaxmap", material::PARALLAX_MAP_IDENTIFIER);
 	if((node = GetNode("$parallaxmapscale", &rootNode)) != nullptr) {
 		auto val = GetFloatValue(*node);
 		if(val)
@@ -391,9 +391,9 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 			surfaceMaterial = it->second;
 		root->AddData("surfacematerial", std::make_shared<ds::String>(*dataSettings, surfaceMaterial));
 	}
-	AssignTextureValue(*root, *m_rootNode, "$compress", Material::WRINKLE_COMPRESS_MAP_IDENTIFIER);
-	AssignTextureValue(*root, *m_rootNode, "$stretch", Material::WRINKLE_STRETCH_MAP_IDENTIFIER);
-	AssignTextureValue(*root, *m_rootNode, "$phongexponenttexture", Material::EXPONENT_MAP_IDENTIFIER);
+	AssignTextureValue(*root, *m_rootNode, "$compress", material::WRINKLE_COMPRESS_MAP_IDENTIFIER);
+	AssignTextureValue(*root, *m_rootNode, "$stretch", material::WRINKLE_STRETCH_MAP_IDENTIFIER);
+	AssignTextureValue(*root, *m_rootNode, "$phongexponenttexture", material::EXPONENT_MAP_IDENTIFIER);
 
 	auto fakePbrLayer = GetInt32Value("$fakepbr_layer");
 	if(fakePbrLayer)
@@ -406,7 +406,7 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 	AssignTextureValue(*root, *m_rootNode, "$ambientoccltexture", "ao_map");
 
 	if(shaderName == "pbr" || shaderName == "pbr_blend") {
-		if(root->HasValue(Material::RMA_MAP_IDENTIFIER) == false) {
+		if(root->HasValue(material::RMA_MAP_IDENTIFIER) == false) {
 			auto rmaInfo = root->AddBlock("rma_info");
 			rmaInfo->AddValue("bool", "requires_metalness_update", "1");
 			rmaInfo->AddValue("bool", "requires_roughness_update", "1");
@@ -421,8 +421,8 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 			color = GetColorValue("$color2");
 		if(color) {
 			root->AddValue("vector4", "color_factor", std::to_string(color->r) + ' ' + std::to_string(color->g) + ' ' + std::to_string(color->b) + " 1.0");
-			if(root->HasValue(Material::ALBEDO_MAP_IDENTIFIER) == false) // $color / $color2 attributes work without a diffuse texture
-				root->AddData(Material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, "white"));
+			if(root->HasValue(material::ALBEDO_MAP_IDENTIFIER) == false) // $color / $color2 attributes work without a diffuse texture
+				root->AddData(material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, "white"));
 		}
 	}
 

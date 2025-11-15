@@ -8,17 +8,16 @@ module;
 #include <VMTFile.h>
 #include <VTFLib.h>
 
-#define ENABLE_VKV_PARSER
-#ifdef ENABLE_VKV_PARSER
-#include <VKVParser/library.h>
-#endif
-#endif
-
 export module pragma.materialsystem:format_handlers.source_vmt;
 
 import pragma.datasystem;
 import pragma.math;
 export import pragma.util;
+#define ENABLE_VKV_PARSER
+#ifdef ENABLE_VKV_PARSER
+import REDxEYE.VKVParser;
+#endif
+#endif
 
 #ifndef DISABLE_VMT_SUPPORT
 

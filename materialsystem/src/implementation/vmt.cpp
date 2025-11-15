@@ -107,13 +107,13 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 		if((node = vmtRoot->GetNode("$bumpmap")) != nullptr) {
 			if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
 				auto *bumpMapNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-				root->AddData(msys::Material::DUDV_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, bumpMapNode->GetValue()));
+				root->AddData(msys::material::DUDV_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, bumpMapNode->GetValue()));
 			}
 		}
 		if((node = vmtRoot->GetNode("$normalmap")) != nullptr) {
 			if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
 				auto *normalMapNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-				root->AddData(msys::Material::NORMAL_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, normalMapNode->GetValue()));
+				root->AddData(msys::material::NORMAL_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, normalMapNode->GetValue()));
 			}
 		}
 
@@ -183,7 +183,7 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 	if((node = vmtRoot->GetNode("$selfillummask")) != nullptr) {
 		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
 			auto *selfIllumMaskNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-			root->AddData(msys::Material::GLOW_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, selfIllumMaskNode->GetValue()));
+			root->AddData(msys::material::GLOW_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, selfIllumMaskNode->GetValue()));
 			bHasGlowMap = true;
 			bHasGlow = true;
 		}
@@ -194,23 +194,23 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
 			hasDiffuseMap = true;
 			auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-			root->AddData(msys::Material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, baseTextureStringNode->GetValue()));
+			root->AddData(msys::material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, baseTextureStringNode->GetValue()));
 		}
 	}
 	if(hasDiffuseMap == false && (node = vmtRoot->GetNode("$hdrbasetexture")) != nullptr) {
 		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
 			hasDiffuseMap = true;
 			auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-			root->AddData(msys::Material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, baseTextureStringNode->GetValue()));
+			root->AddData(msys::material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, baseTextureStringNode->GetValue()));
 		}
 	}
 	if(hasDiffuseMap == false && (node = vmtRoot->GetNode("$basetexture")) != nullptr) {
 		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
 			auto *baseTextureStringNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-			root->AddData(msys::Material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, baseTextureStringNode->GetValue()));
+			root->AddData(msys::material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, baseTextureStringNode->GetValue()));
 
 			if(bHasGlowMap == false && (node = vmtRoot->GetNode("$selfillum")) != nullptr) {
-				root->AddData(msys::Material::GLOW_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, baseTextureStringNode->GetValue()));
+				root->AddData(msys::material::GLOW_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, baseTextureStringNode->GetValue()));
 				root->AddValue("int", "glow_blend_diffuse_mode", "3");
 				root->AddValue("float", "glow_blend_diffuse_scale", "1");
 				root->AddValue("bool", "glow_alpha_only", "1");
@@ -278,12 +278,12 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 	// These are custom parameters; Used to make it easier to import PBR assets into Pragma
 	if((node = vmtRoot->GetNode("$rmatexture")) != nullptr && node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
 		auto *metalnessNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-		root->AddData(msys::Material::RMA_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, metalnessNode->GetValue()));
+		root->AddData(msys::material::RMA_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, metalnessNode->GetValue()));
 	}
 
 	if((node = vmtRoot->GetNode("$emissiontexture")) != nullptr && node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
 		auto *emissionNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-		root->AddData(msys::Material::EMISSION_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, emissionNode->GetValue()));
+		root->AddData(msys::material::EMISSION_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, emissionNode->GetValue()));
 	}
 
 	if((node = vmtRoot->GetNode("$metalnessfactor")) != nullptr) {
@@ -322,13 +322,13 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 		shaderName = "pbr_blend";
 		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
 			auto *baseTexture2StringNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-			root->AddData(msys::Material::ALBEDO_MAP2_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, baseTexture2StringNode->GetValue()));
+			root->AddData(msys::material::ALBEDO_MAP2_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, baseTexture2StringNode->GetValue()));
 		}
 	}
 	if(bWater == false && (node = vmtRoot->GetNode("$bumpmap")) != nullptr) {
 		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
 			auto *bumpMapNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-			root->AddData(msys::Material::NORMAL_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, bumpMapNode->GetValue()));
+			root->AddData(msys::material::NORMAL_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, bumpMapNode->GetValue()));
 		}
 	}
 	if((node = vmtRoot->GetNode("$envmapmask")) != nullptr) {
@@ -356,7 +356,7 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 	if((node = vmtRoot->GetNode("$parallaxmap")) != nullptr) {
 		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
 			auto *parallaxMapNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-			root->AddData(msys::Material::PARALLAX_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, parallaxMapNode->GetValue()));
+			root->AddData(msys::material::PARALLAX_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, parallaxMapNode->GetValue()));
 		}
 	}
 	if((node = vmtRoot->GetNode("$parallaxmapscale")) != nullptr) {
@@ -395,19 +395,19 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 	if((node = vmtRoot->GetNode("$compress")) != nullptr) {
 		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
 			auto *compressMapNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-			root->AddData(msys::Material::WRINKLE_COMPRESS_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, compressMapNode->GetValue()));
+			root->AddData(msys::material::WRINKLE_COMPRESS_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, compressMapNode->GetValue()));
 		}
 	}
 	if((node = vmtRoot->GetNode("$stretch")) != nullptr) {
 		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
 			auto *stretchMapNode = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-			root->AddData(msys::Material::WRINKLE_STRETCH_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, stretchMapNode->GetValue()));
+			root->AddData(msys::material::WRINKLE_STRETCH_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, stretchMapNode->GetValue()));
 		}
 	}
 	if((node = vmtRoot->GetNode("$phongexponenttexture")) != nullptr) {
 		if(node->GetType() == VMTNodeType::NODE_TYPE_STRING) {
 			auto *phongExponentTexture = static_cast<VTFLib::Nodes::CVMTStringNode *>(node);
-			root->AddData(msys::Material::EXPONENT_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, phongExponentTexture->GetValue()));
+			root->AddData(msys::material::EXPONENT_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, phongExponentTexture->GetValue()));
 		}
 	}
 
@@ -431,7 +431,7 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 	}
 
 	if(shaderName == "pbr" || shaderName == "pbr_blend") {
-		if(root->HasValue(msys::Material::RMA_MAP_IDENTIFIER) == false) {
+		if(root->HasValue(msys::material::RMA_MAP_IDENTIFIER) == false) {
 			auto rmaInfo = root->AddBlock("rma_info");
 			rmaInfo->AddValue("bool", "requires_metalness_update", "1");
 			rmaInfo->AddValue("bool", "requires_roughness_update", "1");
@@ -445,8 +445,8 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 			auto color = vmt_parameter_to_color(*node);
 			if(color.has_value()) {
 				root->AddValue("vector4", "color_factor", std::to_string(color->r) + ' ' + std::to_string(color->g) + ' ' + std::to_string(color->b) + " 1.0");
-				if(root->HasValue(msys::Material::ALBEDO_MAP_IDENTIFIER) == false) // $color / $color2 attributes work without a diffuse texture
-					root->AddData(msys::Material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, "white"));
+				if(root->HasValue(msys::material::ALBEDO_MAP_IDENTIFIER) == false) // $color / $color2 attributes work without a diffuse texture
+					root->AddData(msys::material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, "white"));
 			}
 		}
 	}

@@ -98,7 +98,7 @@ void MaterialManager::AddMaterial(const std::string &identifier, msys::Material 
 	m_nameToMaterialIndex[nidentifier] = mat.GetIndex();
 }
 
-extern const std::array<std::string, 5> g_knownMaterialFormats = {msys::Material::FORMAT_MATERIAL_BINARY, msys::Material::FORMAT_MATERIAL_ASCII, "wmi", "vmat_c", "vmt"};
+extern const std::array<std::string, 5> g_knownMaterialFormats = {msys::material::FORMAT_MATERIAL_BINARY, msys::material::FORMAT_MATERIAL_ASCII, "wmi", "vmat_c", "vmt"};
 std::string MaterialManager::PathToIdentifier(const std::string &path, std::string *ext, bool &hadExtension) const
 {
 	auto matPath = FileManager::GetNormalizedPath(path);
@@ -228,7 +228,7 @@ bool MaterialManager::Load(const std::string &path, LoadInfo &info, bool bReload
 	}
 #endif
 
-	if(ext.empty() || ustring::compare<std::string>(ext, msys::Material::FORMAT_MATERIAL_ASCII, false) || ustring::compare<std::string>(ext, msys::Material::FORMAT_MATERIAL_BINARY, false))
+	if(ext.empty() || ustring::compare<std::string>(ext, msys::material::FORMAT_MATERIAL_ASCII, false) || ustring::compare<std::string>(ext, msys::material::FORMAT_MATERIAL_BINARY, false))
 		return LoadUdm(fp, info);
 
 	fsys::File f {fp};

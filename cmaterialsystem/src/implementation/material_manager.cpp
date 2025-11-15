@@ -231,7 +231,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt, LoadInfo &info, 
 				texInfo.SetNormalMap();
 				prosper::util::save_texture(rootPath + '/' + normalTexName, texNormal->GetImage(), texInfo, errHandler);
 
-				// TODO: These should be Material::ALBEDO_MAP_IDENTIFIER/Material::NORMAL_MAP_IDENTIFIER/Material::PARALLAX_MAP_IDENTIFIER, but
+				// TODO: These should be material::ALBEDO_MAP_IDENTIFIER/material::NORMAL_MAP_IDENTIFIER/material::PARALLAX_MAP_IDENTIFIER, but
 				// for some reason the linker complains about unresolved symbols?
 				rootData.AddData("albedo_map", std::make_shared<ds::Texture>(settings, albedoTexName));
 				rootData.AddData("normal_map", std::make_shared<ds::Texture>(settings, normalTexName));
@@ -441,7 +441,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt, LoadInfo &info, 
 				texInfo.SetNormalMap();
 				prosper::util::save_texture(rootPath + '/' + normalTexName, texNormal->GetImage(), texInfo, errHandler);
 
-				// TODO: This should be Material::NORMAL_MAP_IDENTIFIER, but
+				// TODO: This should be material::NORMAL_MAP_IDENTIFIER, but
 				// for some reason the linker complains about unresolved symbols?
 				rootData.AddData("normal_map", std::make_shared<ds::Texture>(settings, normalTexName));
 			}

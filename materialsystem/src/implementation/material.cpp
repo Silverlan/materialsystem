@@ -12,20 +12,20 @@ import :material_manager;
 
 #undef CreateFile
 
-decltype(msys::Material::DIFFUSE_MAP_IDENTIFIER) msys::Material::DIFFUSE_MAP_IDENTIFIER = "diffuse_map";
-decltype(msys::Material::ALBEDO_MAP_IDENTIFIER) msys::Material::ALBEDO_MAP_IDENTIFIER = "albedo_map";
-decltype(msys::Material::ALBEDO_MAP2_IDENTIFIER) msys::Material::ALBEDO_MAP2_IDENTIFIER = "albedo_map2";
-decltype(msys::Material::ALBEDO_MAP3_IDENTIFIER) msys::Material::ALBEDO_MAP3_IDENTIFIER = "albedo_map3";
-decltype(msys::Material::NORMAL_MAP_IDENTIFIER) msys::Material::NORMAL_MAP_IDENTIFIER = "normal_map";
-decltype(msys::Material::GLOW_MAP_IDENTIFIER) msys::Material::GLOW_MAP_IDENTIFIER = "emission_map";
-decltype(msys::Material::EMISSION_MAP_IDENTIFIER) msys::Material::EMISSION_MAP_IDENTIFIER = GLOW_MAP_IDENTIFIER;
-decltype(msys::Material::PARALLAX_MAP_IDENTIFIER) msys::Material::PARALLAX_MAP_IDENTIFIER = "parallax_map";
-decltype(msys::Material::ALPHA_MAP_IDENTIFIER) msys::Material::ALPHA_MAP_IDENTIFIER = "alpha_map";
-decltype(msys::Material::RMA_MAP_IDENTIFIER) msys::Material::RMA_MAP_IDENTIFIER = "rma_map";
-decltype(msys::Material::DUDV_MAP_IDENTIFIER) msys::Material::DUDV_MAP_IDENTIFIER = "dudv_map";
-decltype(msys::Material::WRINKLE_STRETCH_MAP_IDENTIFIER) msys::Material::WRINKLE_STRETCH_MAP_IDENTIFIER = "wrinkle_stretch_map";
-decltype(msys::Material::WRINKLE_COMPRESS_MAP_IDENTIFIER) msys::Material::WRINKLE_COMPRESS_MAP_IDENTIFIER = "wrinkle_compress_map";
-decltype(msys::Material::EXPONENT_MAP_IDENTIFIER) msys::Material::EXPONENT_MAP_IDENTIFIER = "exponent_map";
+decltype(msys::material::DIFFUSE_MAP_IDENTIFIER) msys::material::DIFFUSE_MAP_IDENTIFIER = "diffuse_map";
+decltype(msys::material::ALBEDO_MAP_IDENTIFIER) msys::material::ALBEDO_MAP_IDENTIFIER = "albedo_map";
+decltype(msys::material::ALBEDO_MAP2_IDENTIFIER) msys::material::ALBEDO_MAP2_IDENTIFIER = "albedo_map2";
+decltype(msys::material::ALBEDO_MAP3_IDENTIFIER) msys::material::ALBEDO_MAP3_IDENTIFIER = "albedo_map3";
+decltype(msys::material::NORMAL_MAP_IDENTIFIER) msys::material::NORMAL_MAP_IDENTIFIER = "normal_map";
+decltype(msys::material::GLOW_MAP_IDENTIFIER) msys::material::GLOW_MAP_IDENTIFIER = "emission_map";
+decltype(msys::material::EMISSION_MAP_IDENTIFIER) msys::material::EMISSION_MAP_IDENTIFIER = GLOW_MAP_IDENTIFIER;
+decltype(msys::material::PARALLAX_MAP_IDENTIFIER) msys::material::PARALLAX_MAP_IDENTIFIER = "parallax_map";
+decltype(msys::material::ALPHA_MAP_IDENTIFIER) msys::material::ALPHA_MAP_IDENTIFIER = "alpha_map";
+decltype(msys::material::RMA_MAP_IDENTIFIER) msys::material::RMA_MAP_IDENTIFIER = "rma_map";
+decltype(msys::material::DUDV_MAP_IDENTIFIER) msys::material::DUDV_MAP_IDENTIFIER = "dudv_map";
+decltype(msys::material::WRINKLE_STRETCH_MAP_IDENTIFIER) msys::material::WRINKLE_STRETCH_MAP_IDENTIFIER = "wrinkle_stretch_map";
+decltype(msys::material::WRINKLE_COMPRESS_MAP_IDENTIFIER) msys::material::WRINKLE_COMPRESS_MAP_IDENTIFIER = "wrinkle_compress_map";
+decltype(msys::material::EXPONENT_MAP_IDENTIFIER) msys::material::EXPONENT_MAP_IDENTIFIER = "exponent_map";
 
 msys::Material::BaseMaterial::~BaseMaterial()
 {
@@ -125,7 +125,7 @@ void msys::Material::UpdateTextures(bool forceUpdate)
 		umath::set_flag(m_stateFlags, StateFlags::TexturesUpdated, false);
 	if(umath::is_flag_set(m_stateFlags, StateFlags::TexturesUpdated))
 		return;
-	GetTextureInfo(DIFFUSE_MAP_IDENTIFIER);
+	GetTextureInfo(material::DIFFUSE_MAP_IDENTIFIER);
 
 	// The call above may have already invoked UpdateTextures(), so we
 	// need to re-check
@@ -133,15 +133,15 @@ void msys::Material::UpdateTextures(bool forceUpdate)
 		return;
 	umath::set_flag(m_stateFlags, StateFlags::TexturesUpdated);
 
-	m_texDiffuse = GetTextureInfo(DIFFUSE_MAP_IDENTIFIER);
+	m_texDiffuse = GetTextureInfo(material::DIFFUSE_MAP_IDENTIFIER);
 	if(!m_texDiffuse)
-		m_texDiffuse = GetTextureInfo(ALBEDO_MAP_IDENTIFIER);
+		m_texDiffuse = GetTextureInfo(material::ALBEDO_MAP_IDENTIFIER);
 
-	m_texNormal = GetTextureInfo(NORMAL_MAP_IDENTIFIER);
-	m_texGlow = GetTextureInfo(EMISSION_MAP_IDENTIFIER);
-	m_texParallax = GetTextureInfo(PARALLAX_MAP_IDENTIFIER);
-	m_texAlpha = GetTextureInfo(ALPHA_MAP_IDENTIFIER);
-	m_texRma = GetTextureInfo(RMA_MAP_IDENTIFIER);
+	m_texNormal = GetTextureInfo(material::NORMAL_MAP_IDENTIFIER);
+	m_texGlow = GetTextureInfo(material::EMISSION_MAP_IDENTIFIER);
+	m_texParallax = GetTextureInfo(material::PARALLAX_MAP_IDENTIFIER);
+	m_texAlpha = GetTextureInfo(material::ALPHA_MAP_IDENTIFIER);
+	m_texRma = GetTextureInfo(material::RMA_MAP_IDENTIFIER);
 
 	m_alphaMode = GetProperty<AlphaMode>("alpha_mode", AlphaMode::Opaque);
 
@@ -273,8 +273,8 @@ bool msys::Material::Save(udm::AssetData outData, std::string &outErr)
 		}
 	};
 
-	outData.SetAssetType(PMAT_IDENTIFIER);
-	outData.SetAssetVersion(PMAT_VERSION);
+	outData.SetAssetType(material::PMAT_IDENTIFIER);
+	outData.SetAssetVersion(material::PMAT_VERSION);
 	dataBlockToUdm(udm["properties"], *m_data);
 	if(m_baseMaterial)
 		udm["base_material"] = m_baseMaterial->name;
@@ -303,14 +303,14 @@ bool msys::Material::Save(const std::string &relFileName, std::string &outErr, b
 
 	std::string ext;
 	auto binary = false;
-	if(ufile::get_extension(fileName, &ext) && ustring::compare(ext.c_str(), FORMAT_MATERIAL_BINARY, false))
+	if(ufile::get_extension(fileName, &ext) && ustring::compare(ext.c_str(), material::FORMAT_MATERIAL_BINARY, false))
 		binary = true;
 
 	ufile::remove_extension_from_filename(fileName, g_knownMaterialFormats);
 	if(binary)
-		fileName += '.' + std::string {FORMAT_MATERIAL_BINARY};
+		fileName += '.' + std::string {material::FORMAT_MATERIAL_BINARY};
 	else
-		fileName += '.' + std::string {FORMAT_MATERIAL_ASCII};
+		fileName += '.' + std::string {material::FORMAT_MATERIAL_ASCII};
 
 	FileManager::CreatePath(ufile::get_path_from_filename(fileName).c_str());
 	auto f = FileManager::OpenFile<VFilePtrReal>(fileName.c_str(), binary ? "wb" : "w");

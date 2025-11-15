@@ -103,32 +103,33 @@ export {
 		using MaterialIndex = uint32_t;
 #pragma warning(push)
 #pragma warning(disable : 4251)
-		class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
-		  public:
-			static constexpr auto PMAT_IDENTIFIER = "PMAT";
-			static constexpr uint32_t PMAT_VERSION = 1;
+		namespace material {
+			CONSTEXPR_DLL_COMPAT auto PMAT_IDENTIFIER = "PMAT";
+			CONSTEXPR_DLL_COMPAT uint32_t PMAT_VERSION = 1;
 
-			static constexpr auto FORMAT_MATERIAL_BINARY = "pmat_b";
-			static constexpr auto FORMAT_MATERIAL_ASCII = "pmat";
-			static constexpr auto FORMAT_MATERIAL_LEGACY = "wmi";
+			CONSTEXPR_DLL_COMPAT auto FORMAT_MATERIAL_BINARY = "pmat_b";
+			CONSTEXPR_DLL_COMPAT auto FORMAT_MATERIAL_ASCII = "pmat";
+			CONSTEXPR_DLL_COMPAT auto FORMAT_MATERIAL_LEGACY = "wmi";
 
 			// inline static class-strings cause an internal compiler error with VS2019, so we can't use them for the time being
 			// inline static const std::string DIFFUSE_MAP_IDENTIFIER = "diffuse_map";
-			static const std::string DIFFUSE_MAP_IDENTIFIER;
-			static const std::string ALBEDO_MAP_IDENTIFIER;
-			static const std::string ALBEDO_MAP2_IDENTIFIER;
-			static const std::string ALBEDO_MAP3_IDENTIFIER;
-			static const std::string NORMAL_MAP_IDENTIFIER;
-			static const std::string GLOW_MAP_IDENTIFIER;
-			static const std::string EMISSION_MAP_IDENTIFIER;
-			static const std::string PARALLAX_MAP_IDENTIFIER;
-			static const std::string ALPHA_MAP_IDENTIFIER;
-			static const std::string RMA_MAP_IDENTIFIER;
-			static const std::string DUDV_MAP_IDENTIFIER;
-			static const std::string WRINKLE_STRETCH_MAP_IDENTIFIER;
-			static const std::string WRINKLE_COMPRESS_MAP_IDENTIFIER;
-			static const std::string EXPONENT_MAP_IDENTIFIER;
-
+			CLASS_ENUM_COMPAT const std::string DIFFUSE_MAP_IDENTIFIER;
+			CLASS_ENUM_COMPAT const std::string ALBEDO_MAP_IDENTIFIER;
+			CLASS_ENUM_COMPAT const std::string ALBEDO_MAP2_IDENTIFIER;
+			CLASS_ENUM_COMPAT const std::string ALBEDO_MAP3_IDENTIFIER;
+			CLASS_ENUM_COMPAT const std::string NORMAL_MAP_IDENTIFIER;
+			CLASS_ENUM_COMPAT const std::string GLOW_MAP_IDENTIFIER;
+			CLASS_ENUM_COMPAT const std::string EMISSION_MAP_IDENTIFIER;
+			CLASS_ENUM_COMPAT const std::string PARALLAX_MAP_IDENTIFIER;
+			CLASS_ENUM_COMPAT const std::string ALPHA_MAP_IDENTIFIER;
+			CLASS_ENUM_COMPAT const std::string RMA_MAP_IDENTIFIER;
+			CLASS_ENUM_COMPAT const std::string DUDV_MAP_IDENTIFIER;
+			CLASS_ENUM_COMPAT const std::string WRINKLE_STRETCH_MAP_IDENTIFIER;
+			CLASS_ENUM_COMPAT const std::string WRINKLE_COMPRESS_MAP_IDENTIFIER;
+			CLASS_ENUM_COMPAT const std::string EXPONENT_MAP_IDENTIFIER;
+		}
+		class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
+		  public:
 			enum class StateFlags : uint32_t {
 				None = 0u,
 				Loaded = 1u,
