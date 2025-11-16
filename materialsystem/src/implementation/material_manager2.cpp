@@ -98,7 +98,7 @@ bool msys::PmatFormatHandler::LoadData(MaterialProcessor &processor, MaterialLoa
 	auto udmDataRoot = udmData->GetAssetData().GetData();
 
 	auto dataSettings = static_cast<MaterialManager &>(GetAssetManager()).CreateDataSettings();
-	auto root = std::make_shared<ds::Block>(*dataSettings);
+	auto root = util::make_shared<ds::Block>(*dataSettings);
 	auto it = udmDataRoot.begin_el();
 	if(it == udmDataRoot.end_el())
 		return false;
@@ -268,7 +268,7 @@ std::shared_ptr<msys::Material> msys::MaterialManager::CreateMaterialObject(cons
 std::shared_ptr<msys::Material> msys::MaterialManager::CreateMaterial(const udm::AssetData &assetData, std::string &outErr)
 {
 	auto dataSettings = CreateDataSettings();
-	auto root = std::make_shared<ds::Block>(*dataSettings);
+	auto root = util::make_shared<ds::Block>(*dataSettings);
 	auto data = assetData.GetData();
 	auto it = data.begin_el();
 	if(it == data.end_el()) {

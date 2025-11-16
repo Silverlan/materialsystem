@@ -53,15 +53,15 @@ bool msys::Source2VmatFormatHandler::LoadVMat(::source2::resource::Resource &res
 		auto *albedoMapB = s2Mat->FindTextureParam("g_tColorB");
 
 		if(albedoMapA)
-			root->AddData(material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*albedoMapA)));
+			root->AddData(material::ALBEDO_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*albedoMapA)));
 		if(albedoMapB)
-			root->AddData(material::ALBEDO_MAP2_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*albedoMapB)));
+			root->AddData(material::ALBEDO_MAP2_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*albedoMapB)));
 
 		auto *normalMapA = s2Mat->FindTextureParam("g_tNormalA");
 		auto *normalMapB = s2Mat->FindTextureParam("g_tNormalB");
 
 		if(normalMapA)
-			root->AddData(material::NORMAL_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*normalMapA)));
+			root->AddData(material::NORMAL_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*normalMapA)));
 
 		auto *metalnessA = s2Mat->FindFloatParam("g_flMetalnessA");
 		auto *metalnessB = s2Mat->FindFloatParam("g_flMetalnessB");
@@ -82,11 +82,11 @@ bool msys::Source2VmatFormatHandler::LoadVMat(::source2::resource::Resource &res
 		// TODO: Can these have a ColorB/NormalB/etc??
 		auto *albedoMap = s2Mat->FindTextureParam("g_tColorA");
 		if(albedoMap)
-			root->AddData(material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*albedoMap)));
+			root->AddData(material::ALBEDO_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*albedoMap)));
 
 		auto *normalMap = s2Mat->FindTextureParam("g_tNormalA");
 		if(normalMap)
-			root->AddData(material::NORMAL_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*normalMap)));
+			root->AddData(material::NORMAL_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*normalMap)));
 
 		auto *metalness = s2Mat->FindFloatParam("g_flMetalnessA");
 		if(metalness)
@@ -100,11 +100,11 @@ bool msys::Source2VmatFormatHandler::LoadVMat(::source2::resource::Resource &res
 		// Dota 2
 		auto *albedoMap = s2Mat->FindTextureParam("g_tColor");
 		if(albedoMap)
-			root->AddData(material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*albedoMap)));
+			root->AddData(material::ALBEDO_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*albedoMap)));
 
 		auto *normalMap = s2Mat->FindTextureParam("g_tNormal");
 		if(normalMap)
-			root->AddData(material::NORMAL_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*normalMap)));
+			root->AddData(material::NORMAL_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*normalMap)));
 #if 0
 		// TODO
 		+		["g_tMasks1"]	("g_tMasks1", "materials/models/courier/drodo/drodo_detailmask_tga_bcdebe17.vtex")	std::pair<std::basic_string<char,std::char_traits<char>,std::allocator<char> > const ,std::basic_string<char,std::char_traits<char>,std::allocator<char> > >
@@ -118,15 +118,15 @@ bool msys::Source2VmatFormatHandler::LoadVMat(::source2::resource::Resource &res
 		if(albedoMap == nullptr)
 			albedoMap = s2Mat->FindTextureParam("g_tColor2");
 		if(albedoMap)
-			root->AddData(material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*albedoMap)));
+			root->AddData(material::ALBEDO_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*albedoMap)));
 
 		auto *normalMap = s2Mat->FindTextureParam("g_tNormal");
 		if(normalMap)
-			root->AddData(material::NORMAL_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*normalMap)));
+			root->AddData(material::NORMAL_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*normalMap)));
 
 		auto *emissionMap = s2Mat->FindTextureParam("g_tSelfIllumMask");
 		if(emissionMap)
-			root->AddData(material::EMISSION_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*emissionMap)));
+			root->AddData(material::EMISSION_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, fLoadTexture(*emissionMap)));
 
 		auto *metalness = s2Mat->FindFloatParam("g_flMetalness");
 		if(metalness)

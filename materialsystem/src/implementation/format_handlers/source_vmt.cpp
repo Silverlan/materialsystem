@@ -145,13 +145,13 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 		if((node = GetNode("$bumpmap", &rootNode)) != nullptr) {
 			auto bumpMap = GetStringValue(*node);
 			if(bumpMap) {
-				root->AddData(material::DUDV_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *bumpMap));
+				root->AddData(material::DUDV_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, *bumpMap));
 				hasDudv = true;
 			}
 		}
 		if(!hasDudv) {
 			std::string defaultDudvMap = "nature/water_coast01_dudv"; // Should be shipped with SFM or HL2
-			root->AddData(material::DUDV_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, defaultDudvMap));
+			root->AddData(material::DUDV_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, defaultDudvMap));
 		}
 		AssignTextureValue(*root, *m_rootNode, "$normalmap", material::NORMAL_MAP_IDENTIFIER);
 
@@ -212,7 +212,7 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 	if((node = GetNode("$selfillummask", &rootNode)) != nullptr) {
 		auto selfIllumMask = GetStringValue(*node);
 		if(selfIllumMask) {
-			root->AddData(material::GLOW_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *selfIllumMask));
+			root->AddData(material::GLOW_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, *selfIllumMask));
 			bHasGlowMap = true;
 			bHasGlow = true;
 		}
@@ -223,23 +223,23 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 		auto hdrCompressedTexture = GetStringValue(*node);
 		if(hdrCompressedTexture) {
 			hasDiffuseMap = true;
-			root->AddData(material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *hdrCompressedTexture));
+			root->AddData(material::ALBEDO_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, *hdrCompressedTexture));
 		}
 	}
 	if(hasDiffuseMap == false && (node = GetNode("$hdrbasetexture", &rootNode)) != nullptr) {
 		auto hdrBaseTexture = GetStringValue(*node);
 		if(hdrBaseTexture) {
 			hasDiffuseMap = true;
-			root->AddData(material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *hdrBaseTexture));
+			root->AddData(material::ALBEDO_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, *hdrBaseTexture));
 		}
 	}
 	if(hasDiffuseMap == false && (node = GetNode("$basetexture", &rootNode)) != nullptr) {
 		auto baseTexture = GetStringValue(*node);
 		if(baseTexture) {
-			root->AddData(material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *baseTexture));
+			root->AddData(material::ALBEDO_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, *baseTexture));
 
 			if(bHasGlowMap == false && (node = GetNode("$selfillum", &rootNode)) != nullptr) {
-				root->AddData(material::GLOW_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, *baseTexture));
+				root->AddData(material::GLOW_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, *baseTexture));
 				root->AddValue("int", "glow_blend_diffuse_mode", "3");
 				root->AddValue("float", "glow_blend_diffuse_scale", "1");
 				root->AddValue("bool", "glow_alpha_only", "1");
@@ -258,7 +258,7 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 				detailBlendMode = static_cast<msys::DetailMode>(*vmtDetailBlendMode);
 			if(umath::to_integral(detailBlendMode) >= 0 && umath::to_integral(detailBlendMode) < umath::to_integral(msys::DetailMode::Count)) {
 				root->AddValue("string", "detail_blend_mode", msys::to_string(detailBlendMode));
-				root->AddData("detail_map", std::make_shared<ds::Texture>(*dataSettings, *detail));
+				root->AddData("detail_map", util::make_shared<ds::Texture>(*dataSettings, *detail));
 
 				node = GetNode("$detailscale", &rootNode);
 				if(node) {
@@ -422,7 +422,7 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 		if(color) {
 			root->AddValue("vector4", "color_factor", std::to_string(color->r) + ' ' + std::to_string(color->g) + ' ' + std::to_string(color->b) + " 1.0");
 			if(root->HasValue(material::ALBEDO_MAP_IDENTIFIER) == false) // $color / $color2 attributes work without a diffuse texture
-				root->AddData(material::ALBEDO_MAP_IDENTIFIER, std::make_shared<ds::Texture>(*dataSettings, "white"));
+				root->AddData(material::ALBEDO_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, "white"));
 		}
 	}
 

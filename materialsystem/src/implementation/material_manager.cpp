@@ -74,7 +74,7 @@ msys::Material *MaterialManager::CreateMaterial(const std::string *identifier, c
 		matId = "__anonymous" + std::to_string(m_unnamedIdx++);
 	if(root == nullptr) {
 		auto dataSettings = ds::create_data_settings(ENUM_VARS);
-		root = std::make_shared<ds::Block>(*dataSettings);
+		root = util::make_shared<ds::Block>(*dataSettings);
 	}
 	msys::Material *mat; //auto *mat = CreateMaterial<Material>(shader,root); // Claims ownership of 'root' and frees the memory at destruction
 	mat->SetName(matId);
@@ -303,7 +303,7 @@ bool MaterialManager::LoadUdm(std::shared_ptr<VFilePtrInternal> &f, LoadInfo &lo
 	auto data = udmData->GetAssetData().GetData();
 
 	auto dataSettings = CreateDataSettings();
-	auto root = std::make_shared<ds::Block>(*dataSettings);
+	auto root = util::make_shared<ds::Block>(*dataSettings);
 
 	std::function<void(const std::string &key, udm::LinkedPropertyWrapper &prop, ds::Block &block, bool texture)> udmToDataSys = nullptr;
 	udmToDataSys = [&udmToDataSys, &dataSettings](const std::string &key, udm::LinkedPropertyWrapper &prop, ds::Block &block, bool texture) {
