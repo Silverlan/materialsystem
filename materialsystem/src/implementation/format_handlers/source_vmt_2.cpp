@@ -127,7 +127,7 @@ bool msys::SourceVmtFormatHandler2::Import(const std::string &outputPath, std::s
 	}
 	auto *vmtRoot = kvNode.get();
 	merge_dx_node_values(*vmtRoot);
-	m_rootNode = std::make_shared<VkvNode>(*kvNode);
+	m_rootNode = util::make_shared<VkvNode>(*kvNode);
 	return LoadVMT(*m_rootNode, outputPath, outFilePath);
 }
 
@@ -147,7 +147,7 @@ std::shared_ptr<const msys::IVmtNode> msys::SourceVmtFormatHandler2::GetNode(con
 	auto it = kvBranch.branches.find(key);
 	if(it == kvBranch.branches.end())
 		return nullptr;
-	return std::make_shared<VkvNode>(*it->second);
+	return util::make_shared<VkvNode>(*it->second);
 }
 std::optional<std::string> msys::SourceVmtFormatHandler2::GetStringValue(const IVmtNode &node) const
 {
