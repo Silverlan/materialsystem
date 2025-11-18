@@ -62,9 +62,7 @@ bool ds::Texture::GetBool() const { return true; }
 ::Vector3 ds::Texture::GetVector() const { return {}; }
 ::Vector2 ds::Texture::GetVector2() const { return {}; }
 ::Vector4 ds::Texture::GetVector4() const { return {}; }
-void ds::Texture::register_type() {
-	ds::register_data_value_type<ds::Texture>("texture");
-}
+void ds::Texture::register_type() { ds::register_data_value_type<ds::Texture>("texture"); }
 std::string ds::Texture::GetTypeString() const { return "texture"; }
 
 /*ds::Cubemap::Cubemap(ds::Settings &dataSettings,const std::string &value)
