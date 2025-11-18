@@ -25,6 +25,8 @@ export {
 	namespace ds {
 		class DLLMATSYS Texture : public Value {
 		  public:
+			static void register_type();
+
 			Texture(ds::Settings &dataSettings, const std::string &value);
 			Texture(ds::Settings &dataSettings, const TextureInfo &value);
 			virtual Texture *Copy() override;
