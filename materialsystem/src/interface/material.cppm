@@ -252,6 +252,8 @@ export {
 			Material(msys::MaterialManager &manager);
 			Material(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data);
 			Material(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data);
+			void InitializeHandle();
+			
 			virtual void OnBaseMaterialChanged();
 			void CallEventListeners(Event event);
 			void UpdateBaseMaterial();
