@@ -4,6 +4,7 @@
 module;
 
 #include "definitions.hpp"
+#include "util_enum_flags.hpp"
 
 export module pragma.cmaterialsystem:texture_manager.texture;
 
@@ -66,8 +67,5 @@ export {
 #pragma warning(pop)
 		using namespace umath::scoped_enum::bitwise;
 	}
-	namespace umath::scoped_enum::bitwise {
-		template<>
-		struct enable_bitwise_operators<msys::Texture::Flags> : std::true_type {};
-	}
+	REGISTER_ENUM_FLAGS(msys::Texture::Flags)
 }

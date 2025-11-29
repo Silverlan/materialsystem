@@ -4,6 +4,7 @@
 module;
 
 #include "definitions.hpp"
+#include "util_enum_flags.hpp"
 #include <cassert>
 
 export module pragma.materialsystem:material;
@@ -253,7 +254,7 @@ export {
 			Material(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data);
 			Material(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data);
 			void InitializeHandle();
-			
+
 			virtual void OnBaseMaterialChanged();
 			void CallEventListeners(Event event);
 			void UpdateBaseMaterial();
@@ -304,10 +305,7 @@ export {
 		using namespace umath::scoped_enum::bitwise;
 #pragma warning(pop)
 	}
-	namespace umath::scoped_enum::bitwise {
-		template<>
-		struct enable_bitwise_operators<msys::Material::StateFlags> : std::true_type {};
-	}
+	REGISTER_ENUM_FLAGS(msys::Material::StateFlags)
 
 	DLLMATSYS std::ostream &operator<<(std::ostream &out, const msys::Material &o);
 
