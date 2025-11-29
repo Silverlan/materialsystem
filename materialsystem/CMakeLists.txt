@@ -36,8 +36,6 @@ endif()
 
 if(MSVC)
     target_compile_options(${PROJ_NAME} PRIVATE "/bigobj")
-else()
-    target_link_options(${PROJ_NAME} PRIVATE "LINKER:--strip-all")
 endif()
 
 pr_finalize(${PROJ_NAME})
