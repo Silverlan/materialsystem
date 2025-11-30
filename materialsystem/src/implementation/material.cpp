@@ -36,21 +36,18 @@ msys::Material::BaseMaterial::~BaseMaterial()
 std::shared_ptr<msys::Material> msys::Material::Create(msys::MaterialManager &manager)
 {
 	auto mat = std::shared_ptr<msys::Material> {new Material {manager}};
-	mat->InitializeHandle();
 	mat->Reset();
 	return mat;
 }
 std::shared_ptr<msys::Material> msys::Material::Create(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data)
 {
 	auto mat = std::shared_ptr<msys::Material> {new Material {manager, shaderInfo, data}};
-	mat->InitializeHandle();
 	mat->Initialize(shaderInfo, data);
 	return mat;
 }
 std::shared_ptr<msys::Material> msys::Material::Create(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data)
 {
 	auto mat = std::shared_ptr<msys::Material> {new Material {manager, shader, data}};
-	mat->InitializeHandle();
 	mat->Initialize(shader, data);
 	return mat;
 }
@@ -59,12 +56,6 @@ msys::Material::Material(msys::MaterialManager &manager) : m_data(nullptr), m_sh
 msys::Material::Material(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data) : Material(manager) {}
 
 msys::Material::Material(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data) : Material(manager) {}
-
-void msys::Material::InitializeHandle()
-{
-	m_handle = util::to_shared_handle(shared_from_this());
-}
-
 
 void msys::Material::Assign(const Material &other)
 {
@@ -651,7 +642,7 @@ TextureInfo *msys::Material::GetTextureInfo(const std::string_view &key)
 	return nullptr;
 }
 
-msys::MaterialHandle msys::Material::GetHandle() { return m_handle; }
+msys::MaterialHandle msys::Material::GetHandle() { return shared_from_this(); }
 
 std::shared_ptr<msys::Material> msys::Material::Copy(bool copyData) const
 {

@@ -66,7 +66,7 @@ void msys::CMaterialManager::ReloadMaterialShaders()
 			m_shaderHandler(hMat.get());
 	}
 }
-void msys::CMaterialManager::MarkForReload(CMaterial &mat) { m_reloadShaderQueue.push(util::TWeakSharedHandle<msys::Material>(mat.GetHandle())); }
+void msys::CMaterialManager::MarkForReload(CMaterial &mat) { m_reloadShaderQueue.push(mat.GetHandle()); }
 void msys::CMaterialManager::Poll()
 {
 	MaterialManager::Poll();
@@ -77,7 +77,7 @@ void msys::CMaterialManager::Poll()
 			auto hMat = m_reloadShaderQueue.front();
 			m_reloadShaderQueue.pop();
 
-			if(!hMat.expired())
+			if(!hMat.IsValid())
 				continue;
 			auto *pmat = hMat.get();
 			auto it = traversed.find(pmat);

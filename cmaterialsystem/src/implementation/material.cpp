@@ -30,21 +30,18 @@ bool msys::CMaterial::ShaderEqualFn::operator()(const util::WeakHandle<prosper::
 std::shared_ptr<msys::CMaterial> msys::CMaterial::Create(msys::MaterialManager &manager)
 {
 	auto mat = std::shared_ptr<CMaterial> {new CMaterial {manager}};
-	mat->InitializeHandle();
 	mat->Reset();
 	return mat;
 }
 std::shared_ptr<msys::CMaterial> msys::CMaterial::Create(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shader, const std::shared_ptr<ds::Block> &data)
 {
 	auto mat = std::shared_ptr<CMaterial> {new CMaterial {manager, shader, data}};
-	mat->InitializeHandle();
 	mat->Initialize(shader, data);
 	return mat;
 }
 std::shared_ptr<msys::CMaterial> msys::CMaterial::Create(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data)
 {
 	auto mat = std::shared_ptr<CMaterial> {new CMaterial {manager, shader, data}};
-	mat->InitializeHandle();
 	mat->Initialize(shader, data);
 	return mat;
 }

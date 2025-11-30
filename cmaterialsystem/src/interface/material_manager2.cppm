@@ -35,6 +35,6 @@ export namespace msys {
 		std::function<void(Material *)> m_shaderHandler;
 		prosper::IPrContext &m_context;
 		std::unique_ptr<msys::TextureManager> m_textureManager;
-		std::queue<util::TWeakSharedHandle<Material>> m_reloadShaderQueue;
+		std::queue<WeakMaterialHandle> m_reloadShaderQueue;
 	};
 };

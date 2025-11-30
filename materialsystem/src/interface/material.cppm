@@ -16,7 +16,8 @@ export import pragma.udm;
 export {
 	namespace msys {
 		class Material;
-		using MaterialHandle = util::TSharedHandle<Material>;
+		using MaterialHandle = util::SharedPtrHandle<Material>;
+		using WeakMaterialHandle = util::WeakPtrHandle<Material>;
 		class MaterialManager;
 
 		template<typename T>
@@ -253,7 +254,6 @@ export {
 			Material(msys::MaterialManager &manager);
 			Material(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data);
 			Material(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data);
-			void InitializeHandle();
 
 			virtual void OnBaseMaterialChanged();
 			void CallEventListeners(Event event);
@@ -276,7 +276,6 @@ export {
 			uint32_t m_updateIndex = 0;
 			util::WeakHandle<util::ShaderInfo> m_shaderInfo = {};
 			std::unique_ptr<std::string> m_shader;
-			MaterialHandle m_handle;
 			std::string m_name;
 			std::shared_ptr<ds::Block> m_data;
 			StateFlags m_stateFlags = StateFlags::None;
