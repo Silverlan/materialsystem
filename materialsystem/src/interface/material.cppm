@@ -14,10 +14,10 @@ export import pragma.datasystem;
 export import pragma.udm;
 
 export {
-	namespace msys {
+	namespace pragma::material {
 		class Material;
-		using MaterialHandle = util::SharedPtrHandle<Material>;
-		using WeakMaterialHandle = util::WeakPtrHandle<Material>;
+		using MaterialHandle = pragma::util::SharedPtrHandle<Material>;
+		using WeakMaterialHandle = pragma::util::WeakPtrHandle<Material>;
 		class MaterialManager;
 
 		template<typename T>
@@ -33,38 +33,38 @@ export {
 
 		template<typename T>
 		concept is_underlying_property_udm_type = std::is_same_v<T, udm::String> || std::is_same_v<T, udm::Int32> || std::is_same_v<T, udm::Float> || std::is_same_v<T, udm::Boolean> || std::is_same_v<T, udm::Vector3> || std::is_same_v<T, udm::Vector2> || std::is_same_v<T, udm::Vector4>;
-		constexpr udm::Type to_udm_type(ds::ValueType type)
+		constexpr udm::Type to_udm_type(datasystem::ValueType type)
 		{
 			switch(type) {
-			case ds::ValueType::String:
-			case ds::ValueType::Texture:
+			case datasystem::ValueType::String:
+			case datasystem::ValueType::Texture:
 				return udm::Type::String;
-			case ds::ValueType::Int:
+			case datasystem::ValueType::Int:
 				return udm::Type::Int32;
-			case ds::ValueType::Float:
+			case datasystem::ValueType::Float:
 				return udm::Type::Float;
-			case ds::ValueType::Bool:
+			case datasystem::ValueType::Bool:
 				return udm::Type::Boolean;
-			case ds::ValueType::Color:
+			case datasystem::ValueType::Color:
 				return udm::Type::Vector3;
-			case ds::ValueType::Vector2:
+			case datasystem::ValueType::Vector2:
 				return udm::Type::Vector2;
-			case ds::ValueType::Vector3:
+			case datasystem::ValueType::Vector3:
 				return udm::Type::Vector3;
-			case ds::ValueType::Vector4:
+			case datasystem::ValueType::Vector4:
 				return udm::Type::Vector4;
 			default:
 				return udm::Type::Invalid;
 			}
-			static_assert(umath::to_integral(ds::ValueType::Count) == 11, "Update this function when new types are added!");
+			static_assert(pragma::math::to_integral(datasystem::ValueType::Count) == 11, "Update this function when new types are added!");
 		}
 
-		constexpr ds::ValueType to_ds_type(udm::Type type)
+		constexpr datasystem::ValueType to_ds_type(udm::Type type)
 		{
 			switch(type) {
 			case udm::Type::String:
 			case udm::Type::Utf8String:
-				return ds::ValueType::String;
+				return datasystem::ValueType::String;
 			case udm::Type::Int8:
 			case udm::Type::UInt8:
 			case udm::Type::Int16:
@@ -73,39 +73,39 @@ export {
 			case udm::Type::UInt32:
 			case udm::Type::Int64:
 			case udm::Type::UInt64:
-				return ds::ValueType::Int;
+				return datasystem::ValueType::Int;
 			case udm::Type::Half:
 			case udm::Type::Float:
 			case udm::Type::Double:
-				return ds::ValueType::Float;
+				return datasystem::ValueType::Float;
 			case udm::Type::Boolean:
-				return ds::ValueType::Bool;
+				return datasystem::ValueType::Bool;
 			case udm::Type::Vector2:
 			case udm::Type::Vector2i:
-				return ds::ValueType::Vector2;
+				return datasystem::ValueType::Vector2;
 			case udm::Type::Vector3:
 			case udm::Type::Vector3i:
-				return ds::ValueType::Vector3;
+				return datasystem::ValueType::Vector3;
 			case udm::Type::Vector4:
 			case udm::Type::Vector4i:
-				return ds::ValueType::Vector4;
+				return datasystem::ValueType::Vector4;
 			case udm::Type::Quaternion:
 			case udm::Type::EulerAngles:
-				return ds::ValueType::Vector3;
+				return datasystem::ValueType::Vector3;
 			case udm::Type::Srgba:
 			case udm::Type::HdrColor:
-				return ds::ValueType::Vector4;
+				return datasystem::ValueType::Vector4;
 			default:
 				break;
 			}
-			static_assert(umath::to_integral(ds::ValueType::Count) == 11, "Update this function when new types are added!");
-			return ds::ValueType::Invalid;
+			static_assert(pragma::math::to_integral(datasystem::ValueType::Count) == 11, "Update this function when new types are added!");
+			return datasystem::ValueType::Invalid;
 		}
 
 		using MaterialIndex = uint32_t;
 #pragma warning(push)
 #pragma warning(disable : 4251)
-		namespace material {
+		namespace ematerial {
 			CONSTEXPR_DLL_COMPAT auto PMAT_IDENTIFIER = "PMAT";
 			CONSTEXPR_DLL_COMPAT uint32_t PMAT_VERSION = 1;
 
@@ -145,14 +145,14 @@ export {
 				Count,
 			};
 
-			static std::shared_ptr<Material> Create(msys::MaterialManager &manager);
-			static std::shared_ptr<Material> Create(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data);
-			static std::shared_ptr<Material> Create(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data);
+			static std::shared_ptr<Material> Create(MaterialManager &manager);
+			static std::shared_ptr<Material> Create(MaterialManager &manager, const pragma::util::WeakHandle<pragma::util::ShaderInfo> &shaderInfo, const std::shared_ptr<datasystem::Block> &data);
+			static std::shared_ptr<Material> Create(MaterialManager &manager, const std::string &shader, const std::shared_ptr<datasystem::Block> &data);
 			Material(const Material &) = delete;
 			virtual ~Material();
-			msys::MaterialHandle GetHandle();
-			virtual void SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo);
-			const util::ShaderInfo *GetShaderInfo() const;
+			MaterialHandle GetHandle();
+			virtual void SetShaderInfo(const pragma::util::WeakHandle<pragma::util::ShaderInfo> &shaderInfo);
+			const pragma::util::ShaderInfo *GetShaderInfo() const;
 			void UpdateTextures(bool forceUpdate = false);
 			const std::string &GetShaderIdentifier() const;
 			void SetName(const std::string &name);
@@ -197,39 +197,39 @@ export {
 			void SetBloomColorFactor(const Vector4 &bloomColorFactor);
 			std::optional<Vector4> GetBloomColorFactor() const;
 
-			const std::shared_ptr<ds::Block> &GetPropertyDataBlock() const { return m_data; }
+			const std::shared_ptr<datasystem::Block> &GetPropertyDataBlock() const { return m_data; }
 			bool HasPropertyBlock(const std::string_view &name) const;
-			std::shared_ptr<ds::Block> GetPropertyBlock(const std::string_view &path) const;
-			msys::PropertyType GetPropertyType(const std::string_view &key) const;
+			std::shared_ptr<datasystem::Block> GetPropertyBlock(const std::string_view &path) const;
+			PropertyType GetPropertyType(const std::string_view &key) const;
 
 			void SetTextureProperty(const std::string_view &strPath, const std::string_view &tex);
 
 			void ClearProperty(const std::string_view &key, bool clearBlocksIfEmpty = true);
 			template<typename T>
-			    requires(msys::is_property_type<T>)
+			    requires(material::is_property_type<T>)
 			void SetProperty(const std::string_view &key, const T &value);
 			template<typename TTarget>
-			    requires(msys::is_property_type<TTarget>)
+			    requires(material::is_property_type<TTarget>)
 			bool GetProperty(const std::string_view &key, TTarget *outValue) const;
 			template<typename TTarget>
-			    requires(msys::is_property_type<TTarget>)
+			    requires(material::is_property_type<TTarget>)
 			TTarget GetProperty(const std::string_view &key, const TTarget &defVal) const;
-			ds::ValueType GetPropertyValueType(const std::string_view &strPath) const;
+			datasystem::ValueType GetPropertyValueType(const std::string_view &strPath) const;
 
-			std::pair<std::shared_ptr<ds::Block>, std::string> ResolvePropertyPath(const std::string_view &strPath) const;
+			std::pair<std::shared_ptr<datasystem::Block>, std::string> ResolvePropertyPath(const std::string_view &strPath) const;
 
 			virtual void SetLoaded(bool b);
 			CallbackHandle CallOnLoaded(const std::function<void(void)> &f) const;
 			CallbackHandle AddEventListener(Event event, const std::function<void(void)> &f);
 			bool IsValid() const;
-			msys::MaterialManager &GetManager() const;
+			MaterialManager &GetManager() const;
 			std::optional<std::string> GetAbsolutePath() const;
 
 			bool Save(udm::AssetData outData, std::string &outErr);
 			bool Save(const std::string &fileName, std::string &outErr, bool absolutePath = false);
 			bool Save(std::string &outErr);
 
-			bool SaveLegacy(std::shared_ptr<VFilePtrInternalReal> f) const;
+			bool SaveLegacy(std::shared_ptr<fs::VFilePtrInternalReal> f) const;
 			bool SaveLegacy(const std::string &fileName, const std::string &rootPath = "") const;
 			bool SaveLegacy() const;
 
@@ -247,41 +247,41 @@ export {
 			void *GetUserData2() { return m_userData2; }
 			void SetUserData2(void *data) { m_userData2 = data; }
 			virtual void Reset();
-			void Initialize(const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data);
-			void Initialize(const std::string &shader, const std::shared_ptr<ds::Block> &data);
+			void Initialize(const pragma::util::WeakHandle<pragma::util::ShaderInfo> &shaderInfo, const std::shared_ptr<datasystem::Block> &data);
+			void Initialize(const std::string &shader, const std::shared_ptr<datasystem::Block> &data);
 		  protected:
-			friend msys::MaterialManager;
-			Material(msys::MaterialManager &manager);
-			Material(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data);
-			Material(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data);
+			friend MaterialManager;
+			Material(MaterialManager &manager);
+			Material(MaterialManager &manager, const pragma::util::WeakHandle<pragma::util::ShaderInfo> &shaderInfo, const std::shared_ptr<datasystem::Block> &data);
+			Material(MaterialManager &manager, const std::string &shader, const std::shared_ptr<datasystem::Block> &data);
 
 			virtual void OnBaseMaterialChanged();
 			void CallEventListeners(Event event);
 			void UpdateBaseMaterial();
 
-			void ClearProperty(ds::Block &block, const std::string_view &key, bool clearBlocksIfEmpty);
+			void ClearProperty(datasystem::Block &block, const std::string_view &key, bool clearBlocksIfEmpty);
 			template<typename T>
-			    requires(msys::is_property_type<T>)
-			void SetProperty(ds::Block &block, const std::string_view &key, const T &value);
+			    requires(material::is_property_type<T>)
+			void SetProperty(datasystem::Block &block, const std::string_view &key, const T &value);
 			template<typename TTarget>
-			    requires(msys::is_property_type<TTarget>)
-			bool GetProperty(const ds::Block &block, const std::string_view &key, TTarget *outValue) const;
+			    requires(material::is_property_type<TTarget>)
+			bool GetProperty(const datasystem::Block &block, const std::string_view &key, TTarget *outValue) const;
 			template<typename TTarget>
-			    requires(msys::is_property_type<TTarget>)
-			TTarget GetProperty(const ds::Block &block, const std::string_view &key, const TTarget &defVal) const;
+			    requires(material::is_property_type<TTarget>)
+			TTarget GetProperty(const datasystem::Block &block, const std::string_view &key, const TTarget &defVal) const;
 
-			virtual void Initialize(const std::shared_ptr<ds::Block> &data);
+			virtual void Initialize(const std::shared_ptr<datasystem::Block> &data);
 			virtual void OnTexturesUpdated();
 			void SetIndex(MaterialIndex index) { m_index = index; }
 			uint32_t m_updateIndex = 0;
-			util::WeakHandle<util::ShaderInfo> m_shaderInfo = {};
+			pragma::util::WeakHandle<pragma::util::ShaderInfo> m_shaderInfo = {};
 			std::unique_ptr<std::string> m_shader;
 			std::string m_name;
-			std::shared_ptr<ds::Block> m_data;
+			std::shared_ptr<datasystem::Block> m_data;
 			StateFlags m_stateFlags = StateFlags::None;
 			mutable std::vector<CallbackHandle> m_callOnLoaded;
 			std::unordered_map<Event, std::vector<CallbackHandle>> m_eventListeners;
-			msys::MaterialManager &m_manager;
+			MaterialManager &m_manager;
 			TextureInfo *m_texDiffuse = nullptr;
 			TextureInfo *m_texNormal = nullptr;
 			TextureInfo *m_texGlow = nullptr;
@@ -301,14 +301,14 @@ export {
 			};
 			std::unique_ptr<BaseMaterial> m_baseMaterial;
 		};
-		using namespace umath::scoped_enum::bitwise;
+		using namespace pragma::math::scoped_enum::bitwise;
 #pragma warning(pop)
 	}
-	REGISTER_ENUM_FLAGS(msys::Material::StateFlags)
+	REGISTER_ENUM_FLAGS(pragma::material::Material::StateFlags)
 
-	DLLMATSYS std::ostream &operator<<(std::ostream &out, const msys::Material &o);
+	DLLMATSYS std::ostream &operator<<(std::ostream &out, const pragma::material::Material &o);
 
-	namespace msys {
+	namespace pragma::material {
 		template<typename T>
 		    requires(is_property_type<T>)
 		void Material::SetProperty(const std::string_view &strPath, const T &value)
@@ -345,7 +345,7 @@ export {
 
 		template<typename T>
 		    requires(is_property_type<T>)
-		void Material::SetProperty(ds::Block &block, const std::string_view &key, const T &value)
+		void Material::SetProperty(datasystem::Block &block, const std::string_view &key, const T &value)
 		{
 			if constexpr(std::is_same_v<T, Quat>)
 				return SetProperty(block, key, EulerAngles {value});
@@ -364,12 +364,12 @@ export {
 		}
 		template<typename TTarget>
 		    requires(is_property_type<TTarget>)
-		bool Material::GetProperty(const ds::Block &block, const std::string_view &key, TTarget *outValue) const
+		bool Material::GetProperty(const datasystem::Block &block, const std::string_view &key, TTarget *outValue) const
 		{
 			auto &dsBase = block.GetValue(key);
 			if(dsBase == nullptr || !dsBase->IsValue())
 				return false;
-			auto &dsVal = *static_cast<ds::Value *>(dsBase.get());
+			auto &dsVal = *static_cast<datasystem::Value *>(dsBase.get());
 			constexpr auto targetType = udm::type_to_enum<TTarget>();
 			auto sourceType = to_udm_type(dsVal.GetType());
 			auto res = udm::visit(sourceType, [&](auto tag) -> bool {
@@ -377,36 +377,36 @@ export {
 				if constexpr(is_property_type<TSource>) {
 					if constexpr(udm::is_convertible<TSource, TTarget>()) {
 						if constexpr(std::is_same_v<TSource, udm::String>) {
-							assert(dsVal.GetType() == ds::ValueType::String || dsVal.GetType() == ds::ValueType::Texture);
-							*outValue = udm::convert<TSource, TTarget>(static_cast<ds::String *>(&dsVal)->GetValue());
+							assert(dsVal.GetType() == datasystem::ValueType::String || dsVal.GetType() == datasystem::ValueType::Texture);
+							*outValue = udm::convert<TSource, TTarget>(static_cast<datasystem::String *>(&dsVal)->GetValue());
 						}
 						else if constexpr(std::is_same_v<TSource, udm::Int32>) {
-							assert(dsVal.GetType() == ds::ValueType::Int);
-							*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Int *>(&dsVal)->GetValue());
+							assert(dsVal.GetType() == datasystem::ValueType::Int);
+							*outValue = udm::convert<TSource, TTarget>(static_cast<datasystem::Int *>(&dsVal)->GetValue());
 						}
 						else if constexpr(std::is_same_v<TSource, udm::Float>) {
-							assert(dsVal.GetType() == ds::ValueType::Float);
-							*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Float *>(&dsVal)->GetValue());
+							assert(dsVal.GetType() == datasystem::ValueType::Float);
+							*outValue = udm::convert<TSource, TTarget>(static_cast<datasystem::Float *>(&dsVal)->GetValue());
 						}
 						else if constexpr(std::is_same_v<TSource, udm::Boolean>) {
-							assert(dsVal.GetType() == ds::ValueType::Bool);
-							*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Bool *>(&dsVal)->GetValue());
+							assert(dsVal.GetType() == datasystem::ValueType::Bool);
+							*outValue = udm::convert<TSource, TTarget>(static_cast<datasystem::Bool *>(&dsVal)->GetValue());
 						}
 						else if constexpr(std::is_same_v<TSource, udm::Vector3>) {
 							auto dsValType = dsVal.GetType();
-							assert(dsValType == ds::ValueType::Color || dsValType == ds::ValueType::Vector3);
-							if(dsValType == ds::ValueType::Color)
-								*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Color *>(&dsVal)->GetValue().ToVector3());
+							assert(dsValType == datasystem::ValueType::Color || dsValType == datasystem::ValueType::Vector3);
+							if(dsValType == datasystem::ValueType::Color)
+								*outValue = udm::convert<TSource, TTarget>(static_cast<datasystem::Color *>(&dsVal)->GetValue().ToVector3());
 							else
-								*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Vector *>(&dsVal)->GetValue());
+								*outValue = udm::convert<TSource, TTarget>(static_cast<datasystem::Vector *>(&dsVal)->GetValue());
 						}
 						else if constexpr(std::is_same_v<TSource, udm::Vector2>) {
-							assert(dsVal.GetType() == ds::ValueType::Vector2);
-							*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Vector2 *>(&dsVal)->GetValue());
+							assert(dsVal.GetType() == datasystem::ValueType::Vector2);
+							*outValue = udm::convert<TSource, TTarget>(static_cast<datasystem::Vector2 *>(&dsVal)->GetValue());
 						}
 						else if constexpr(std::is_same_v<TSource, udm::Vector4>) {
-							assert(dsVal.GetType() == ds::ValueType::Vector4);
-							*outValue = udm::convert<TSource, TTarget>(static_cast<ds::Vector4 *>(&dsVal)->GetValue());
+							assert(dsVal.GetType() == datasystem::ValueType::Vector4);
+							*outValue = udm::convert<TSource, TTarget>(static_cast<datasystem::Vector4 *>(&dsVal)->GetValue());
 						}
 						else
 							return false;
@@ -419,7 +419,7 @@ export {
 		}
 		template<typename TTarget>
 		    requires(is_property_type<TTarget>)
-		TTarget Material::GetProperty(const ds::Block &block, const std::string_view &key, const TTarget &defVal) const
+		TTarget Material::GetProperty(const datasystem::Block &block, const std::string_view &key, const TTarget &defVal) const
 		{
 			TTarget val;
 			if(GetProperty<TTarget>(block, key, &val))

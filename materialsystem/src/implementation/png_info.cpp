@@ -9,7 +9,7 @@ module pragma.materialsystem;
 
 import :png_info;
 
-void PNGInfo::Release()
+void pragma::material::PNGInfo::Release()
 {
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 	free(image_data);
@@ -20,11 +20,11 @@ static void ReadPNGDataFromFile(png_structp png_ptr, png_bytep outBytes, png_siz
 {
 	if(png_get_io_ptr(png_ptr) == NULL)
 		return;
-	VFilePtr &fp = *static_cast<VFilePtr *>(png_get_io_ptr(png_ptr));
+	pragma::fs::VFilePtr &fp = *static_cast<pragma::fs::VFilePtr *>(png_get_io_ptr(png_ptr));
 	fp->Read(&outBytes[0], byteCountToRead);
 }
 
-bool material::load_png_data(std::shared_ptr<VFilePtrInternal> &fp, PNGInfo &info)
+bool pragma::material::load_png_data(std::shared_ptr<pragma::fs::VFilePtrInternal> &fp, PNGInfo &info)
 {
 	png_byte header[8];
 
@@ -145,9 +145,9 @@ bool material::load_png_data(std::shared_ptr<VFilePtrInternal> &fp, PNGInfo &inf
 	}
 	return true;
 }
-bool material::load_png_data(const char *path, PNGInfo &info)
+bool pragma::material::load_png_data(const char *path, PNGInfo &info)
 {
-	auto fp = FileManager::OpenFile(path, "rb");
+	auto fp = fs::open_file(path, fs::FileMode::Read | fs::FileMode::Binary);
 	if(fp == NULL)
 		return false;
 	return load_png_data(fp, info);

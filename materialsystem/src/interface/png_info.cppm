@@ -10,7 +10,7 @@ export module pragma.materialsystem:png_info;
 
 export import pragma.filesystem;
 
-export {
+export namespace pragma::material {
 	struct DLLMATSYS PNGInfo {
 		uint32_t format; // vk::Format
 		unsigned int width;
@@ -23,8 +23,6 @@ export {
 		void Release();
 	};
 
-	namespace material {
-		DLLMATSYS bool load_png_data(const char *path, PNGInfo &info);
-		DLLMATSYS bool load_png_data(std::shared_ptr<VFilePtrInternal> &f, PNGInfo &info);
-	};
+	DLLMATSYS bool load_png_data(const char *path, PNGInfo &info);
+	DLLMATSYS bool load_png_data(std::shared_ptr<fs::VFilePtrInternal> &f, PNGInfo &info);
 }

@@ -20,32 +20,32 @@ import :material_manager2;
 template<typename T>
 static T bor(T v0, T v1)
 {
-	return static_cast<T>(umath::to_integral(v0) | umath::to_integral(v1));
+	return static_cast<T>(pragma::math::to_integral(v0) | pragma::math::to_integral(v1));
 }
 
 #ifndef DISABLE_VMT_SUPPORT
 template<class T>
-bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Block &rootData, std::string &matShader)
+bool pragma::material::load_vmt_data(T &formatHandler, const std::string &vmtShader, datasystem::Block &rootData, std::string &matShader)
 {
 	auto &fh = formatHandler;
 	//TODO: These do not work if the textures haven't been imported yet!!
-	auto settings = ds::create_data_settings({});
-	auto &matManager = static_cast<msys::CMaterialManager &>(fh.GetAssetManager());
+	auto settings = datasystem::create_data_settings({});
+	auto &matManager = static_cast<CMaterialManager &>(fh.GetAssetManager());
 	auto rootPath = matManager.GetImportDirectory();
-	if(ustring::compare<std::string>(vmtShader, "eyes", false)) {
+	if(pragma::string::compare<std::string>(vmtShader, "eyes", false)) {
 		matShader = "eye_legacy";
 		fh.AssignTextureValue(rootData, *fh.m_rootNode, "$iris", "iris_map");
 		fh.AssignTextureValue(rootData, *fh.m_rootNode, "$basetexture", "sclera_map");
 		rootData.AddValue("float", "iris_scale", "0.5");
 	}
-	else if(ustring::compare<std::string>(vmtShader, "eyerefract", false)) {
+	else if(pragma::string::compare<std::string>(vmtShader, "eyerefract", false)) {
 		matShader = "eye";
 		auto irisTexture = fh.GetStringValue("$iris");
 		auto corneaTexture = fh.GetStringValue("$corneatexture");
 
 		// Some conversions are required for the iris and cornea textures for usage in Pragma
 		auto &context = matManager.GetContext();
-		auto *shaderDecomposeCornea = static_cast<msys::ShaderDecomposeCornea *>(context.GetShader("decompose_cornea").get());
+		auto *shaderDecomposeCornea = static_cast<ShaderDecomposeCornea *>(context.GetShader("decompose_cornea").get());
 		if(shaderDecomposeCornea) {
 			auto &textureManager = matManager.GetTextureManager();
 
@@ -59,7 +59,7 @@ bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Blo
 
 			if(irisMap && irisMap->HasValidVkTexture() && corneaMap && corneaMap->HasValidVkTexture()) {
 				// Prepare output textures (albedo, normal, parallax)
-				using namespace umath::scoped_enum::bitwise;
+				using namespace pragma::math::scoped_enum::bitwise;
 				prosper::util::ImageCreateInfo imgCreateInfo {};
 				//imgCreateInfo.flags |= prosper::util::ImageCreateInfo::Flags::FullMipmapChain;
 				imgCreateInfo.format = prosper::Format::R8G8B8A8_UNorm;
@@ -68,8 +68,8 @@ bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Blo
 				imgCreateInfo.tiling = prosper::ImageTiling::Optimal;
 				imgCreateInfo.usage = bor<prosper::ImageUsageFlags>(prosper::ImageUsageFlags::ColorAttachmentBit, prosper::ImageUsageFlags::TransferSrcBit);
 
-				imgCreateInfo.width = umath::max(irisMap->GetWidth(), corneaMap->GetWidth());
-				imgCreateInfo.height = umath::max(irisMap->GetHeight(), corneaMap->GetHeight());
+				imgCreateInfo.width = pragma::math::max(irisMap->GetWidth(), corneaMap->GetWidth());
+				imgCreateInfo.height = pragma::math::max(irisMap->GetHeight(), corneaMap->GetHeight());
 				auto imgAlbedo = context.CreateImage(imgCreateInfo);
 
 				imgCreateInfo.format = prosper::Format::R32G32B32A32_SFloat;
@@ -84,12 +84,12 @@ bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Blo
 				auto texNoise = context.CreateTexture({}, *imgNoise, imgViewCreateInfo);
 				auto rt = context.CreateRenderTarget({texAlbedo, texNormal, texParallax, texNoise}, shaderDecomposeCornea->GetRenderPass());
 
-				auto dsg = shaderDecomposeCornea->CreateDescriptorSetGroup(msys::ShaderDecomposeCornea::DESCRIPTOR_SET_TEXTURE.setIndex);
+				auto dsg = shaderDecomposeCornea->CreateDescriptorSetGroup(ShaderDecomposeCornea::DESCRIPTOR_SET_TEXTURE.setIndex);
 				auto &ds = *dsg->GetDescriptorSet();
 				auto &vkIrisTex = irisMap->GetVkTexture();
 				auto &vkCorneaTex = corneaMap->GetVkTexture();
-				ds.SetBindingTexture(*vkIrisTex, umath::to_integral(msys::ShaderDecomposeCornea::TextureBinding::IrisMap));
-				ds.SetBindingTexture(*vkCorneaTex, umath::to_integral(msys::ShaderDecomposeCornea::TextureBinding::CorneaMap));
+				ds.SetBindingTexture(*vkIrisTex, pragma::math::to_integral(ShaderDecomposeCornea::TextureBinding::IrisMap));
+				ds.SetBindingTexture(*vkCorneaTex, pragma::math::to_integral(ShaderDecomposeCornea::TextureBinding::CorneaMap));
 				auto &setupCmd = context.GetSetupCommandBuffer();
 				if(setupCmd->RecordBeginRenderPass(*rt)) {
 					prosper::ShaderBindState bindState {*setupCmd};
@@ -114,28 +114,28 @@ bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Blo
 				auto errHandler = [](const std::string &err) { std::cout << "WARNING: Unable to save eyeball image(s) as DDS: " << err << std::endl; };
 
 				// TODO: Change width/height
-				uimg::TextureInfo texInfo {};
-				texInfo.containerFormat = uimg::TextureInfo::ContainerFormat::DDS;
-				texInfo.alphaMode = uimg::TextureInfo::AlphaMode::Auto;
-				texInfo.flags = uimg::TextureInfo::Flags::GenerateMipmaps;
-				texInfo.inputFormat = uimg::TextureInfo::InputFormat::R8G8B8A8_UInt;
+				image::TextureInfo texInfo {};
+				texInfo.containerFormat = image::TextureInfo::ContainerFormat::DDS;
+				texInfo.alphaMode = image::TextureInfo::AlphaMode::Auto;
+				texInfo.flags = image::TextureInfo::Flags::GenerateMipmaps;
+				texInfo.inputFormat = image::TextureInfo::InputFormat::R8G8B8A8_UInt;
 				prosper::util::save_texture((rootPath + ('/' + albedoTexName)).GetString(), texAlbedo->GetImage(), texInfo, errHandler);
 
-				texInfo.outputFormat = uimg::TextureInfo::OutputFormat::GradientMap;
-				texInfo.inputFormat = uimg::TextureInfo::InputFormat::R32G32B32A32_Float;
+				texInfo.outputFormat = image::TextureInfo::OutputFormat::GradientMap;
+				texInfo.inputFormat = image::TextureInfo::InputFormat::R32G32B32A32_Float;
 				prosper::util::save_texture((rootPath + ('/' + parallaxTexName)).GetString(), texParallax->GetImage(), texInfo, errHandler);
 				prosper::util::save_texture((rootPath + ('/' + noiseTexName)).GetString(), texNoise->GetImage(), texInfo, errHandler);
 
-				texInfo.outputFormat = uimg::TextureInfo::OutputFormat::NormalMap;
+				texInfo.outputFormat = image::TextureInfo::OutputFormat::NormalMap;
 				texInfo.SetNormalMap();
 				prosper::util::save_texture((rootPath + ('/' + normalTexName)).GetString(), texNormal->GetImage(), texInfo, errHandler);
 
-				// TODO: These should be material::ALBEDO_MAP_IDENTIFIER/material::NORMAL_MAP_IDENTIFIER/material::PARALLAX_MAP_IDENTIFIER, but
+				// TODO: These should be ematerial::ALBEDO_MAP_IDENTIFIER/ematerial::NORMAL_MAP_IDENTIFIER/ematerial::PARALLAX_MAP_IDENTIFIER, but
 				// for some reason the linker complains about unresolved symbols?
-				rootData.AddData("albedo_map", std::make_shared<ds::Texture>(*settings, albedoTexName));
-				rootData.AddData("normal_map", std::make_shared<ds::Texture>(*settings, normalTexName));
-				rootData.AddData("parallax_map", std::make_shared<ds::Texture>(*settings, parallaxTexName));
-				rootData.AddData("noise_map", std::make_shared<ds::Texture>(*settings, noiseTexName));
+				rootData.AddData("albedo_map", std::make_shared<datasystem::Texture>(*settings, albedoTexName));
+				rootData.AddData("normal_map", std::make_shared<datasystem::Texture>(*settings, normalTexName));
+				rootData.AddData("parallax_map", std::make_shared<datasystem::Texture>(*settings, parallaxTexName));
+				rootData.AddData("noise_map", std::make_shared<datasystem::Texture>(*settings, noiseTexName));
 				rootData.AddValue("float", "metalness_factor", "0.0");
 				rootData.AddValue("float", "roughness_factor", "0.0");
 
@@ -150,7 +150,7 @@ bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Blo
 			fh.AssignFloatValue(rootData, *fh.m_rootNode, "$dilation", "pupil_dilation");
 		}
 	}
-	else if(ustring::compare<std::string>(vmtShader, "spritecard", false)) {
+	else if(pragma::string::compare<std::string>(vmtShader, "spritecard", false)) {
 		// Some Source Engine textures contain embedded animation sheet data.
 		// Since our texture formats don't support that, we'll have to extract it and
 		// store it separately.
@@ -164,16 +164,16 @@ bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Blo
 			if(baseTexMap != nullptr) {
 				auto &baseTexName = baseTexMap->GetName();
 				auto texPath = matManager.GetRootDirectory();
-				texPath += util::Path::CreateFile(baseTexName + ".vtf");
-				auto fptr = FileManager::OpenFile(texPath.GetString().c_str(), "rb");
+				texPath += pragma::util::Path::CreateFile(baseTexName + ".vtf");
+				auto fptr = fs::open_file(texPath.GetString(), fs::FileMode::Read | fs::FileMode::Binary);
 				if(fptr) {
-					fsys::File f {fptr};
+					fs::File f {fptr};
 					VTFLib::CVTFFile fVtf {};
 					if(fVtf.Load(&f, false)) {
 						vlUInt resSize;
-						auto *ptr = fVtf.GetResourceData(tagVTFResourceEntryType::VTF_RSRC_SHEET, resSize);
+						auto *ptr = fVtf.GetResourceData(VTF_RSRC_SHEET, resSize);
 						if(ptr) {
-							util::DataStream ds {ptr, resSize};
+							pragma::util::DataStream ds {ptr, resSize};
 							ds->SetOffset(0);
 							auto version = ds->Read<int32_t>();
 							assert(version == 0 || version == 1);
@@ -223,12 +223,12 @@ bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Blo
 #endif
 								}
 							}
-							auto sequenceFilePath = rootPath + util::Path::CreateFile(baseTexName + ".psd");
-							FileManager::CreatePath(sequenceFilePath.GetPath().data());
-							auto fSeq = FileManager::OpenFile<VFilePtrReal>(sequenceFilePath.GetString().c_str(), "wb");
+							auto sequenceFilePath = rootPath + pragma::util::Path::CreateFile(baseTexName + ".psd");
+							fs::create_path(sequenceFilePath.GetPath().data());
+							auto fSeq = fs::open_file<fs::VFilePtrReal>(sequenceFilePath.GetString().c_str(), fs::FileMode::Write | fs::FileMode::Binary);
 							if(fSeq) {
 								anim.Save(fSeq);
-								rootData.AddValue("string", "animation", util::Path {baseTexName}.GetString());
+								rootData.AddValue("string", "animation", pragma::util::Path {baseTexName}.GetString());
 							}
 						}
 					}
@@ -242,12 +242,12 @@ bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Blo
 		if(overbrightFactor && *overbrightFactor != 0.f) {
 			// Overbright factors can get fairly large (e.g. 31 -> "particle/blood1/blood_goop3_spray"), we'll scale it down for Pragma
 			// so that a factor of 30 roughly equals 1.9
-			*overbrightFactor = umath::max(*overbrightFactor, 1.2f);
+			*overbrightFactor = pragma::math::max(*overbrightFactor, 1.2f);
 			*overbrightFactor = logf(*overbrightFactor) / logf(6.f); // log base 6
 			Vector4 colorFactor {0.f, 0.f, 0.f, 0.f};
 			auto vColorFactor = rootData.GetValue("bloom_color_factor");
-			if(vColorFactor && typeid(*vColorFactor) == typeid(ds::Vector4))
-				colorFactor = static_cast<ds::Vector4 &>(*vColorFactor).GetValue();
+			if(vColorFactor && typeid(*vColorFactor) == typeid(datasystem::Vector4))
+				colorFactor = static_cast<datasystem::Vector4 &>(*vColorFactor).GetValue();
 			colorFactor += Vector4 {*overbrightFactor, *overbrightFactor, *overbrightFactor, 0.f};
 
 			rootData.AddValue("vector4", "bloom_color_factor", std::to_string(colorFactor.r) + ' ' + std::to_string(colorFactor.g) + ' ' + std::to_string(colorFactor.b) + " 1.0");
@@ -257,8 +257,8 @@ bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Blo
 		if(addSelf) {
 			Vector4 colorFactor {1.f, 1.f, 1.f, 1.f};
 			auto vColorFactor = rootData.GetValue("color_factor");
-			if(vColorFactor && typeid(*vColorFactor) == typeid(ds::Vector4))
-				colorFactor = static_cast<ds::Vector4 &>(*vColorFactor).GetValue();
+			if(vColorFactor && typeid(*vColorFactor) == typeid(datasystem::Vector4))
+				colorFactor = static_cast<datasystem::Vector4 &>(*vColorFactor).GetValue();
 			colorFactor += Vector4 {*addSelf, *addSelf, *addSelf, 0.f};
 
 			rootData.AddValue("vector4", "color_factor", std::to_string(colorFactor.r) + ' ' + std::to_string(colorFactor.g) + ' ' + std::to_string(colorFactor.b) + " 1.0");
@@ -270,7 +270,7 @@ bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Blo
 		auto bumpMapTexture = fh.GetStringValue("$bumpmap");
 
 		auto &context = matManager.GetContext();
-		auto *shaderSSBumpMapToNormalMap = static_cast<msys::ShaderSSBumpMapToNormalMap *>(context.GetShader("ssbumpmap_to_normalmap").get());
+		auto *shaderSSBumpMapToNormalMap = static_cast<ShaderSSBumpMapToNormalMap *>(context.GetShader("ssbumpmap_to_normalmap").get());
 		context.GetShaderManager().GetShader("copy_image"); // Make sure copy_image shader has been initialized
 		if(shaderSSBumpMapToNormalMap) {
 			auto &textureManager = matManager.GetTextureManager();
@@ -294,10 +294,10 @@ bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Blo
 				auto texNormal = context.CreateTexture({}, *imgNormal, imgViewCreateInfo);
 				auto rt = context.CreateRenderTarget({texNormal}, shaderSSBumpMapToNormalMap->GetRenderPass());
 
-				auto dsg = shaderSSBumpMapToNormalMap->CreateDescriptorSetGroup(msys::ShaderSSBumpMapToNormalMap::DESCRIPTOR_SET_TEXTURE.setIndex);
+				auto dsg = shaderSSBumpMapToNormalMap->CreateDescriptorSetGroup(ShaderSSBumpMapToNormalMap::DESCRIPTOR_SET_TEXTURE.setIndex);
 				auto &ds = *dsg->GetDescriptorSet();
 				auto &vkBumpMapTex = bumpMap->GetVkTexture();
-				ds.SetBindingTexture(*vkBumpMapTex, umath::to_integral(msys::ShaderSSBumpMapToNormalMap::TextureBinding::SSBumpMap));
+				ds.SetBindingTexture(*vkBumpMapTex, pragma::math::to_integral(ShaderSSBumpMapToNormalMap::TextureBinding::SSBumpMap));
 				auto &setupCmd = context.GetSetupCommandBuffer();
 				if(setupCmd->RecordBeginRenderPass(*rt)) {
 					prosper::ShaderBindState bindState {*setupCmd};
@@ -316,18 +316,18 @@ bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Blo
 
 				auto errHandler = [](const std::string &err) { std::cout << "WARNING: Unable to save converted ss bumpmap as DDS: " << err << std::endl; };
 
-				uimg::TextureInfo texInfo {};
-				texInfo.containerFormat = uimg::TextureInfo::ContainerFormat::DDS;
-				texInfo.alphaMode = uimg::TextureInfo::AlphaMode::None;
-				texInfo.flags = bor<uimg::TextureInfo::Flags>(texInfo.flags, uimg::TextureInfo::Flags::GenerateMipmaps);
-				texInfo.inputFormat = uimg::TextureInfo::InputFormat::R32G32B32A32_Float;
-				texInfo.outputFormat = uimg::TextureInfo::OutputFormat::NormalMap;
+				image::TextureInfo texInfo {};
+				texInfo.containerFormat = image::TextureInfo::ContainerFormat::DDS;
+				texInfo.alphaMode = image::TextureInfo::AlphaMode::None;
+				texInfo.flags = bor<image::TextureInfo::Flags>(texInfo.flags, image::TextureInfo::Flags::GenerateMipmaps);
+				texInfo.inputFormat = image::TextureInfo::InputFormat::R32G32B32A32_Float;
+				texInfo.outputFormat = image::TextureInfo::OutputFormat::NormalMap;
 				texInfo.SetNormalMap();
 				prosper::util::save_texture((rootPath + ('/' + normalTexName)).GetString(), texNormal->GetImage(), texInfo, errHandler);
 
-				// TODO: This should be material::NORMAL_MAP_IDENTIFIER, but
+				// TODO: This should be ematerial::NORMAL_MAP_IDENTIFIER, but
 				// for some reason the linker complains about unresolved symbols?
-				rootData.AddData("normal_map", std::make_shared<ds::Texture>(*settings, normalTexName));
+				rootData.AddData("normal_map", std::make_shared<datasystem::Texture>(*settings, normalTexName));
 			}
 		}
 	}
@@ -335,13 +335,13 @@ bool msys::load_vmt_data(T &formatHandler, const std::string &vmtShader, ds::Blo
 	return true;
 }
 
-template bool msys::load_vmt_data<msys::CSourceVmtFormatHandler>(msys::CSourceVmtFormatHandler &, const std::string &, ds::Block &, std::string &);
+template bool pragma::material::load_vmt_data<pragma::material::CSourceVmtFormatHandler>(CSourceVmtFormatHandler &, const std::string &, datasystem::Block &, std::string &);
 #ifdef ENABLE_VKV_PARSER
-template bool msys::load_vmt_data<msys::CSourceVmtFormatHandler2>(msys::CSourceVmtFormatHandler2 &, const std::string &, ds::Block &, std::string &);
+template bool pragma::material::load_vmt_data<pragma::material::CSourceVmtFormatHandler2>(pragma::material::CSourceVmtFormatHandler2 &, const std::string &, datasystem::Block &, std::string &);
 #endif
 
-msys::CSourceVmtFormatHandler::CSourceVmtFormatHandler(util::IAssetManager &assetManager) : SourceVmtFormatHandler {assetManager} {}
-bool msys::CSourceVmtFormatHandler::LoadVmtData(const std::string &vmtShader, ds::Block &rootData, std::string &matShader)
+pragma::material::CSourceVmtFormatHandler::CSourceVmtFormatHandler(pragma::util::IAssetManager &assetManager) : SourceVmtFormatHandler {assetManager} {}
+bool pragma::material::CSourceVmtFormatHandler::LoadVmtData(const std::string &vmtShader, datasystem::Block &rootData, std::string &matShader)
 {
 	auto r = SourceVmtFormatHandler::LoadVmtData(vmtShader, rootData, matShader);
 	if(!r)

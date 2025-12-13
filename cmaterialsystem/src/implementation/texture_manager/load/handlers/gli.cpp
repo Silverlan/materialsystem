@@ -7,9 +7,9 @@ module pragma.cmaterialsystem;
 
 import :texture_manager.format_handlers.gli;
 
-bool msys::TextureFormatHandlerGli::GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize)
+bool pragma::material::TextureFormatHandlerGli::GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize)
 {
-	auto cubemap = umath::is_flag_set(m_inputTextureInfo.flags, InputTextureInfo::Flags::CubemapBit);
+	auto cubemap = pragma::math::is_flag_set(m_inputTextureInfo.flags, InputTextureInfo::Flags::CubemapBit);
 	auto gliLayer = cubemap ? 0 : layer;
 	auto gliFace = cubemap ? layer : 0;
 	outSize = m_texture.size(mipmapIdx);
@@ -17,9 +17,9 @@ bool msys::TextureFormatHandlerGli::GetDataPtr(uint32_t layer, uint32_t mipmapId
 	return *outPtr != nullptr;
 }
 
-void msys::TextureFormatHandlerGli::SetTexture(gli::texture &&tex) { m_texture = std::move(tex); }
+void pragma::material::TextureFormatHandlerGli::SetTexture(gli::texture &&tex) { m_texture = std::move(tex); }
 
-bool msys::TextureFormatHandlerGli::LoadData(InputTextureInfo &texInfo)
+bool pragma::material::TextureFormatHandlerGli::LoadData(InputTextureInfo &texInfo)
 {
 	auto sz = m_file->GetSize();
 	if(sz == 0)
@@ -36,7 +36,7 @@ bool msys::TextureFormatHandlerGli::LoadData(InputTextureInfo &texInfo)
 	}
 	texInfo.flags |= InputTextureInfo::Flags::SrgbBit;
 	auto isCubemap = m_texture.faces() == 6;
-	umath::set_flag(texInfo.flags, InputTextureInfo::Flags::CubemapBit, isCubemap);
+	pragma::math::set_flag(texInfo.flags, InputTextureInfo::Flags::CubemapBit, isCubemap);
 	auto extents = m_texture.extent();
 	texInfo.width = extents.x;
 	texInfo.height = extents.y;

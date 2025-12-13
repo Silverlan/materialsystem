@@ -9,16 +9,16 @@ import :texture_manager.texture_format_handler;
 import gli;
 
 static bool g_shouldFlipVertically = false;
-void msys::ITextureFormatHandler::SetFlipTexturesVertically(bool flip) { g_shouldFlipVertically = flip; }
-bool msys::ITextureFormatHandler::ShouldFlipTextureVertically() { return g_shouldFlipVertically; }
+void pragma::material::ITextureFormatHandler::SetFlipTexturesVertically(bool flip) { g_shouldFlipVertically = flip; }
+bool pragma::material::ITextureFormatHandler::ShouldFlipTextureVertically() { return g_shouldFlipVertically; }
 
-msys::ITextureFormatHandler::ITextureFormatHandler(util::IAssetManager &assetManager) : util::IAssetFormatHandler {assetManager} {}
+pragma::material::ITextureFormatHandler::ITextureFormatHandler(pragma::util::IAssetManager &assetManager) : IAssetFormatHandler {assetManager} {}
 
-bool msys::ITextureFormatHandler::LoadData() { return LoadData(m_inputTextureInfo); }
+bool pragma::material::ITextureFormatHandler::LoadData() { return LoadData(m_inputTextureInfo); }
 
-void msys::ITextureFormatHandler::SetTextureData(const std::shared_ptr<udm::Property> &textureData) { m_inputTextureInfo.textureData = textureData; }
+void pragma::material::ITextureFormatHandler::SetTextureData(const std::shared_ptr<udm::Property> &textureData) { m_inputTextureInfo.textureData = textureData; }
 
-void msys::ITextureFormatHandler::Flip(const InputTextureInfo &texInfo)
+void pragma::material::ITextureFormatHandler::Flip(const InputTextureInfo &texInfo)
 {
 	auto targetType = gli::texture::target_type::TARGET_2D;
 	auto formatType = static_cast<gli::texture::format_type>(texInfo.format);

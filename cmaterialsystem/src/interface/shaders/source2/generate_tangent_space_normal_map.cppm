@@ -9,7 +9,7 @@ export module pragma.cmaterialsystem:shaders.source2.generate_tangent_space_norm
 
 export import pragma.prosper;
 
-export namespace msys {
+export namespace pragma::material {
 	namespace source2 {
 		class DLLCMATSYS ShaderGenerateTangentSpaceNormalMap : public prosper::ShaderBaseImageProcessing {
 		  public:

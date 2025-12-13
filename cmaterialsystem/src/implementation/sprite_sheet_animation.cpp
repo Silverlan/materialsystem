@@ -10,13 +10,13 @@ import :sprite_sheet_animation;
 static std::array<char, 3> PSD_HEADER {'P', 'S', 'D'};
 constexpr uint32_t PSD_VERSION = 0;
 
-uint32_t SpriteSheetAnimation::GetAbsoluteFrameIndex(uint32_t sequenceIdx, uint32_t localFrameIdx) const
+uint32_t pragma::material::SpriteSheetAnimation::GetAbsoluteFrameIndex(uint32_t sequenceIdx, uint32_t localFrameIdx) const
 {
 	if(sequenceIdx >= sequences.size())
 		return std::numeric_limits<uint32_t>::max();
 	return sequences.at(sequenceIdx).GetAbsoluteFrameIndex(localFrameIdx);
 }
-void SpriteSheetAnimation::Save(std::shared_ptr<VFilePtrInternalReal> &f) const
+void pragma::material::SpriteSheetAnimation::Save(std::shared_ptr<fs::VFilePtrInternalReal> &f) const
 {
 	// TODO: Transition to UDM
 	f->Write(PSD_HEADER.data(), PSD_HEADER.size());
@@ -35,7 +35,7 @@ void SpriteSheetAnimation::Save(std::shared_ptr<VFilePtrInternalReal> &f) const
 		}
 	}
 }
-void SpriteSheetAnimation::UpdateLookupData()
+void pragma::material::SpriteSheetAnimation::UpdateLookupData()
 {
 	uint32_t frameOffset = 0;
 	for(auto &seq : sequences) {
@@ -48,7 +48,7 @@ void SpriteSheetAnimation::UpdateLookupData()
 		seq.m_duration = duration;
 	}
 }
-bool SpriteSheetAnimation::Load(std::shared_ptr<VFilePtrInternal> &f)
+bool pragma::material::SpriteSheetAnimation::Load(std::shared_ptr<fs::VFilePtrInternal> &f)
 {
 	// TODO: Transition to UDM
 	auto header = f->Read<std::array<char, 3>>();
@@ -73,12 +73,12 @@ bool SpriteSheetAnimation::Load(std::shared_ptr<VFilePtrInternal> &f)
 	UpdateLookupData();
 	return true;
 }
-void SpriteSheetAnimation::Sequence::SetFrameOffset(uint32_t offset) { m_frameOffset = offset; }
-uint32_t SpriteSheetAnimation::Sequence::GetFrameOffset() const { return m_frameOffset; }
-float SpriteSheetAnimation::Sequence::GetDuration() const { return m_duration; }
-uint32_t SpriteSheetAnimation::Sequence::GetAbsoluteFrameIndex(uint32_t localFrameIdx) const { return GetFrameOffset() + localFrameIdx; }
-uint32_t SpriteSheetAnimation::Sequence::GetLocalFrameIndex(uint32_t absFrameIdx) const { return absFrameIdx - GetFrameOffset(); }
-bool SpriteSheetAnimation::Sequence::GetInterpolatedFrameData(float ptTime, uint32_t &outFrame0, uint32_t &outFrame1, float &outInterpFactor) const
+void pragma::material::SpriteSheetAnimation::Sequence::SetFrameOffset(uint32_t offset) { m_frameOffset = offset; }
+uint32_t pragma::material::SpriteSheetAnimation::Sequence::GetFrameOffset() const { return m_frameOffset; }
+float pragma::material::SpriteSheetAnimation::Sequence::GetDuration() const { return m_duration; }
+uint32_t pragma::material::SpriteSheetAnimation::Sequence::GetAbsoluteFrameIndex(uint32_t localFrameIdx) const { return GetFrameOffset() + localFrameIdx; }
+uint32_t pragma::material::SpriteSheetAnimation::Sequence::GetLocalFrameIndex(uint32_t absFrameIdx) const { return absFrameIdx - GetFrameOffset(); }
+bool pragma::material::SpriteSheetAnimation::Sequence::GetInterpolatedFrameData(float ptTime, uint32_t &outFrame0, uint32_t &outFrame1, float &outInterpFactor) const
 {
 	if(frames.empty())
 		return false;

@@ -10,15 +10,15 @@ import pragma.image;
 
 static bool read_image_size(std::string &imgFile, uint32_t &width, uint32_t &height)
 {
-	msys::TextureType type;
+	pragma::material::TextureType type;
 	imgFile = translate_image_path(imgFile, type);
-	auto r = uimg::read_image_size(imgFile, width, height);
+	auto r = pragma::image::read_image_size(imgFile, width, height);
 	auto rootPath = MaterialManager::GetRootMaterialLocation() + "/";
 	imgFile = imgFile.substr(rootPath.length());
 	return r;
 }
 
-ds::Texture::Texture(ds::Settings &dataSettings, const std::string &value, bool bCubemap) : Value(dataSettings)
+pragma::datasystem::Texture::Texture(Settings &dataSettings, const std::string &value, bool bCubemap) : Value(dataSettings)
 {
 	auto str = value;
 	if(str.empty()) {
@@ -41,34 +41,34 @@ ds::Texture::Texture(ds::Settings &dataSettings, const std::string &value, bool 
 	}
 	m_value.name = str;
 }
-ds::Texture::Texture(ds::Settings &dataSettings, const std::string &value) : Texture(dataSettings, value, false) {}
-ds::Texture::Texture(ds::Settings &dataSettings, const TextureInfo &value) : Value(dataSettings), m_value(value) {}
-ds::Texture *ds::Texture::Copy() { return new ds::Texture(*m_dataSettings, m_value); }
-const TextureInfo &ds::Texture::GetValue() const { return const_cast<Texture *>(this)->GetValue(); }
-TextureInfo &ds::Texture::GetValue() { return m_value; }
-ds::ValueType ds::Texture::GetType() const { return ds::ValueType::Texture; }
+pragma::datasystem::Texture::Texture(Settings &dataSettings, const std::string &value) : Texture(dataSettings, value, false) {}
+pragma::datasystem::Texture::Texture(Settings &dataSettings, const TextureInfo &value) : Value(dataSettings), m_value(value) {}
+pragma::datasystem::Texture *pragma::datasystem::Texture::Copy() { return new Texture(*m_dataSettings, m_value); }
+const TextureInfo &pragma::datasystem::Texture::GetValue() const { return const_cast<Texture *>(this)->GetValue(); }
+TextureInfo &pragma::datasystem::Texture::GetValue() { return m_value; }
+pragma::datasystem::ValueType pragma::datasystem::Texture::GetType() const { return ValueType::Texture; }
 
-std::string ds::Texture::GetString() const
+std::string pragma::datasystem::Texture::GetString() const
 {
 	auto name = m_value.name;
-	ustring::replace(name, "\\", "/");
+	pragma::string::replace(name, "\\", "/");
 	ufile::remove_extension_from_filename(name); // TODO: Allow manual extension if it was specified explicitly?
 	return name;
 }
-int ds::Texture::GetInt() const { return 0; }
-float ds::Texture::GetFloat() const { return 0.f; }
-bool ds::Texture::GetBool() const { return true; }
-::Color ds::Texture::GetColor() const { return {}; }
-::Vector3 ds::Texture::GetVector() const { return {}; }
-::Vector2 ds::Texture::GetVector2() const { return {}; }
-::Vector4 ds::Texture::GetVector4() const { return {}; }
-void ds::Texture::register_type() { ds::register_data_value_type<ds::Texture>("texture"); }
-std::string ds::Texture::GetTypeString() const { return "texture"; }
+int pragma::datasystem::Texture::GetInt() const { return 0; }
+float pragma::datasystem::Texture::GetFloat() const { return 0.f; }
+bool pragma::datasystem::Texture::GetBool() const { return true; }
+Color pragma::datasystem::Texture::GetColor() const { return {}; }
+Vector3 pragma::datasystem::Texture::GetVector() const { return {}; }
+Vector2 pragma::datasystem::Texture::GetVector2() const { return {}; }
+Vector4 pragma::datasystem::Texture::GetVector4() const { return {}; }
+void pragma::datasystem::Texture::register_type() { pragma::datasystem::register_data_value_type<Texture>("texture"); }
+std::string pragma::datasystem::Texture::GetTypeString() const { return "texture"; }
 
-/*ds::Cubemap::Cubemap(ds::Settings &dataSettings,const std::string &value)
+/*pragma::datasystem::Cubemap::Cubemap(pragma::datasystem::Settings &dataSettings,const std::string &value)
 	: Texture(dataSettings,value,true)
 {}
-REGISTER_DATA_TYPE(ds::Cubemap,cubemap)*/
+REGISTER_DATA_TYPE(pragma::datasystem::Cubemap,cubemap)*/
 
 ///////////////////////////
 

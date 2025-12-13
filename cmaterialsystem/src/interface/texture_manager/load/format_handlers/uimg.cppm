@@ -10,14 +10,14 @@ export module pragma.cmaterialsystem:texture_manager.format_handlers.uimg;
 export import :texture_manager.texture_format_handler;
 export import pragma.image;
 
-export namespace msys {
+export namespace pragma::material {
 	class DLLCMATSYS TextureFormatHandlerUimg : public ITextureFormatHandler {
 	  public:
-		TextureFormatHandlerUimg(util::IAssetManager &assetManager) : ITextureFormatHandler {assetManager} {}
+		TextureFormatHandlerUimg(pragma::util::IAssetManager &assetManager) : ITextureFormatHandler {assetManager} {}
 		virtual bool GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize) override;
 	  protected:
 		virtual bool LoadData(InputTextureInfo &texInfo) override;
 	  private:
-		std::shared_ptr<uimg::ImageBuffer> m_imgBuf = nullptr;
+		std::shared_ptr<image::ImageBuffer> m_imgBuf = nullptr;
 	};
 };

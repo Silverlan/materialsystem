@@ -14,8 +14,8 @@ import :format_handlers.source_vmt;
 import :vmt;
 
 #ifndef DISABLE_VMT_SUPPORT
-msys::ISourceVmtFormatHandler::ISourceVmtFormatHandler(util::IAssetManager &assetManager) : util::IImportAssetFormatHandler {assetManager} {}
-std::optional<std::string> msys::ISourceVmtFormatHandler::GetStringValue(const std::string &key, const IVmtNode *optParent, const std::optional<std::string> &defaultValue) const
+pragma::material::ISourceVmtFormatHandler::ISourceVmtFormatHandler(pragma::util::IAssetManager &assetManager) : IImportAssetFormatHandler {assetManager} {}
+std::optional<std::string> pragma::material::ISourceVmtFormatHandler::GetStringValue(const std::string &key, const IVmtNode *optParent, const std::optional<std::string> &defaultValue) const
 {
 	auto node = GetNode(key, optParent);
 	if(!node)
@@ -25,7 +25,7 @@ std::optional<std::string> msys::ISourceVmtFormatHandler::GetStringValue(const s
 		return defaultValue;
 	return val;
 }
-std::optional<bool> msys::ISourceVmtFormatHandler::GetBooleanValue(const std::string &key, const IVmtNode *optParent, const std::optional<bool> &defaultValue) const
+std::optional<bool> pragma::material::ISourceVmtFormatHandler::GetBooleanValue(const std::string &key, const IVmtNode *optParent, const std::optional<bool> &defaultValue) const
 {
 	auto node = GetNode(key, optParent);
 	if(!node)
@@ -35,7 +35,7 @@ std::optional<bool> msys::ISourceVmtFormatHandler::GetBooleanValue(const std::st
 		return defaultValue;
 	return val;
 }
-std::optional<float> msys::ISourceVmtFormatHandler::GetFloatValue(const std::string &key, const IVmtNode *optParent, const std::optional<float> &defaultValue) const
+std::optional<float> pragma::material::ISourceVmtFormatHandler::GetFloatValue(const std::string &key, const IVmtNode *optParent, const std::optional<float> &defaultValue) const
 {
 	auto node = GetNode(key, optParent);
 	if(!node)
@@ -45,7 +45,7 @@ std::optional<float> msys::ISourceVmtFormatHandler::GetFloatValue(const std::str
 		return defaultValue;
 	return val;
 }
-std::optional<Vector3> msys::ISourceVmtFormatHandler::GetColorValue(const std::string &key, const IVmtNode *optParent, const std::optional<Vector3> &defaultValue) const
+std::optional<Vector3> pragma::material::ISourceVmtFormatHandler::GetColorValue(const std::string &key, const IVmtNode *optParent, const std::optional<Vector3> &defaultValue) const
 {
 	auto node = GetNode(key, optParent);
 	if(!node)
@@ -55,7 +55,7 @@ std::optional<Vector3> msys::ISourceVmtFormatHandler::GetColorValue(const std::s
 		return defaultValue;
 	return val;
 }
-std::optional<uint8_t> msys::ISourceVmtFormatHandler::GetUint8Value(const std::string &key, const IVmtNode *optParent, const std::optional<uint8_t> &defaultValue) const
+std::optional<uint8_t> pragma::material::ISourceVmtFormatHandler::GetUint8Value(const std::string &key, const IVmtNode *optParent, const std::optional<uint8_t> &defaultValue) const
 {
 	auto node = GetNode(key, optParent);
 	if(!node)
@@ -65,7 +65,7 @@ std::optional<uint8_t> msys::ISourceVmtFormatHandler::GetUint8Value(const std::s
 		return defaultValue;
 	return val;
 }
-std::optional<int32_t> msys::ISourceVmtFormatHandler::GetInt32Value(const std::string &key, const IVmtNode *optParent, const std::optional<uint8_t> &defaultValue) const
+std::optional<int32_t> pragma::material::ISourceVmtFormatHandler::GetInt32Value(const std::string &key, const IVmtNode *optParent, const std::optional<uint8_t> &defaultValue) const
 {
 	auto node = GetNode(key, optParent);
 	if(!node)
@@ -75,7 +75,7 @@ std::optional<int32_t> msys::ISourceVmtFormatHandler::GetInt32Value(const std::s
 		return defaultValue;
 	return val;
 }
-bool msys::ISourceVmtFormatHandler::AssignStringValue(ds::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey) const
+bool pragma::material::ISourceVmtFormatHandler::AssignStringValue(datasystem::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey) const
 {
 	auto node = GetNode(vmtKey, &vmtNode);
 	if(!node)
@@ -86,7 +86,7 @@ bool msys::ISourceVmtFormatHandler::AssignStringValue(ds::Block &dsData, const I
 	dsData.AddValue("string", pragmaKey, *value);
 	return true;
 }
-bool msys::ISourceVmtFormatHandler::AssignTextureValue(ds::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey) const
+bool pragma::material::ISourceVmtFormatHandler::AssignTextureValue(datasystem::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey) const
 {
 	auto node = GetNode(vmtKey, &vmtNode);
 	if(!node)
@@ -97,7 +97,7 @@ bool msys::ISourceVmtFormatHandler::AssignTextureValue(ds::Block &dsData, const 
 	dsData.AddValue("texture", pragmaKey, *value);
 	return true;
 }
-bool msys::ISourceVmtFormatHandler::AssignBooleanValue(ds::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey, std::optional<bool> defaultValue) const
+bool pragma::material::ISourceVmtFormatHandler::AssignBooleanValue(datasystem::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey, std::optional<bool> defaultValue) const
 {
 	auto node = GetNode(vmtKey, &vmtNode);
 	if(!node)
@@ -110,7 +110,7 @@ bool msys::ISourceVmtFormatHandler::AssignBooleanValue(ds::Block &dsData, const 
 	dsData.AddValue("bool", pragmaKey, *value ? "1" : "0");
 	return true;
 }
-bool msys::ISourceVmtFormatHandler::AssignFloatValue(ds::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey, std::optional<float> defaultValue) const
+bool pragma::material::ISourceVmtFormatHandler::AssignFloatValue(datasystem::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey, std::optional<float> defaultValue) const
 {
 	auto node = GetNode(vmtKey, &vmtNode);
 	if(!node)
@@ -123,17 +123,17 @@ bool msys::ISourceVmtFormatHandler::AssignFloatValue(ds::Block &dsData, const IV
 	dsData.AddValue("float", pragmaKey, std::to_string(*value));
 	return true;
 }
-bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std::string &outputPath, std::string &outFilePath)
+bool pragma::material::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std::string &outputPath, std::string &outFilePath)
 {
 	std::string shader = GetShader();
-	ustring::to_lower(shader);
+	pragma::string::to_lower(shader);
 
 	auto phongOverride = std::numeric_limits<float>::quiet_NaN();
 	auto bWater = false;
 	std::string shaderName;
 	std::shared_ptr<const IVmtNode> node = nullptr;
-	auto dataSettings = ds::create_data_settings({});
-	auto root = std::make_shared<ds::Block>(*dataSettings);
+	auto dataSettings = datasystem::create_data_settings({});
+	auto root = std::make_shared<datasystem::Block>(*dataSettings);
 	if(shader == "worldvertextransition")
 		shaderName = "pbr";
 	else if(shader == "sprite")
@@ -145,15 +145,15 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 		if((node = GetNode("$bumpmap", &rootNode)) != nullptr) {
 			auto bumpMap = GetStringValue(*node);
 			if(bumpMap) {
-				root->AddData(material::DUDV_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, *bumpMap));
+				root->AddData(ematerial::DUDV_MAP_IDENTIFIER, pragma::util::make_shared<datasystem::Texture>(*dataSettings, *bumpMap));
 				hasDudv = true;
 			}
 		}
 		if(!hasDudv) {
 			std::string defaultDudvMap = "nature/water_coast01_dudv"; // Should be shipped with SFM or HL2
-			root->AddData(material::DUDV_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, defaultDudvMap));
+			root->AddData(ematerial::DUDV_MAP_IDENTIFIER, pragma::util::make_shared<datasystem::Texture>(*dataSettings, defaultDudvMap));
 		}
-		AssignTextureValue(*root, *m_rootNode, "$normalmap", material::NORMAL_MAP_IDENTIFIER);
+		AssignTextureValue(*root, *m_rootNode, "$normalmap", ematerial::NORMAL_MAP_IDENTIFIER);
 
 		auto fog = root->AddBlock("fog");
 		AssignBooleanValue(*fog, rootNode, "$fogenable", "enabled", true);
@@ -212,7 +212,7 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 	if((node = GetNode("$selfillummask", &rootNode)) != nullptr) {
 		auto selfIllumMask = GetStringValue(*node);
 		if(selfIllumMask) {
-			root->AddData(material::GLOW_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, *selfIllumMask));
+			root->AddData(ematerial::GLOW_MAP_IDENTIFIER, pragma::util::make_shared<datasystem::Texture>(*dataSettings, *selfIllumMask));
 			bHasGlowMap = true;
 			bHasGlow = true;
 		}
@@ -223,23 +223,23 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 		auto hdrCompressedTexture = GetStringValue(*node);
 		if(hdrCompressedTexture) {
 			hasDiffuseMap = true;
-			root->AddData(material::ALBEDO_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, *hdrCompressedTexture));
+			root->AddData(ematerial::ALBEDO_MAP_IDENTIFIER, pragma::util::make_shared<datasystem::Texture>(*dataSettings, *hdrCompressedTexture));
 		}
 	}
 	if(hasDiffuseMap == false && (node = GetNode("$hdrbasetexture", &rootNode)) != nullptr) {
 		auto hdrBaseTexture = GetStringValue(*node);
 		if(hdrBaseTexture) {
 			hasDiffuseMap = true;
-			root->AddData(material::ALBEDO_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, *hdrBaseTexture));
+			root->AddData(ematerial::ALBEDO_MAP_IDENTIFIER, pragma::util::make_shared<datasystem::Texture>(*dataSettings, *hdrBaseTexture));
 		}
 	}
 	if(hasDiffuseMap == false && (node = GetNode("$basetexture", &rootNode)) != nullptr) {
 		auto baseTexture = GetStringValue(*node);
 		if(baseTexture) {
-			root->AddData(material::ALBEDO_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, *baseTexture));
+			root->AddData(ematerial::ALBEDO_MAP_IDENTIFIER, pragma::util::make_shared<datasystem::Texture>(*dataSettings, *baseTexture));
 
 			if(bHasGlowMap == false && (node = GetNode("$selfillum", &rootNode)) != nullptr) {
-				root->AddData(material::GLOW_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, *baseTexture));
+				root->AddData(ematerial::GLOW_MAP_IDENTIFIER, pragma::util::make_shared<datasystem::Texture>(*dataSettings, *baseTexture));
 				root->AddValue("int", "glow_blend_diffuse_mode", "3");
 				root->AddValue("float", "glow_blend_diffuse_scale", "1");
 				root->AddValue("bool", "glow_alpha_only", "1");
@@ -251,14 +251,14 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 	if((node = GetNode("$detail", &rootNode)) != nullptr) {
 		auto detail = GetStringValue(*node);
 		if(detail) {
-			auto detailBlendMode = msys::DetailMode::Invalid;
+			auto detailBlendMode = DetailMode::Invalid;
 			static_assert(std::is_same_v<std::underlying_type_t<decltype(detailBlendMode)>, uint8_t>);
 			auto vmtDetailBlendMode = GetUint8Value("$detailblendmode");
 			if(vmtDetailBlendMode)
-				detailBlendMode = static_cast<msys::DetailMode>(*vmtDetailBlendMode);
-			if(umath::to_integral(detailBlendMode) >= 0 && umath::to_integral(detailBlendMode) < umath::to_integral(msys::DetailMode::Count)) {
-				root->AddValue("string", "detail_blend_mode", msys::to_string(detailBlendMode));
-				root->AddData("detail_map", util::make_shared<ds::Texture>(*dataSettings, *detail));
+				detailBlendMode = static_cast<DetailMode>(*vmtDetailBlendMode);
+			if(pragma::math::to_integral(detailBlendMode) >= 0 && pragma::math::to_integral(detailBlendMode) < pragma::math::to_integral(DetailMode::Count)) {
+				root->AddValue("string", "detail_blend_mode", pragma::material::to_string(detailBlendMode));
+				root->AddData("detail_map", pragma::util::make_shared<datasystem::Texture>(*dataSettings, *detail));
 
 				node = GetNode("$detailscale", &rootNode);
 				if(node) {
@@ -286,7 +286,7 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 					auto detailBlendFactor = 1.f;
 					auto values = GetMatrixValue(*node);
 					if(values) {
-						for(uint8_t i = 0; i < umath::min<uint32_t>(static_cast<uint32_t>(values->size()), static_cast<uint32_t>(1u)); ++i)
+						for(uint8_t i = 0; i < pragma::math::min<uint32_t>(static_cast<uint32_t>(values->size()), static_cast<uint32_t>(1u)); ++i)
 							detailBlendFactor = values->at(i);
 					}
 					else {
@@ -307,8 +307,8 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 	}
 
 	// These are custom parameters; Used to make it easier to import PBR assets into Pragma
-	AssignTextureValue(*root, *m_rootNode, "$rmatexture", material::RMA_MAP_IDENTIFIER);
-	AssignTextureValue(*root, *m_rootNode, "$emissiontexture", material::EMISSION_MAP_IDENTIFIER);
+	AssignTextureValue(*root, *m_rootNode, "$rmatexture", ematerial::RMA_MAP_IDENTIFIER);
+	AssignTextureValue(*root, *m_rootNode, "$emissiontexture", ematerial::EMISSION_MAP_IDENTIFIER);
 	AssignFloatValue(*root, *m_rootNode, "$metalnessfactor", "metalness_factor", 0.f);
 	AssignFloatValue(*root, *m_rootNode, "$roughnessfactor", "roughness_factor", 0.f);
 	AssignFloatValue(*root, *m_rootNode, "$specularfactor", "specular_factor", 0.f);
@@ -328,14 +328,14 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 		}
 	}
 	if(shader == "worldvertextransition") {
-		if(AssignTextureValue(*root, *m_rootNode, "$basetexture2", material::ALBEDO_MAP2_IDENTIFIER))
+		if(AssignTextureValue(*root, *m_rootNode, "$basetexture2", ematerial::ALBEDO_MAP2_IDENTIFIER))
 			shaderName = "pbr_blend";
 	}
 	if(bWater == false)
-		AssignTextureValue(*root, *m_rootNode, "$bumpmap", material::NORMAL_MAP_IDENTIFIER);
+		AssignTextureValue(*root, *m_rootNode, "$bumpmap", ematerial::NORMAL_MAP_IDENTIFIER);
 	AssignTextureValue(*root, *m_rootNode, "$envmapmask", "specular_map");
 	if((node = GetNode("$additive", &rootNode)) != nullptr) {
-		root->AddValue("int", "alpha_mode", std::to_string(umath::to_integral(AlphaMode::Blend)));
+		root->AddValue("int", "alpha_mode", std::to_string(pragma::math::to_integral(AlphaMode::Blend)));
 		AssignBooleanValue(*root, *m_rootNode, "$additive", "black_to_alpha");
 	}
 	AssignBooleanValue(*root, *m_rootNode, "$phong", "phong_normal_alpha");
@@ -353,7 +353,7 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 		if(val)
 			root->AddValue("float", "phong_shininess", std::to_string(*val * 2.f));
 	}
-	AssignTextureValue(*root, *m_rootNode, "$parallaxmap", material::PARALLAX_MAP_IDENTIFIER);
+	AssignTextureValue(*root, *m_rootNode, "$parallaxmap", ematerial::PARALLAX_MAP_IDENTIFIER);
 	if((node = GetNode("$parallaxmapscale", &rootNode)) != nullptr) {
 		auto val = GetFloatValue(*node);
 		if(val)
@@ -362,7 +362,7 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 
 	auto translucent = GetBooleanValue("$translucent");
 	if(translucent && *translucent)
-		root->AddValue("int", "alpha_mode", std::to_string(umath::to_integral(AlphaMode::Blend)));
+		root->AddValue("int", "alpha_mode", std::to_string(pragma::math::to_integral(AlphaMode::Blend)));
 
 	auto alphaFactor = GetFloatValue("$alpha");
 	if(alphaFactor)
@@ -370,7 +370,7 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 
 	auto alphaTest = GetBooleanValue("$alphatest");
 	if(alphaTest) {
-		root->AddValue("int", "alpha_mode", std::to_string(umath::to_integral(AlphaMode::Mask)));
+		root->AddValue("int", "alpha_mode", std::to_string(pragma::math::to_integral(AlphaMode::Mask)));
 		auto alphaCutoff = 0.5f; // TODO: Confirm that the default for Source is 0.5
 		auto alphaTestReference = GetFloatValue("$alphatestreference");
 		if(alphaTestReference)
@@ -380,7 +380,7 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 
 	auto surfaceProp = GetStringValue("$surfaceprop");
 	if(surfaceProp) {
-		ustring::to_lower(*surfaceProp);
+		pragma::string::to_lower(*surfaceProp);
 		std::string surfaceMaterial = "concrete";
 		std::unordered_map<std::string, std::string> translateMaterial = {
 #include "impl_surfacematerials.h"
@@ -389,11 +389,11 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 		auto it = translateMaterial.find(*surfaceProp);
 		if(it != translateMaterial.end())
 			surfaceMaterial = it->second;
-		root->AddData("surfacematerial", std::make_shared<ds::String>(*dataSettings, surfaceMaterial));
+		root->AddData("surfacematerial", std::make_shared<datasystem::String>(*dataSettings, surfaceMaterial));
 	}
-	AssignTextureValue(*root, *m_rootNode, "$compress", material::WRINKLE_COMPRESS_MAP_IDENTIFIER);
-	AssignTextureValue(*root, *m_rootNode, "$stretch", material::WRINKLE_STRETCH_MAP_IDENTIFIER);
-	AssignTextureValue(*root, *m_rootNode, "$phongexponenttexture", material::EXPONENT_MAP_IDENTIFIER);
+	AssignTextureValue(*root, *m_rootNode, "$compress", ematerial::WRINKLE_COMPRESS_MAP_IDENTIFIER);
+	AssignTextureValue(*root, *m_rootNode, "$stretch", ematerial::WRINKLE_STRETCH_MAP_IDENTIFIER);
+	AssignTextureValue(*root, *m_rootNode, "$phongexponenttexture", ematerial::EXPONENT_MAP_IDENTIFIER);
 
 	auto fakePbrLayer = GetInt32Value("$fakepbr_layer");
 	if(fakePbrLayer)
@@ -406,7 +406,7 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 	AssignTextureValue(*root, *m_rootNode, "$ambientoccltexture", "ao_map");
 
 	if(shaderName == "pbr" || shaderName == "pbr_blend") {
-		if(root->HasValue(material::RMA_MAP_IDENTIFIER) == false) {
+		if(root->HasValue(ematerial::RMA_MAP_IDENTIFIER) == false) {
 			auto rmaInfo = root->AddBlock("rma_info");
 			rmaInfo->AddValue("bool", "requires_metalness_update", "1");
 			rmaInfo->AddValue("bool", "requires_roughness_update", "1");
@@ -421,14 +421,14 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 			color = GetColorValue("$color2");
 		if(color) {
 			root->AddValue("vector4", "color_factor", std::to_string(color->r) + ' ' + std::to_string(color->g) + ' ' + std::to_string(color->b) + " 1.0");
-			if(root->HasValue(material::ALBEDO_MAP_IDENTIFIER) == false) // $color / $color2 attributes work without a diffuse texture
-				root->AddData(material::ALBEDO_MAP_IDENTIFIER, util::make_shared<ds::Texture>(*dataSettings, "white"));
+			if(root->HasValue(ematerial::ALBEDO_MAP_IDENTIFIER) == false) // $color / $color2 attributes work without a diffuse texture
+				root->AddData(ematerial::ALBEDO_MAP_IDENTIFIER, pragma::util::make_shared<datasystem::Texture>(*dataSettings, "white"));
 		}
 	}
 
 	if(!LoadVmtData(shader, *root, shaderName))
 		return false;
-	auto mat = Material::Create(static_cast<msys::MaterialManager &>(GetAssetManager()), shaderName, root);
+	auto mat = Material::Create(static_cast<MaterialManager &>(GetAssetManager()), shaderName, root);
 	if(!mat)
 		return false;
 	std::string err;
@@ -442,34 +442,34 @@ bool msys::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std:
 
 /////////////////////////
 
-msys::SourceVmtFormatHandler::SourceVmtFormatHandler(util::IAssetManager &assetManager) : ISourceVmtFormatHandler {assetManager} {}
-const VTFLib::Nodes::CVMTNode &msys::SourceVmtFormatHandler::GetVtfLibNode(const IVmtNode &vmtNode) const { return static_cast<const VtfLibVmtNode &>(vmtNode).vtfLibNode; }
-std::string msys::SourceVmtFormatHandler::GetShader() const
+pragma::material::SourceVmtFormatHandler::SourceVmtFormatHandler(pragma::util::IAssetManager &assetManager) : ISourceVmtFormatHandler {assetManager} {}
+const VTFLib::Nodes::CVMTNode &pragma::material::SourceVmtFormatHandler::GetVtfLibNode(const IVmtNode &vmtNode) const { return static_cast<const VtfLibVmtNode &>(vmtNode).vtfLibNode; }
+std::string pragma::material::SourceVmtFormatHandler::GetShader() const
 {
 	auto &vtfLibNode = GetVtfLibNode(*m_rootNode);
 	return vtfLibNode.GetName();
 }
-std::shared_ptr<const msys::IVmtNode> msys::SourceVmtFormatHandler::GetNode(const std::string &key, const IVmtNode *optParent) const
+std::shared_ptr<const pragma::material::IVmtNode> pragma::material::SourceVmtFormatHandler::GetNode(const std::string &key, const IVmtNode *optParent) const
 {
 	if(!optParent)
 		return GetNode(key, m_rootNode.get());
 	auto &vtfLibParent = GetVtfLibNode(*optParent);
-	if(vtfLibParent.GetType() != VMTNodeType::NODE_TYPE_GROUP)
+	if(vtfLibParent.GetType() != NODE_TYPE_GROUP)
 		return nullptr;
 	auto *child = static_cast<const VTFLib::Nodes::CVMTGroupNode &>(vtfLibParent).GetNode(key.c_str());
 	if(!child)
 		return nullptr;
 	return std::make_shared<VtfLibVmtNode>(*child);
 }
-std::optional<std::string> msys::SourceVmtFormatHandler::GetStringValue(const IVmtNode &node) const
+std::optional<std::string> pragma::material::SourceVmtFormatHandler::GetStringValue(const IVmtNode &node) const
 {
 	auto &vtfLibNode = GetVtfLibNode(node);
-	if(vtfLibNode.GetType() != VMTNodeType::NODE_TYPE_STRING)
+	if(vtfLibNode.GetType() != NODE_TYPE_STRING)
 		return {};
 	auto &strNode = static_cast<const VTFLib::Nodes::CVMTStringNode &>(vtfLibNode);
 	return strNode.GetValue();
 }
-std::optional<float> msys::SourceVmtFormatHandler::GetFloatValue(const IVmtNode &node) const
+std::optional<float> pragma::material::SourceVmtFormatHandler::GetFloatValue(const IVmtNode &node) const
 {
 	auto &vtfLibNode = GetVtfLibNode(node);
 	float value;
@@ -477,7 +477,7 @@ std::optional<float> msys::SourceVmtFormatHandler::GetFloatValue(const IVmtNode 
 		return {};
 	return value;
 }
-std::optional<bool> msys::SourceVmtFormatHandler::GetBooleanValue(const IVmtNode &node) const
+std::optional<bool> pragma::material::SourceVmtFormatHandler::GetBooleanValue(const IVmtNode &node) const
 {
 	auto &vtfLibNode = GetVtfLibNode(node);
 	bool value;
@@ -485,12 +485,12 @@ std::optional<bool> msys::SourceVmtFormatHandler::GetBooleanValue(const IVmtNode
 		return {};
 	return value;
 }
-std::optional<Vector3> msys::SourceVmtFormatHandler::GetColorValue(const IVmtNode &node) const
+std::optional<Vector3> pragma::material::SourceVmtFormatHandler::GetColorValue(const IVmtNode &node) const
 {
 	auto &vtfLibNode = GetVtfLibNode(node);
 	return vmt_parameter_to_color(vtfLibNode);
 }
-std::optional<uint8_t> msys::SourceVmtFormatHandler::GetUint8Value(const IVmtNode &node) const
+std::optional<uint8_t> pragma::material::SourceVmtFormatHandler::GetUint8Value(const IVmtNode &node) const
 {
 	auto &vtfLibNode = GetVtfLibNode(node);
 	uint8_t value;
@@ -498,7 +498,7 @@ std::optional<uint8_t> msys::SourceVmtFormatHandler::GetUint8Value(const IVmtNod
 		return {};
 	return value;
 }
-std::optional<int32_t> msys::SourceVmtFormatHandler::GetInt32Value(const IVmtNode &node) const
+std::optional<int32_t> pragma::material::SourceVmtFormatHandler::GetInt32Value(const IVmtNode &node) const
 {
 	auto &vtfLibNode = GetVtfLibNode(node);
 	int32_t value;
@@ -506,7 +506,7 @@ std::optional<int32_t> msys::SourceVmtFormatHandler::GetInt32Value(const IVmtNod
 		return {};
 	return value;
 }
-std::optional<std::array<float, 3>> msys::SourceVmtFormatHandler::GetMatrixValue(const IVmtNode &node) const
+std::optional<std::array<float, 3>> pragma::material::SourceVmtFormatHandler::GetMatrixValue(const IVmtNode &node) const
 {
 	auto &vtfLibNode = GetVtfLibNode(node);
 	auto str = GetStringValue(node);
@@ -544,25 +544,25 @@ static void merge_dx_node_values(VTFLib::Nodes::CVMTGroupNode &node)
 		for(auto opIdx : {2, 3, 1, 0}) // Order is important! (Ordered by string length per operator type (e.g. '<=' has to come before '<'))
 		{
 			auto &candidate = acceptedOperators.at(opIdx);
-			if(ustring::compare(name, candidate.c_str(), true, candidate.length()) == false)
+			if(pragma::string::compare(name, candidate.c_str(), true, candidate.length()) == false)
 				continue;
 			op = static_cast<Operator>(opIdx);
 		}
 		if(op == Operator::None)
 			dxLevelValue = name;
 		else
-			dxLevelValue = ustring::substr(std::string {name}, acceptedOperators.at(umath::to_integral(op)).length());
-		ustring::to_lower(dxLevelValue);
+			dxLevelValue = pragma::string::substr(std::string {name}, acceptedOperators.at(pragma::math::to_integral(op)).length());
+		pragma::string::to_lower(dxLevelValue);
 		auto it = dxStringToEnum.find(dxLevelValue);
 		if(it == dxStringToEnum.end())
 			continue;
-		if(umath::to_integral(it->second) <= umath::to_integral(bestDxVersion) && umath::to_integral(op) <= umath::to_integral(bestOperator))
+		if(pragma::math::to_integral(it->second) <= pragma::math::to_integral(bestDxVersion) && pragma::math::to_integral(op) <= pragma::math::to_integral(bestOperator))
 			continue;
 		dxNode = pNode;
 		bestDxVersion = it->second;
 		bestOperator = op;
 	}
-	if(dxNode != nullptr && dxNode->GetType() == VMTNodeType::NODE_TYPE_GROUP) {
+	if(dxNode != nullptr && dxNode->GetType() == NODE_TYPE_GROUP) {
 		auto *dxGroupNode = static_cast<VTFLib::Nodes::CVMTGroupNode *>(dxNode);
 		auto numNodesDx = dxGroupNode->GetNodeCount();
 		for(auto i = decltype(numNodesDx) {0u}; i < numNodesDx; ++i)
@@ -570,7 +570,7 @@ static void merge_dx_node_values(VTFLib::Nodes::CVMTGroupNode &node)
 	}
 }
 
-bool msys::SourceVmtFormatHandler::Import(const std::string &outputPath, std::string &outFilePath)
+bool pragma::material::SourceVmtFormatHandler::Import(const std::string &outputPath, std::string &outFilePath)
 {
 	auto size = m_file->GetSize();
 	if(size == 0)

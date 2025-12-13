@@ -11,10 +11,10 @@ export import pragma.image;
 export import pragma.materialsystem;
 export import pragma.prosper;
 
-export namespace msys {
+export namespace pragma::material {
 	class TextureLoader;
 	class ITextureFormatHandler;
-	class DLLCMATSYS TextureProcessor : public util::FileAssetProcessor {
+	class DLLCMATSYS TextureProcessor : public pragma::util::FileAssetProcessor {
 	  public:
 		struct BufferInfo {
 			std::shared_ptr<prosper::IBuffer> buffer = nullptr;
@@ -22,7 +22,7 @@ export namespace msys {
 			uint32_t mipmapIndex = 0u;
 		};
 
-		TextureProcessor(util::AssetFormatLoader &loader, std::unique_ptr<util::IAssetFormatHandler> &&handler);
+		TextureProcessor(pragma::util::AssetFormatLoader &loader, std::unique_ptr<pragma::util::IAssetFormatHandler> &&handler);
 		virtual bool Load() override;
 		virtual bool Finalize() override;
 		bool InitializeProsperImage(prosper::IPrContext &context);
@@ -43,13 +43,13 @@ export namespace msys {
 		prosper::Format imageFormat = prosper::Format::Unknown;
 		uint32_t mipmapCount = 1;
 		std::optional<prosper::Format> targetGpuConversionFormat {};
-		std::function<void(const void *, std::shared_ptr<uimg::ImageBuffer> &, uint32_t, uint32_t)> cpuImageConverter = nullptr;
+		std::function<void(const void *, std::shared_ptr<image::ImageBuffer> &, uint32_t, uint32_t)> cpuImageConverter = nullptr;
 		std::vector<BufferInfo> buffers {};
 	  private:
 		TextureLoader &GetLoader();
 		ITextureFormatHandler &GetHandler();
 
 		bool m_generateMipmaps = false;
-		std::vector<std::shared_ptr<uimg::ImageBuffer>> m_tmpImgBuffers {};
+		std::vector<std::shared_ptr<image::ImageBuffer>> m_tmpImgBuffers {};
 	};
 };

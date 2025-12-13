@@ -10,10 +10,10 @@ export module pragma.cmaterialsystem:texture_manager.format_handlers.gli;
 export import :texture_manager.texture_format_handler;
 export import gli;
 
-export namespace msys {
+export namespace pragma::material {
 	class DLLCMATSYS TextureFormatHandlerGli : public ITextureFormatHandler {
 	  public:
-		TextureFormatHandlerGli(util::IAssetManager &assetManager) : ITextureFormatHandler {assetManager} {}
+		TextureFormatHandlerGli(pragma::util::IAssetManager &assetManager) : ITextureFormatHandler {assetManager} {}
 		virtual bool GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize) override;
 		void SetTexture(gli::texture &&tex);
 

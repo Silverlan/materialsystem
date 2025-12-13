@@ -14,8 +14,8 @@ export import pragma.udm;
 #undef AddJob
 
 export {
-	namespace msys {
-		class DLLCMATSYS ITextureFormatHandler : public util::IAssetFormatHandler {
+	namespace pragma::material {
+		class DLLCMATSYS ITextureFormatHandler : public pragma::util::IAssetFormatHandler {
 		  public:
 			static void SetFlipTexturesVertically(bool flip);
 			static bool ShouldFlipTextureVertically();
@@ -42,13 +42,13 @@ export {
 			void SetTextureData(const std::shared_ptr<udm::Property> &textureData);
 			const InputTextureInfo &GetInputTextureInfo() const { return m_inputTextureInfo; }
 		  protected:
-			ITextureFormatHandler(util::IAssetManager &assetManager);
+			ITextureFormatHandler(pragma::util::IAssetManager &assetManager);
 			void Flip(const InputTextureInfo &texInfo);
 			virtual bool LoadData(InputTextureInfo &texInfo) = 0;
 			InputTextureInfo m_inputTextureInfo;
 			bool m_flipTextureVertically = false;
 		};
-		using namespace umath::scoped_enum::bitwise;
+		using namespace pragma::math::scoped_enum::bitwise;
 	};
-	REGISTER_ENUM_FLAGS(msys::ITextureFormatHandler::InputTextureInfo::Flags)
+	REGISTER_ENUM_FLAGS(pragma::material::ITextureFormatHandler::InputTextureInfo::Flags)
 }

@@ -18,7 +18,7 @@ export import pragma.prosper;
 import source2;
 #endif
 
-export {
+export namespace pragma::material {
 	class DLLCMATSYS TextureQueueItem {
 	  protected:
 		TextureQueueItem();
@@ -30,31 +30,31 @@ export {
 		std::string name;
 		std::string path;
 		std::string cache;
-		std::shared_ptr<VFilePtrInternal> file = nullptr; // Optional
+		std::shared_ptr<fs::VFilePtrInternal> file = nullptr; // Optional
 		unsigned char **mipmap;
 		unsigned int *dxtformat;
 		unsigned int *format;
 		int mipmapid;
-		msys::TextureMipmapMode mipmapMode;
+		material::TextureMipmapMode mipmapMode;
 		std::shared_ptr<prosper::ISampler> sampler = nullptr;
 		bool valid;
 		bool initialized;
 		bool cubemap;
 		bool addToCache = true;
-		msys::TextureType texturetype;
+		material::TextureType texturetype;
 	};
 
 	class DLLCMATSYS TextureQueueItemPNG : public TextureQueueItem {
 	  public:
 		TextureQueueItemPNG();
 		virtual ~TextureQueueItemPNG() override;
-		std::shared_ptr<uimg::ImageBuffer> pnginfo = nullptr;
+		std::shared_ptr<image::ImageBuffer> pnginfo = nullptr;
 	};
 
 	class DLLCMATSYS TextureQueueItemStbi : public TextureQueueItem {
 	  public:
-		TextureQueueItemStbi(msys::TextureType texType);
-		std::shared_ptr<uimg::ImageBuffer> imageBuffer = nullptr;
+		TextureQueueItemStbi(material::TextureType texType);
+		std::shared_ptr<image::ImageBuffer> imageBuffer = nullptr;
 	};
 
 #ifndef DISABLE_VTF_SUPPORT
@@ -71,12 +71,12 @@ export {
 		TextureQueueItemVTex();
 		virtual ~TextureQueueItemVTex() override;
 		std::shared_ptr<source2::resource::Texture> texture = nullptr;
-		std::unique_ptr<fsys::File> fptr = nullptr;
+		std::unique_ptr<fs::File> fptr = nullptr;
 	};
 #endif
 	class DLLCMATSYS TextureQueueItemSurface : public TextureQueueItem {
 	  public:
-		TextureQueueItemSurface(msys::TextureType type);
+		TextureQueueItemSurface(material::TextureType type);
 		TextureQueueItemSurface(const TextureQueueItemSurface &) = delete;
 		TextureQueueItemSurface &operator=(const TextureQueueItemSurface &) = delete;
 		virtual ~TextureQueueItemSurface() override;

@@ -9,7 +9,7 @@ export module pragma.cmaterialsystem:sprite_sheet_animation;
 
 export import pragma.filesystem;
 
-export {
+export namespace pragma::material {
 	struct DLLCMATSYS SpriteSheetAnimation {
 #if 0
 		static constexpr auto SAMPLE_COUNT = 1'024;
@@ -50,8 +50,8 @@ export {
 		std::vector<Sequence> sequences {};
 
 		uint32_t GetAbsoluteFrameIndex(uint32_t sequenceIdx, uint32_t localFrameIdx) const;
-		void Save(std::shared_ptr<VFilePtrInternalReal> &f) const;
-		bool Load(std::shared_ptr<VFilePtrInternal> &f);
+		void Save(std::shared_ptr<fs::VFilePtrInternalReal> &f) const;
+		bool Load(std::shared_ptr<fs::VFilePtrInternal> &f);
 
 		void UpdateLookupData();
 	};

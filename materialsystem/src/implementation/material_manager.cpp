@@ -34,9 +34,9 @@ static const std::unordered_map<std::string, std::string> ENUM_VARS = {
   {"BORDER_COLOR_FLOAT_OPAQUE_WHITE", "4"},
   {"BORDER_COLOR_INT_OPAQUE_WHITE", "5"},
 
-  {"ALPHA_MODE_OPAQUE", std::to_string(umath::to_integral(AlphaMode::Opaque))},
-  {"ALPHA_MODE_MASK", std::to_string(umath::to_integral(AlphaMode::Mask))},
-  {"ALPHA_MODE_BLEND", std::to_string(umath::to_integral(AlphaMode::Blend))},
+  {"ALPHA_MODE_OPAQUE", std::to_string(pragma::math::to_integral(AlphaMode::Opaque))},
+  {"ALPHA_MODE_MASK", std::to_string(pragma::math::to_integral(AlphaMode::Mask))},
+  {"ALPHA_MODE_BLEND", std::to_string(pragma::math::to_integral(AlphaMode::Blend))},
 };
 
 MaterialManager::LoadInfo::LoadInfo() : material(nullptr) {}
@@ -47,7 +47,7 @@ std::optional<std::string> MaterialManager::FindMaterialPath(const std::string &
 	std::string ext;
 	auto path = PathToIdentifier(material, &ext);
 	//path += '.' +ext;
-	if(FileManager::Exists(g_materialLocation + '/' + path) == false)
+	if(pragma::fs::exists(g_materialLocation + '/' + path) == false)
 		return {};
 	return path;
 }
@@ -58,14 +58,14 @@ MaterialManager::~MaterialManager() { Clear(); }
 void MaterialManager::SetRootMaterialLocation(const std::string &location) { g_materialLocation = location; }
 const std::string &MaterialManager::GetRootMaterialLocation() { return g_materialLocation; }
 
-msys::Material *MaterialManager::CreateMaterial(const std::string &shader, const std::shared_ptr<ds::Block> &root) { return CreateMaterial(nullptr, shader, root); }
-msys::Material *MaterialManager::CreateMaterial(const std::string &identifier, const std::string &shader, const std::shared_ptr<ds::Block> &root) { return CreateMaterial(&identifier, shader, root); }
-msys::Material *MaterialManager::CreateMaterial(const std::string *identifier, const std::string &shader, std::shared_ptr<ds::Block> root)
+pragma::material::Material *MaterialManager::CreateMaterial(const std::string &shader, const std::shared_ptr<pragma::datasystem::Block> &root) { return CreateMaterial(nullptr, shader, root); }
+pragma::material::Material *MaterialManager::CreateMaterial(const std::string &identifier, const std::string &shader, const std::shared_ptr<pragma::datasystem::Block> &root) { return CreateMaterial(&identifier, shader, root); }
+pragma::material::Material *MaterialManager::CreateMaterial(const std::string *identifier, const std::string &shader, std::shared_ptr<pragma::datasystem::Block> root)
 {
 	std::string matId;
 	if(identifier != nullptr) {
 		matId = *identifier;
-		ustring::to_lower(matId);
+		pragma::string::to_lower(matId);
 		auto *mat = FindMaterial(matId);
 		if(mat != nullptr)
 			return mat;
@@ -73,16 +73,16 @@ msys::Material *MaterialManager::CreateMaterial(const std::string *identifier, c
 	else
 		matId = "__anonymous" + std::to_string(m_unnamedIdx++);
 	if(root == nullptr) {
-		auto dataSettings = ds::create_data_settings(ENUM_VARS);
-		root = util::make_shared<ds::Block>(*dataSettings);
+		auto dataSettings = pragma::datasystem::create_data_settings(ENUM_VARS);
+		root = pragma::util::make_shared<pragma::datasystem::Block>(*dataSettings);
 	}
-	msys::Material *mat; //auto *mat = CreateMaterial<Material>(shader,root); // Claims ownership of 'root' and frees the memory at destruction
+	pragma::material::Material *mat; //auto *mat = CreateMaterial<Material>(shader,root); // Claims ownership of 'root' and frees the memory at destruction
 	mat->SetName(matId);
 	AddMaterial(matId, *mat);
 	return mat;
 }
 
-void MaterialManager::AddMaterial(const std::string &identifier, msys::Material &mat)
+void MaterialManager::AddMaterial(const std::string &identifier, pragma::material::Material &mat)
 {
 	auto nidentifier = ToMaterialIdentifier(identifier);
 	auto it = m_nameToMaterialIndex.find(nidentifier);
@@ -98,15 +98,15 @@ void MaterialManager::AddMaterial(const std::string &identifier, msys::Material 
 	m_nameToMaterialIndex[nidentifier] = mat.GetIndex();
 }
 
-extern const std::array<std::string, 5> g_knownMaterialFormats = {msys::material::FORMAT_MATERIAL_BINARY, msys::material::FORMAT_MATERIAL_ASCII, "wmi", "vmat_c", "vmt"};
+extern const std::array<std::string, 5> g_knownMaterialFormats = {pragma::material::ematerial::FORMAT_MATERIAL_BINARY, pragma::material::ematerial::FORMAT_MATERIAL_ASCII, "wmi", "vmat_c", "vmt"};
 std::string MaterialManager::PathToIdentifier(const std::string &path, std::string *ext, bool &hadExtension) const
 {
-	auto matPath = FileManager::GetNormalizedPath(path);
+	auto matPath = pragma::filesystem::get_normalized_path(path);
 	std::string fext;
 	auto hasExt = ufile::get_extension(matPath, &fext);
 	if(hasExt) {
 		auto lext = fext;
-		ustring::to_lower(lext);
+		pragma::string::to_lower(lext);
 		auto it = std::find(g_knownMaterialFormats.begin(), g_knownMaterialFormats.end(), lext);
 		if(it == g_knownMaterialFormats.end())
 			hasExt = false; // Assume that it's part of the filename
@@ -115,7 +115,7 @@ std::string MaterialManager::PathToIdentifier(const std::string &path, std::stri
 		hadExtension = false;
 		for(auto &exts : g_knownMaterialFormats) {
 			*ext = exts;
-			if(FileManager::Exists(g_materialLocation + "\\" + matPath + '.' + *ext))
+			if(pragma::fs::exists(g_materialLocation + "\\" + matPath + '.' + *ext))
 				break;
 		}
 		matPath += '.' + *ext;
@@ -136,29 +136,29 @@ std::string MaterialManager::PathToIdentifier(const std::string &path) const
 	return PathToIdentifier(path, &ext);
 }
 
-msys::Material *MaterialManager::FindMaterial(const std::string &identifier, std::string &internalMatId) const
+pragma::material::Material *MaterialManager::FindMaterial(const std::string &identifier, std::string &internalMatId) const
 {
 	internalMatId = PathToIdentifier(identifier);
 	auto it = m_nameToMaterialIndex.find(ToMaterialIdentifier(internalMatId));
 	if(it == m_nameToMaterialIndex.end())
 		return nullptr;
-	return const_cast<msys::Material *>(m_materials.at(it->second).get());
+	return const_cast<pragma::material::Material *>(m_materials.at(it->second).get());
 }
-msys::Material *MaterialManager::FindMaterial(const std::string &identifier) const
+pragma::material::Material *MaterialManager::FindMaterial(const std::string &identifier) const
 {
 	std::string internalMatId;
 	return FindMaterial(identifier, internalMatId);
 }
-msys::Material *MaterialManager::GetMaterial(msys::MaterialIndex index) { return (index < m_materials.size()) ? m_materials.at(index).get() : nullptr; }
-const msys::Material *MaterialManager::GetMaterial(msys::MaterialIndex index) const { return const_cast<MaterialManager *>(this)->GetMaterial(index); }
-std::shared_ptr<ds::Settings> MaterialManager::CreateDataSettings() const { return ds::create_data_settings(ENUM_VARS); }
+pragma::material::Material *MaterialManager::GetMaterial(pragma::material::MaterialIndex index) { return (index < m_materials.size()) ? m_materials.at(index).get() : nullptr; }
+const pragma::material::Material *MaterialManager::GetMaterial(pragma::material::MaterialIndex index) const { return const_cast<MaterialManager *>(this)->GetMaterial(index); }
+std::shared_ptr<pragma::datasystem::Settings> MaterialManager::CreateDataSettings() const { return pragma::datasystem::create_data_settings(ENUM_VARS); }
 
 std::string MaterialManager::ToMaterialIdentifier(const std::string &id) const
 {
-	auto path = util::Path::CreateFile(id);
+	auto path = pragma::util::Path::CreateFile(id);
 	path.RemoveFileExtension(g_knownMaterialFormats);
 	auto identifier = path.GetString();
-	ustring::to_lower(identifier);
+	pragma::string::to_lower(identifier);
 	return identifier;
 }
 
@@ -167,7 +167,7 @@ bool MaterialManager::Load(const std::string &path, LoadInfo &info, bool bReload
 	std::string ext;
 	auto &matId = info.identifier;
 	auto bHadExtension = false;
-	matId = FileManager::GetNormalizedPath(path);
+	matId = pragma::fs::get_normalized_path(path);
 	auto it = m_nameToMaterialIndex.find(ToMaterialIdentifier(matId));
 	if(it != m_nameToMaterialIndex.end()) {
 		auto &hMat = m_materials.at(it->second);
@@ -184,15 +184,15 @@ bool MaterialManager::Load(const std::string &path, LoadInfo &info, bool bReload
 	if(bHadExtension == false)
 		absPath += '.' + ext;
 	auto sub = matId;
-	std::string openMode = "r";
+	auto openMode = pragma::fs::FileMode::Read;
 #ifndef DISABLE_VMAT_SUPPORT
-	if(ustring::compare<std::string>(ext, "vmat_c", false))
-		openMode = "rb";
+	if(pragma::string::compare<std::string>(ext, "vmat_c", false))
+		openMode = pragma::fs::FileMode::Read | pragma::fs::FileMode::Binary;
 #endif
-	auto fp = FileManager::OpenFile(absPath.c_str(), openMode.c_str());
+	auto fp = pragma::fs::open_file(absPath.c_str(), openMode);
 	if(fp == nullptr)
 		return false;
-	auto handleLoadError = [this](const std::string &matId, msys::Material **mat) -> bool {
+	auto handleLoadError = [this](const std::string &matId, pragma::material::Material **mat) -> bool {
 		//auto matErr = m_materials.find("error");
 		//if(matErr == m_materials.end())
 		//	return false;
@@ -221,29 +221,29 @@ bool MaterialManager::Load(const std::string &path, LoadInfo &info, bool bReload
 	}
 #endif
 #ifndef DISABLE_VMAT_SUPPORT
-	if(ustring::compare<std::string>(ext, "vmat_c", false)) {
-		fsys::File f {fp};
+	if(pragma::string::compare<std::string>(ext, "vmat_c", false)) {
+		pragma::fs::File f {fp};
 		auto resource = source2::load_resource(f);
 		return resource ? LoadVMat(*resource, info) : false;
 	}
 #endif
 
-	if(ext.empty() || ustring::compare<std::string>(ext, msys::material::FORMAT_MATERIAL_ASCII, false) || ustring::compare<std::string>(ext, msys::material::FORMAT_MATERIAL_BINARY, false))
+	if(ext.empty() || pragma::string::compare<std::string>(ext, pragma::material::ematerial::FORMAT_MATERIAL_ASCII, false) || pragma::string::compare<std::string>(ext, pragma::material::ematerial::FORMAT_MATERIAL_BINARY, false))
 		return LoadUdm(fp, info);
 
-	fsys::File f {fp};
-	auto root = ds::System::ReadData(f, ENUM_VARS);
+	pragma::fs::File f {fp};
+	auto root = pragma::datasystem::System::ReadData(f, ENUM_VARS);
 	fp.reset();
 	if(root == nullptr)
 		return handleLoadError(matId, &info.material);
 	auto *data = root->GetData();
 	std::string shader;
-	std::shared_ptr<ds::Block> matData = nullptr;
+	std::shared_ptr<pragma::datasystem::Block> matData = nullptr;
 	for(auto it = data->begin(); it != data->end(); it++) {
 		auto &val = it->second;
 		if(val->IsBlock()) // Shader has to be first block
 		{
-			matData = std::static_pointer_cast<ds::Block>(val);
+			matData = std::static_pointer_cast<pragma::datasystem::Block>(val);
 			shader = it->first;
 			break;
 		}
@@ -256,7 +256,7 @@ bool MaterialManager::Load(const std::string &path, LoadInfo &info, bool bReload
 	info.root = matData;
 	return true;
 }
-msys::Material *MaterialManager::Load(const std::string &path, bool bReload, bool loadInstantly, bool *bFirstTimeError)
+pragma::material::Material *MaterialManager::Load(const std::string &path, bool bReload, bool loadInstantly, bool *bFirstTimeError)
 {
 	if(bFirstTimeError != nullptr)
 		*bFirstTimeError = false;
@@ -289,7 +289,7 @@ msys::Material *MaterialManager::Load(const std::string &path, bool bReload, boo
 	}
 	return info.material;
 }
-bool MaterialManager::LoadUdm(std::shared_ptr<VFilePtrInternal> &f, LoadInfo &loadInfo)
+bool MaterialManager::LoadUdm(std::shared_ptr<pragma::fs::VFilePtrInternal> &f, LoadInfo &loadInfo)
 {
 	std::shared_ptr<udm::Data> udmData = nullptr;
 	try {
@@ -303,10 +303,10 @@ bool MaterialManager::LoadUdm(std::shared_ptr<VFilePtrInternal> &f, LoadInfo &lo
 	auto data = udmData->GetAssetData().GetData();
 
 	auto dataSettings = CreateDataSettings();
-	auto root = util::make_shared<ds::Block>(*dataSettings);
+	auto root = pragma::util::make_shared<pragma::datasystem::Block>(*dataSettings);
 
-	std::function<void(const std::string &key, udm::LinkedPropertyWrapper &prop, ds::Block &block, bool texture)> udmToDataSys = nullptr;
-	udmToDataSys = [&udmToDataSys, &dataSettings](const std::string &key, udm::LinkedPropertyWrapper &prop, ds::Block &block, bool texture) {
+	std::function<void(const std::string &key, udm::LinkedPropertyWrapper &prop, pragma::datasystem::Block &block, bool texture)> udmToDataSys = nullptr;
+	udmToDataSys = [&udmToDataSys, &dataSettings](const std::string &key, udm::LinkedPropertyWrapper &prop, pragma::datasystem::Block &block, bool texture) {
 		prop.InitializeProperty();
 		if(prop.prop) {
 			switch(prop.prop->type) {
@@ -356,7 +356,7 @@ bool MaterialManager::LoadUdm(std::shared_ptr<VFilePtrInternal> &f, LoadInfo &lo
 					break;
 				}
 			}
-			static_assert(umath::to_integral(udm::Type::Count) == 36u);
+			static_assert(pragma::math::to_integral(udm::Type::Count) == 36u);
 		}
 		prop.GetValuePtr<float>();
 	};
@@ -377,10 +377,10 @@ bool MaterialManager::LoadUdm(std::shared_ptr<VFilePtrInternal> &f, LoadInfo &lo
 	loadInfo.root = root;
 	return true;
 }
-void MaterialManager::SetErrorMaterial(msys::Material *mat)
+void MaterialManager::SetErrorMaterial(pragma::material::Material *mat)
 {
 	if(mat == nullptr)
-		m_error = msys::MaterialHandle {};
+		m_error = pragma::material::MaterialHandle {};
 	else {
 		mat->SetErrorFlag(true);
 		//m_error = mat->GetHandle();
@@ -390,28 +390,28 @@ const std::vector<MaterialManager::ImageFormat> &MaterialManager::get_supported_
 {
 	static std::vector<ImageFormat> s_supportedImageFormats = {
 	  // Order of preference
-	  {msys::TextureType::KTX, "ktx"},
-	  {msys::TextureType::DDS, "dds"},
-	  {msys::TextureType::PNG, "png"},
-	  {msys::TextureType::TGA, "tga"},
-	  {msys::TextureType::JPG, "jpg"},
-	  {msys::TextureType::BMP, "bmp"},
-	  {msys::TextureType::PSD, "psd"},
-	  {msys::TextureType::GIF, "gif"},
-	  {msys::TextureType::HDR, "hdr"},
-	  {msys::TextureType::PIC, "pic"},
+	  {pragma::material::TextureType::KTX, "ktx"},
+	  {pragma::material::TextureType::DDS, "dds"},
+	  {pragma::material::TextureType::PNG, "png"},
+	  {pragma::material::TextureType::TGA, "tga"},
+	  {pragma::material::TextureType::JPG, "jpg"},
+	  {pragma::material::TextureType::BMP, "bmp"},
+	  {pragma::material::TextureType::PSD, "psd"},
+	  {pragma::material::TextureType::GIF, "gif"},
+	  {pragma::material::TextureType::HDR, "hdr"},
+	  {pragma::material::TextureType::PIC, "pic"},
 #ifndef DISABLE_VTF_SUPPORT
-	  {msys::TextureType::VTF, "vtf"},
+	  {pragma::material::TextureType::VTF, "vtf"},
 #endif
 #ifndef DISABLE_VTEX_SUPPORT
-	  {msys::TextureType::VTex, "vtex_c"},
+	  {pragma::material::TextureType::VTex, "vtex_c"},
 #endif
 	};
-	static_assert(umath::to_integral(msys::TextureType::Count) == 13, "Update this implementation when new texture types have been added!");
+	static_assert(pragma::math::to_integral(pragma::material::TextureType::Count) == 13, "Update this implementation when new texture types have been added!");
 	return s_supportedImageFormats;
 }
-msys::Material *MaterialManager::GetErrorMaterial() const { return const_cast<msys::Material *>(m_error.get()); }
-const std::vector<msys::MaterialHandle> &MaterialManager::GetMaterials() const { return m_materials; }
+pragma::material::Material *MaterialManager::GetErrorMaterial() const { return const_cast<pragma::material::Material *>(m_error.get()); }
+const std::vector<pragma::material::MaterialHandle> &MaterialManager::GetMaterials() const { return m_materials; }
 uint32_t MaterialManager::Clear()
 {
 	for(auto &hMaterial : m_materials) {
@@ -423,8 +423,8 @@ uint32_t MaterialManager::Clear()
 	m_nameToMaterialIndex.clear();
 	return n;
 }
-void MaterialManager::SetTextureImporter(const std::function<VFilePtr(const std::string &, const std::string &)> &fileHandler) { m_textureImporter = fileHandler; }
-const std::function<std::shared_ptr<VFilePtrInternal>(const std::string &, const std::string &)> &MaterialManager::GetTextureImporter() const { return m_textureImporter; }
+void MaterialManager::SetTextureImporter(const std::function<pragma::fs::VFilePtr(const std::string &, const std::string &)> &fileHandler) { m_textureImporter = fileHandler; }
+const std::function<std::shared_ptr<pragma::fs::VFilePtrInternal>(const std::string &, const std::string &)> &MaterialManager::GetTextureImporter() const { return m_textureImporter; }
 uint32_t MaterialManager::ClearUnused()
 {
 	uint32_t n = 0;

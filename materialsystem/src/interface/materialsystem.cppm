@@ -15,3 +15,7 @@ export import :texture_info;
 export import :util;
 export import :vmat;
 export import :vmt;
+
+export namespace pragma::msys {
+    using namespace material;
+}

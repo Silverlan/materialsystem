@@ -11,7 +11,7 @@ export module pragma.materialsystem:enums;
 import pragma.math;
 
 export {
-	namespace msys {
+	namespace pragma::material {
 		enum class DetailMode : uint8_t {
 			DecalModulate = 0u,
 			Additive,
@@ -64,7 +64,7 @@ export {
 
 		enum class TextureLoadFlags : uint32_t { None = 0u, LoadInstantly = 1u, Reload = LoadInstantly << 1u, DontCache = Reload << 1u };
 
-		using namespace umath::scoped_enum::bitwise;
+		using namespace pragma::math::scoped_enum::bitwise;
 	}
-	REGISTER_ENUM_FLAGS(msys::TextureLoadFlags)
+	REGISTER_ENUM_FLAGS(pragma::material::TextureLoadFlags)
 }

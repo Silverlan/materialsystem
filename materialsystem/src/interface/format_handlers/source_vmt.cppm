@@ -21,7 +21,7 @@ import REDxEYE.VKVParser;
 
 #ifndef DISABLE_VMT_SUPPORT
 
-export namespace msys {
+export namespace pragma::material {
 	struct IVmtNode {
 		virtual ~IVmtNode() = default;
 	};
@@ -29,9 +29,9 @@ export namespace msys {
 		VtfLibVmtNode(const VTFLib::Nodes::CVMTNode &vtfLibNode) : vtfLibNode {vtfLibNode} {}
 		const VTFLib::Nodes::CVMTNode &vtfLibNode;
 	};
-	class DLLMATSYS ISourceVmtFormatHandler : public util::IImportAssetFormatHandler {
+	class DLLMATSYS ISourceVmtFormatHandler : public pragma::util::IImportAssetFormatHandler {
 	  public:
-		ISourceVmtFormatHandler(util::IAssetManager &assetManager);
+		ISourceVmtFormatHandler(pragma::util::IAssetManager &assetManager);
 	  protected:
 		virtual std::string GetShader() const = 0;
 		virtual std::shared_ptr<const IVmtNode> GetNode(const std::string &key, const IVmtNode *optParent = nullptr) const = 0;
@@ -50,19 +50,19 @@ export namespace msys {
 		std::optional<uint8_t> GetUint8Value(const std::string &key, const IVmtNode *optParent = nullptr, const std::optional<uint8_t> &defaultValue = {}) const;
 		std::optional<int32_t> GetInt32Value(const std::string &key, const IVmtNode *optParent = nullptr, const std::optional<uint8_t> &defaultValue = {}) const;
 
-		bool AssignStringValue(ds::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey) const;
-		bool AssignTextureValue(ds::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey) const;
-		bool AssignBooleanValue(ds::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey, std::optional<bool> defaultValue = std::nullopt) const;
-		bool AssignFloatValue(ds::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey, std::optional<float> defaultValue = std::nullopt) const;
+		bool AssignStringValue(datasystem::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey) const;
+		bool AssignTextureValue(datasystem::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey) const;
+		bool AssignBooleanValue(datasystem::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey, std::optional<bool> defaultValue = std::nullopt) const;
+		bool AssignFloatValue(datasystem::Block &dsData, const IVmtNode &vmtNode, const std::string &vmtKey, const std::string &pragmaKey, std::optional<float> defaultValue = std::nullopt) const;
 
-		virtual bool LoadVmtData(const std::string &vmtShader, ds::Block &rootData, std::string &matShader) = 0;
+		virtual bool LoadVmtData(const std::string &vmtShader, datasystem::Block &rootData, std::string &matShader) = 0;
 		bool LoadVMT(const IVmtNode &rootNode, const std::string &outputPath, std::string &outFilePath);
 
 		std::shared_ptr<IVmtNode> m_rootNode;
 	};
 	class DLLMATSYS SourceVmtFormatHandler : public ISourceVmtFormatHandler {
 	  public:
-		SourceVmtFormatHandler(util::IAssetManager &assetManager);
+		SourceVmtFormatHandler(pragma::util::IAssetManager &assetManager);
 		virtual bool Import(const std::string &outputPath, std::string &outFilePath) override;
 	  protected:
 		const VTFLib::Nodes::CVMTNode &GetVtfLibNode(const IVmtNode &vmtNode) const;
@@ -84,7 +84,7 @@ export namespace msys {
 		using ISourceVmtFormatHandler::GetStringValue;
 		using ISourceVmtFormatHandler::GetUint8Value;
 
-		virtual bool LoadVmtData(const std::string &vmtShader, ds::Block &rootData, std::string &matShader) override { return true; }
+		virtual bool LoadVmtData(const std::string &vmtShader, datasystem::Block &rootData, std::string &matShader) override { return true; }
 	};
 #ifdef ENABLE_VKV_PARSER
 	struct VkvNode : public IVmtNode {
@@ -93,7 +93,7 @@ export namespace msys {
 	};
 	class DLLMATSYS SourceVmtFormatHandler2 : public ISourceVmtFormatHandler {
 	  public:
-		SourceVmtFormatHandler2(util::IAssetManager &assetManager);
+		SourceVmtFormatHandler2(pragma::util::IAssetManager &assetManager);
 		virtual bool Import(const std::string &outputPath, std::string &outFilePath) override;
 	  protected:
 		const ValveKeyValueFormat::KVNode &GetVkvNode(const IVmtNode &vmtNode) const;
@@ -115,7 +115,7 @@ export namespace msys {
 		using ISourceVmtFormatHandler::GetStringValue;
 		using ISourceVmtFormatHandler::GetUint8Value;
 
-		virtual bool LoadVmtData(const std::string &vmtShader, ds::Block &rootData, std::string &matShader) override { return true; }
+		virtual bool LoadVmtData(const std::string &vmtShader, datasystem::Block &rootData, std::string &matShader) override { return true; }
 	};
 #endif
 };

@@ -9,7 +9,7 @@ export module pragma.cmaterialsystem:shaders.decompose_cornea;
 
 export import pragma.prosper;
 
-export namespace msys {
+export namespace pragma::material {
 	class DLLCMATSYS ShaderDecomposeCornea : public prosper::ShaderBaseImageProcessing {
 	  public:
 		static prosper::DescriptorSetInfo DESCRIPTOR_SET_TEXTURE;

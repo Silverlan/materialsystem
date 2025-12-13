@@ -9,7 +9,7 @@ export module pragma.cmaterialsystem:material_manager2;
 
 export import :material;
 
-export namespace msys {
+export namespace pragma::material {
 	class TextureManager;
 	class DLLCMATSYS CMaterialManager : public MaterialManager {
 	  public:
@@ -19,7 +19,7 @@ export namespace msys {
 		static std::shared_ptr<CMaterialManager> Create(prosper::IPrContext &context);
 		virtual ~CMaterialManager() override;
 
-		virtual std::shared_ptr<Material> CreateMaterialObject(const std::string &shader, const std::shared_ptr<ds::Block> &data) override;
+		virtual std::shared_ptr<Material> CreateMaterialObject(const std::string &shader, const std::shared_ptr<datasystem::Block> &data) override;
 		void MarkForReload(CMaterial &mat);
 
 		void SetShaderHandler(const std::function<void(Material *)> &handler);
@@ -27,14 +27,14 @@ export namespace msys {
 		void ReloadMaterialShaders();
 
 		prosper::IPrContext &GetContext() { return m_context; }
-		msys::TextureManager &GetTextureManager() { return *m_textureManager; }
+		TextureManager &GetTextureManager() { return *m_textureManager; }
 		virtual void Poll() override;
 	  private:
 		CMaterialManager(prosper::IPrContext &context);
 		virtual void InitializeImportHandlers() override;
 		std::function<void(Material *)> m_shaderHandler;
 		prosper::IPrContext &m_context;
-		std::unique_ptr<msys::TextureManager> m_textureManager;
+		std::unique_ptr<TextureManager> m_textureManager;
 		std::queue<WeakMaterialHandle> m_reloadShaderQueue;
 	};
 };

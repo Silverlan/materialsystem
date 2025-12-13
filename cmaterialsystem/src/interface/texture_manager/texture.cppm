@@ -13,7 +13,7 @@ export import pragma.prosper;
 
 export {
 	class TextureManager;
-	namespace msys {
+	namespace pragma::material {
 #pragma warning(push)
 #pragma warning(disable : 4251)
 		class DLLCMATSYS Texture final : public std::enable_shared_from_this<Texture> {
@@ -41,9 +41,9 @@ export {
 
 			uint32_t GetUpdateCount() const { return m_updateCount; }
 
-			msys::TextureType GetFileFormatType() const { return m_fileFormatType; }
-			const std::optional<util::Path> &GetFilePath() { return m_filePath; }
-			void SetFileInfo(const util::Path &path, msys::TextureType type);
+			TextureType GetFileFormatType() const { return m_fileFormatType; }
+			const std::optional<pragma::util::Path> &GetFilePath() { return m_filePath; }
+			void SetFileInfo(const pragma::util::Path &path, TextureType type);
 
 			bool HasFlag(Flags flag) const;
 			bool IsIndexed() const;
@@ -57,15 +57,15 @@ export {
 			std::queue<CallbackHandle> m_onLoadCallbacks;
 			std::queue<CallbackHandle> m_onRemoveCallbacks;
 			Flags m_flags = Flags::Error;
-			msys::TextureType m_fileFormatType;
-			std::optional<util::Path> m_filePath {};
+			TextureType m_fileFormatType;
+			std::optional<pragma::util::Path> m_filePath {};
 			prosper::IPrContext &m_context;
 			std::shared_ptr<prosper::Texture> m_texture = nullptr;
 			std::string m_name;
 			uint32_t m_updateCount = 0;
 		};
 #pragma warning(pop)
-		using namespace umath::scoped_enum::bitwise;
+		using namespace pragma::math::scoped_enum::bitwise;
 	}
-	REGISTER_ENUM_FLAGS(msys::Texture::Flags)
+	REGISTER_ENUM_FLAGS(pragma::material::Texture::Flags)
 }

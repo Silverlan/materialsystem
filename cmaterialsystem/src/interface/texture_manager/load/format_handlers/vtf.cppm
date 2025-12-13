@@ -11,7 +11,7 @@ export module pragma.cmaterialsystem:texture_manager.format_handlers.vtf;
 export import :texture_manager.texture_format_handler;
 
 #ifndef DISABLE_VTF_SUPPORT
-export namespace msys {
+export namespace pragma::material {
 	namespace detail {
 		struct VulkanImageData {
 			// Original image format
@@ -25,7 +25,7 @@ export namespace msys {
 	};
 	class DLLCMATSYS TextureFormatHandlerVtf : public ITextureFormatHandler {
 	  public:
-		TextureFormatHandlerVtf(util::IAssetManager &assetManager);
+		TextureFormatHandlerVtf(pragma::util::IAssetManager &assetManager);
 		virtual bool GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize) override;
 	  protected:
 		virtual bool LoadData(InputTextureInfo &texInfo) override;

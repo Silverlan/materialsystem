@@ -9,13 +9,13 @@ export module pragma.cmaterialsystem:texture_manager.manager2;
 
 export import :texture_manager.texture;
 
-export namespace msys {
-	struct DLLCMATSYS TextureLoadInfo : public util::AssetLoadInfo {
-		TextureLoadInfo(util::AssetLoadFlags flags = util::AssetLoadFlags::None);
+export namespace pragma::material {
+	struct DLLCMATSYS TextureLoadInfo : public pragma::util::AssetLoadInfo {
+		TextureLoadInfo(pragma::util::AssetLoadFlags flags = pragma::util::AssetLoadFlags::None);
 		TextureMipmapMode mipmapMode;
 		std::shared_ptr<udm::Property> textureData;
 	};
-	class DLLCMATSYS TextureManager : public util::TFileAssetManager<Texture, TextureLoadInfo> {
+	class DLLCMATSYS TextureManager : public pragma::util::TFileAssetManager<Texture, TextureLoadInfo> {
 	  public:
 		using AssetType = Texture;
 
@@ -27,8 +27,8 @@ export namespace msys {
 
 		void Test();
 	  protected:
-		virtual void InitializeProcessor(util::IAssetProcessor &processor) override;
-		virtual util::AssetObject InitializeAsset(const util::Asset &asset, const util::AssetLoadJob &job) override;
+		virtual void InitializeProcessor(pragma::util::IAssetProcessor &processor) override;
+		virtual pragma::util::AssetObject InitializeAsset(const pragma::util::Asset &asset, const pragma::util::AssetLoadJob &job) override;
 
 		prosper::IPrContext &m_context;
 		std::shared_ptr<Texture> m_error;

@@ -11,11 +11,11 @@ export import :texture_manager.texture_processor;
 
 #undef AddJob
 
-export namespace msys {
+export namespace pragma::material {
 	DLLCMATSYS void setup_sampler_mipmap_mode(prosper::util::SamplerCreateInfo &createInfo, TextureMipmapMode mode);
-	class DLLCMATSYS TextureLoader : public util::TAssetFormatLoader<TextureProcessor> {
+	class DLLCMATSYS TextureLoader : public pragma::util::TAssetFormatLoader<TextureProcessor> {
 	  public:
-		TextureLoader(util::IAssetManager &assetManager, prosper::IPrContext &context);
+		TextureLoader(pragma::util::IAssetManager &assetManager, prosper::IPrContext &context);
 		void SetAllowMultiThreadedGpuResourceAllocation(bool b) { m_allowMultiThreadedGpuResourceAllocation = b; }
 		bool DoesAllowMultiThreadedGpuResourceAllocation() const { return m_allowMultiThreadedGpuResourceAllocation; }
 		prosper::IPrContext &GetContext() { return m_context; }

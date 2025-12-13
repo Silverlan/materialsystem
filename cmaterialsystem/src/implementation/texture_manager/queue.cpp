@@ -10,9 +10,9 @@ module pragma.cmaterialsystem;
 
 import :texture_manager.texture_queue;
 
-TextureQueueItem::TextureQueueItem() : valid(true), mipmapMode(msys::TextureMipmapMode::Load), cubemap(false), texturetype(msys::TextureType::Invalid), mipmap(NULL), mipmapid(-1), dxtformat(NULL), format(NULL), initialized(false), context() {}
+pragma::material::TextureQueueItem::TextureQueueItem() : valid(true), mipmapMode(material::TextureMipmapMode::Load), cubemap(false), texturetype(material::TextureType::Invalid), mipmap(NULL), mipmapid(-1), dxtformat(NULL), format(NULL), initialized(false), context() {}
 
-TextureQueueItem::~TextureQueueItem()
+pragma::material::TextureQueueItem::~TextureQueueItem()
 {
 	if(dxtformat != NULL)
 		delete[] dxtformat;
@@ -22,9 +22,9 @@ TextureQueueItem::~TextureQueueItem()
 
 ////////////////////////
 
-TextureQueueItemPNG::TextureQueueItemPNG() : TextureQueueItem(), pnginfo(NULL) { texturetype = msys::TextureType::PNG; }
+pragma::material::TextureQueueItemPNG::TextureQueueItemPNG() : TextureQueueItem(), pnginfo(NULL) { texturetype = material::TextureType::PNG; }
 
-TextureQueueItemPNG::~TextureQueueItemPNG()
+pragma::material::TextureQueueItemPNG::~TextureQueueItemPNG()
 {
 	if(mipmap != NULL) {
 		delete[] mipmap[0];
@@ -34,14 +34,14 @@ TextureQueueItemPNG::~TextureQueueItemPNG()
 
 ////////////////////////
 
-TextureQueueItemStbi::TextureQueueItemStbi(msys::TextureType texType) : TextureQueueItem(), imageBuffer() { texturetype = texType; }
+pragma::material::TextureQueueItemStbi::TextureQueueItemStbi(material::TextureType texType) : TextureQueueItem(), imageBuffer() { texturetype = texType; }
 
 ////////////////////////
 
 #ifndef DISABLE_VTF_SUPPORT
-TextureQueueItemVTF::TextureQueueItemVTF() : TextureQueueItem() { texturetype = msys::TextureType::VTF; }
+pragma::material::TextureQueueItemVTF::TextureQueueItemVTF() : TextureQueueItem() { texturetype = material::TextureType::VTF; }
 
-TextureQueueItemVTF::~TextureQueueItemVTF()
+pragma::material::TextureQueueItemVTF::~TextureQueueItemVTF()
 {
 	if(mipmap != nullptr) {
 		delete[] mipmap[0];
@@ -53,9 +53,9 @@ TextureQueueItemVTF::~TextureQueueItemVTF()
 ////////////////////////
 
 #ifndef DISABLE_VTEX_SUPPORT
-TextureQueueItemVTex::TextureQueueItemVTex() : TextureQueueItem() { texturetype = msys::TextureType::VTex; }
+pragma::material::TextureQueueItemVTex::TextureQueueItemVTex() : TextureQueueItem() { texturetype = material::TextureType::VTex; }
 
-TextureQueueItemVTex::~TextureQueueItemVTex()
+pragma::material::TextureQueueItemVTex::~TextureQueueItemVTex()
 {
 	if(mipmap != nullptr) {
 		delete[] mipmap[0];
@@ -66,9 +66,9 @@ TextureQueueItemVTex::~TextureQueueItemVTex()
 
 ////////////////////////
 
-TextureQueueItemSurface::TextureQueueItemSurface(msys::TextureType type) : TextureQueueItem(), /*ddsimg(NULL),*/ compressed(nullptr), compressedsize(nullptr) { texturetype = type; }
+pragma::material::TextureQueueItemSurface::TextureQueueItemSurface(material::TextureType type) : TextureQueueItem(), /*ddsimg(NULL),*/ compressed(nullptr), compressedsize(nullptr) { texturetype = type; }
 
-TextureQueueItemSurface::~TextureQueueItemSurface()
+pragma::material::TextureQueueItemSurface::~TextureQueueItemSurface()
 {
 	/*if(ddsimg != NULL)
 	{

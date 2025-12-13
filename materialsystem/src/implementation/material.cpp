@@ -12,57 +12,57 @@ import :material_manager;
 
 #undef CreateFile
 
-decltype(msys::material::DIFFUSE_MAP_IDENTIFIER) msys::material::DIFFUSE_MAP_IDENTIFIER = "diffuse_map";
-decltype(msys::material::ALBEDO_MAP_IDENTIFIER) msys::material::ALBEDO_MAP_IDENTIFIER = "albedo_map";
-decltype(msys::material::ALBEDO_MAP2_IDENTIFIER) msys::material::ALBEDO_MAP2_IDENTIFIER = "albedo_map2";
-decltype(msys::material::ALBEDO_MAP3_IDENTIFIER) msys::material::ALBEDO_MAP3_IDENTIFIER = "albedo_map3";
-decltype(msys::material::NORMAL_MAP_IDENTIFIER) msys::material::NORMAL_MAP_IDENTIFIER = "normal_map";
-decltype(msys::material::GLOW_MAP_IDENTIFIER) msys::material::GLOW_MAP_IDENTIFIER = "emission_map";
-decltype(msys::material::EMISSION_MAP_IDENTIFIER) msys::material::EMISSION_MAP_IDENTIFIER = GLOW_MAP_IDENTIFIER;
-decltype(msys::material::PARALLAX_MAP_IDENTIFIER) msys::material::PARALLAX_MAP_IDENTIFIER = "parallax_map";
-decltype(msys::material::ALPHA_MAP_IDENTIFIER) msys::material::ALPHA_MAP_IDENTIFIER = "alpha_map";
-decltype(msys::material::RMA_MAP_IDENTIFIER) msys::material::RMA_MAP_IDENTIFIER = "rma_map";
-decltype(msys::material::DUDV_MAP_IDENTIFIER) msys::material::DUDV_MAP_IDENTIFIER = "dudv_map";
-decltype(msys::material::WRINKLE_STRETCH_MAP_IDENTIFIER) msys::material::WRINKLE_STRETCH_MAP_IDENTIFIER = "wrinkle_stretch_map";
-decltype(msys::material::WRINKLE_COMPRESS_MAP_IDENTIFIER) msys::material::WRINKLE_COMPRESS_MAP_IDENTIFIER = "wrinkle_compress_map";
-decltype(msys::material::EXPONENT_MAP_IDENTIFIER) msys::material::EXPONENT_MAP_IDENTIFIER = "exponent_map";
+decltype(pragma::material::ematerial::DIFFUSE_MAP_IDENTIFIER) pragma::material::ematerial::DIFFUSE_MAP_IDENTIFIER = "diffuse_map";
+decltype(pragma::material::ematerial::ALBEDO_MAP_IDENTIFIER) pragma::material::ematerial::ALBEDO_MAP_IDENTIFIER = "albedo_map";
+decltype(pragma::material::ematerial::ALBEDO_MAP2_IDENTIFIER) pragma::material::ematerial::ALBEDO_MAP2_IDENTIFIER = "albedo_map2";
+decltype(pragma::material::ematerial::ALBEDO_MAP3_IDENTIFIER) pragma::material::ematerial::ALBEDO_MAP3_IDENTIFIER = "albedo_map3";
+decltype(pragma::material::ematerial::NORMAL_MAP_IDENTIFIER) pragma::material::ematerial::NORMAL_MAP_IDENTIFIER = "normal_map";
+decltype(pragma::material::ematerial::GLOW_MAP_IDENTIFIER) pragma::material::ematerial::GLOW_MAP_IDENTIFIER = "emission_map";
+decltype(pragma::material::ematerial::EMISSION_MAP_IDENTIFIER) pragma::material::ematerial::EMISSION_MAP_IDENTIFIER = GLOW_MAP_IDENTIFIER;
+decltype(pragma::material::ematerial::PARALLAX_MAP_IDENTIFIER) pragma::material::ematerial::PARALLAX_MAP_IDENTIFIER = "parallax_map";
+decltype(pragma::material::ematerial::ALPHA_MAP_IDENTIFIER) pragma::material::ematerial::ALPHA_MAP_IDENTIFIER = "alpha_map";
+decltype(pragma::material::ematerial::RMA_MAP_IDENTIFIER) pragma::material::ematerial::RMA_MAP_IDENTIFIER = "rma_map";
+decltype(pragma::material::ematerial::DUDV_MAP_IDENTIFIER) pragma::material::ematerial::DUDV_MAP_IDENTIFIER = "dudv_map";
+decltype(pragma::material::ematerial::WRINKLE_STRETCH_MAP_IDENTIFIER) pragma::material::ematerial::WRINKLE_STRETCH_MAP_IDENTIFIER = "wrinkle_stretch_map";
+decltype(pragma::material::ematerial::WRINKLE_COMPRESS_MAP_IDENTIFIER) pragma::material::ematerial::WRINKLE_COMPRESS_MAP_IDENTIFIER = "wrinkle_compress_map";
+decltype(pragma::material::ematerial::EXPONENT_MAP_IDENTIFIER) pragma::material::ematerial::EXPONENT_MAP_IDENTIFIER = "exponent_map";
 
-msys::Material::BaseMaterial::~BaseMaterial()
+pragma::material::Material::BaseMaterial::~BaseMaterial()
 {
 	if(onBaseTexturesUpdated.IsValid())
 		onBaseTexturesUpdated.Remove();
 }
 
-std::shared_ptr<msys::Material> msys::Material::Create(msys::MaterialManager &manager)
+std::shared_ptr<pragma::material::Material> pragma::material::Material::Create(MaterialManager &manager)
 {
-	auto mat = std::shared_ptr<msys::Material> {new Material {manager}};
+	auto mat = std::shared_ptr<Material> {new Material {manager}};
 	mat->Reset();
 	return mat;
 }
-std::shared_ptr<msys::Material> msys::Material::Create(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data)
+std::shared_ptr<pragma::material::Material> pragma::material::Material::Create(MaterialManager &manager, const pragma::util::WeakHandle<pragma::util::ShaderInfo> &shaderInfo, const std::shared_ptr<datasystem::Block> &data)
 {
-	auto mat = std::shared_ptr<msys::Material> {new Material {manager, shaderInfo, data}};
+	auto mat = std::shared_ptr<Material> {new Material {manager, shaderInfo, data}};
 	mat->Initialize(shaderInfo, data);
 	return mat;
 }
-std::shared_ptr<msys::Material> msys::Material::Create(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data)
+std::shared_ptr<pragma::material::Material> pragma::material::Material::Create(MaterialManager &manager, const std::string &shader, const std::shared_ptr<datasystem::Block> &data)
 {
-	auto mat = std::shared_ptr<msys::Material> {new Material {manager, shader, data}};
+	auto mat = std::shared_ptr<Material> {new Material {manager, shader, data}};
 	mat->Initialize(shader, data);
 	return mat;
 }
-msys::Material::Material(msys::MaterialManager &manager) : m_data(nullptr), m_shader(nullptr), m_manager(manager) {}
+pragma::material::Material::Material(MaterialManager &manager) : m_data(nullptr), m_shader(nullptr), m_manager(manager) {}
 
-msys::Material::Material(msys::MaterialManager &manager, const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data) : Material(manager) {}
+pragma::material::Material::Material(MaterialManager &manager, const pragma::util::WeakHandle<pragma::util::ShaderInfo> &shaderInfo, const std::shared_ptr<datasystem::Block> &data) : Material(manager) {}
 
-msys::Material::Material(msys::MaterialManager &manager, const std::string &shader, const std::shared_ptr<ds::Block> &data) : Material(manager) {}
+pragma::material::Material::Material(MaterialManager &manager, const std::string &shader, const std::shared_ptr<datasystem::Block> &data) : Material(manager) {}
 
-void msys::Material::Assign(const Material &other)
+void pragma::material::Material::Assign(const Material &other)
 {
 	Reset();
 
 	m_stateFlags = StateFlags::Loaded;
-	if(umath::is_flag_set(other.m_stateFlags, StateFlags::Error))
+	if(pragma::math::is_flag_set(other.m_stateFlags, StateFlags::Error))
 		m_stateFlags |= StateFlags::Error;
 	m_data = other.m_data;
 	m_shaderInfo = other.m_shaderInfo;
@@ -74,9 +74,9 @@ void msys::Material::Assign(const Material &other)
 		UpdateTextures();
 }
 
-void msys::Material::Reset()
+void pragma::material::Material::Reset()
 {
-	umath::set_flag(m_stateFlags, StateFlags::Loaded, false);
+	pragma::math::set_flag(m_stateFlags, StateFlags::Loaded, false);
 	m_data = nullptr;
 	m_shaderInfo.reset();
 	m_shader = nullptr;
@@ -90,7 +90,7 @@ void msys::Material::Reset()
 	m_baseMaterial = nullptr;
 }
 
-void msys::Material::Initialize(const util::WeakHandle<util::ShaderInfo> &shaderInfo, const std::shared_ptr<ds::Block> &data)
+void pragma::material::Material::Initialize(const pragma::util::WeakHandle<pragma::util::ShaderInfo> &shaderInfo, const std::shared_ptr<datasystem::Block> &data)
 {
 	Reset();
 	SetShaderInfo(shaderInfo);
@@ -98,7 +98,7 @@ void msys::Material::Initialize(const util::WeakHandle<util::ShaderInfo> &shader
 	Initialize(m_data);
 }
 
-void msys::Material::Initialize(const std::string &shader, const std::shared_ptr<ds::Block> &data)
+void pragma::material::Material::Initialize(const std::string &shader, const std::shared_ptr<datasystem::Block> &data)
 {
 	Reset();
 	m_shader = std::make_unique<std::string>(shader);
@@ -106,7 +106,7 @@ void msys::Material::Initialize(const std::string &shader, const std::shared_ptr
 	Initialize(m_data);
 }
 
-void msys::Material::Initialize(const std::shared_ptr<ds::Block> &data)
+void pragma::material::Material::Initialize(const std::shared_ptr<datasystem::Block> &data)
 {
 	m_baseMaterial = {};
 	std::string baseMaterial;
@@ -114,34 +114,34 @@ void msys::Material::Initialize(const std::shared_ptr<ds::Block> &data)
 		SetBaseMaterial(baseMaterial);
 }
 
-void *msys::Material::GetUserData() { return m_userData; }
-void msys::Material::SetUserData(void *data) { m_userData = data; }
+void *pragma::material::Material::GetUserData() { return m_userData; }
+void pragma::material::Material::SetUserData(void *data) { m_userData = data; }
 
-bool msys::Material::IsTranslucent() const { return m_alphaMode == AlphaMode::Blend; }
+bool pragma::material::Material::IsTranslucent() const { return m_alphaMode == AlphaMode::Blend; }
 
-void msys::Material::UpdateTextures(bool forceUpdate)
+void pragma::material::Material::UpdateTextures(bool forceUpdate)
 {
 	if(forceUpdate)
-		umath::set_flag(m_stateFlags, StateFlags::TexturesUpdated, false);
-	if(umath::is_flag_set(m_stateFlags, StateFlags::TexturesUpdated))
+		pragma::math::set_flag(m_stateFlags, StateFlags::TexturesUpdated, false);
+	if(pragma::math::is_flag_set(m_stateFlags, StateFlags::TexturesUpdated))
 		return;
-	GetTextureInfo(material::DIFFUSE_MAP_IDENTIFIER);
+	GetTextureInfo(ematerial::DIFFUSE_MAP_IDENTIFIER);
 
 	// The call above may have already invoked UpdateTextures(), so we
 	// need to re-check
-	if(umath::is_flag_set(m_stateFlags, StateFlags::TexturesUpdated))
+	if(pragma::math::is_flag_set(m_stateFlags, StateFlags::TexturesUpdated))
 		return;
-	umath::set_flag(m_stateFlags, StateFlags::TexturesUpdated);
+	pragma::math::set_flag(m_stateFlags, StateFlags::TexturesUpdated);
 
-	m_texDiffuse = GetTextureInfo(material::DIFFUSE_MAP_IDENTIFIER);
+	m_texDiffuse = GetTextureInfo(ematerial::DIFFUSE_MAP_IDENTIFIER);
 	if(!m_texDiffuse)
-		m_texDiffuse = GetTextureInfo(material::ALBEDO_MAP_IDENTIFIER);
+		m_texDiffuse = GetTextureInfo(ematerial::ALBEDO_MAP_IDENTIFIER);
 
-	m_texNormal = GetTextureInfo(material::NORMAL_MAP_IDENTIFIER);
-	m_texGlow = GetTextureInfo(material::EMISSION_MAP_IDENTIFIER);
-	m_texParallax = GetTextureInfo(material::PARALLAX_MAP_IDENTIFIER);
-	m_texAlpha = GetTextureInfo(material::ALPHA_MAP_IDENTIFIER);
-	m_texRma = GetTextureInfo(material::RMA_MAP_IDENTIFIER);
+	m_texNormal = GetTextureInfo(ematerial::NORMAL_MAP_IDENTIFIER);
+	m_texGlow = GetTextureInfo(ematerial::EMISSION_MAP_IDENTIFIER);
+	m_texParallax = GetTextureInfo(ematerial::PARALLAX_MAP_IDENTIFIER);
+	m_texAlpha = GetTextureInfo(ematerial::ALPHA_MAP_IDENTIFIER);
+	m_texRma = GetTextureInfo(ematerial::RMA_MAP_IDENTIFIER);
 
 	m_alphaMode = GetProperty<AlphaMode>("alpha_mode", AlphaMode::Opaque);
 
@@ -149,7 +149,7 @@ void msys::Material::UpdateTextures(bool forceUpdate)
 	OnTexturesUpdated();
 }
 
-void msys::Material::CallEventListeners(Event event)
+void pragma::material::Material::CallEventListeners(Event event)
 {
 	auto itLs = m_eventListeners.find(event);
 	if(itLs == m_eventListeners.end())
@@ -166,7 +166,7 @@ void msys::Material::CallEventListeners(Event event)
 	}
 }
 
-CallbackHandle msys::Material::AddEventListener(Event event, const std::function<void(void)> &f)
+CallbackHandle pragma::material::Material::AddEventListener(Event event, const std::function<void(void)> &f)
 {
 	auto it = m_eventListeners.find(event);
 	if(it == m_eventListeners.end())
@@ -176,15 +176,15 @@ CallbackHandle msys::Material::AddEventListener(Event event, const std::function
 	return vec.back();
 }
 
-void msys::Material::OnTexturesUpdated() { CallEventListeners(Event::OnTexturesUpdated); }
+void pragma::material::Material::OnTexturesUpdated() { CallEventListeners(Event::OnTexturesUpdated); }
 
-void msys::Material::SetShaderInfo(const util::WeakHandle<util::ShaderInfo> &shaderInfo)
+void pragma::material::Material::SetShaderInfo(const pragma::util::WeakHandle<pragma::util::ShaderInfo> &shaderInfo)
 {
 	m_shaderInfo = shaderInfo;
 	m_shader = nullptr;
 }
 
-msys::Material::~Material()
+pragma::material::Material::~Material()
 {
 	for(auto &hCb : m_callOnLoaded) {
 		if(hCb.IsValid() == true)
@@ -192,46 +192,46 @@ msys::Material::~Material()
 	}
 }
 
-bool msys::Material::IsValid() const { return (m_data != nullptr) ? true : false; }
-msys::MaterialManager &msys::Material::GetManager() const { return m_manager; }
-void msys::Material::SetLoaded(bool b)
+bool pragma::material::Material::IsValid() const { return (m_data != nullptr) ? true : false; }
+pragma::material::MaterialManager &pragma::material::Material::GetManager() const { return m_manager; }
+void pragma::material::Material::SetLoaded(bool b)
 {
-	if(umath::is_flag_set(m_stateFlags, StateFlags::ExecutingOnLoadCallbacks))
+	if(pragma::math::is_flag_set(m_stateFlags, StateFlags::ExecutingOnLoadCallbacks))
 		return; // Prevent possible recursion while on-load callbacks are being executed
-	umath::set_flag(m_stateFlags, StateFlags::Loaded, b);
+	pragma::math::set_flag(m_stateFlags, StateFlags::Loaded, b);
 	if(b == true) {
-		umath::set_flag(m_stateFlags, StateFlags::ExecutingOnLoadCallbacks, true);
+		pragma::math::set_flag(m_stateFlags, StateFlags::ExecutingOnLoadCallbacks, true);
 		for(auto &f : m_callOnLoaded) {
 			if(f.IsValid())
 				f();
 		}
 		m_callOnLoaded.clear();
-		umath::set_flag(m_stateFlags, StateFlags::ExecutingOnLoadCallbacks, false);
+		pragma::math::set_flag(m_stateFlags, StateFlags::ExecutingOnLoadCallbacks, false);
 	}
 }
-bool msys::Material::Save(udm::AssetData outData, std::string &outErr)
+bool pragma::material::Material::Save(udm::AssetData outData, std::string &outErr)
 {
 	outData.GetData().Add(GetShaderIdentifier());
 	auto udm = (*outData)[GetShaderIdentifier()];
-	std::function<void(udm::LinkedPropertyWrapper, ds::Block &)> dataBlockToUdm = nullptr;
-	dataBlockToUdm = [&dataBlockToUdm, &udm](udm::LinkedPropertyWrapper prop, ds::Block &block) {
+	std::function<void(udm::LinkedPropertyWrapper, datasystem::Block &)> dataBlockToUdm = nullptr;
+	dataBlockToUdm = [&dataBlockToUdm, &udm](udm::LinkedPropertyWrapper prop, datasystem::Block &block) {
 		for(auto &pair : *block.GetData()) {
 			auto &key = pair.first;
 			auto &val = pair.second;
 			if(val->IsBlock()) {
-				auto &block = static_cast<ds::Block &>(*pair.second);
+				auto &block = static_cast<datasystem::Block &>(*pair.second);
 				dataBlockToUdm(prop[key], block);
 				continue;
 			}
 			if(val->IsContainer()) {
-				auto &container = static_cast<ds::Container &>(*pair.second);
+				auto &container = static_cast<datasystem::Container &>(*pair.second);
 				auto &children = container.GetBlocks();
 				auto udmChildren = prop.AddArray(key, children.size());
 				uint32_t idx = 0;
 				for(auto &child : children) {
 					if(child->IsContainer() || child->IsBlock())
 						continue;
-					auto *dsValue = dynamic_cast<ds::Value *>(pair.second.get());
+					auto *dsValue = dynamic_cast<datasystem::Value *>(pair.second.get());
 					if(dsValue == nullptr)
 						continue;
 					udmChildren[idx++] = dsValue->GetString();
@@ -239,49 +239,49 @@ bool msys::Material::Save(udm::AssetData outData, std::string &outErr)
 				udmChildren.Resize(idx);
 				continue;
 			}
-			auto *dsValue = dynamic_cast<ds::Value *>(val.get());
+			auto *dsValue = dynamic_cast<datasystem::Value *>(val.get());
 			assert(dsValue);
 			if(dsValue) {
-				auto *dsStr = dynamic_cast<ds::String *>(dsValue);
+				auto *dsStr = dynamic_cast<datasystem::String *>(dsValue);
 				if(dsStr)
 					prop[key] = dsStr->GetString();
-				auto *dsInt = dynamic_cast<ds::Int *>(dsValue);
+				auto *dsInt = dynamic_cast<datasystem::Int *>(dsValue);
 				if(dsInt)
 					prop[key] = dsInt->GetInt();
-				auto *dsFloat = dynamic_cast<ds::Float *>(dsValue);
+				auto *dsFloat = dynamic_cast<datasystem::Float *>(dsValue);
 				if(dsFloat)
 					prop[key] = dsFloat->GetFloat();
-				auto *dsBool = dynamic_cast<ds::Bool *>(dsValue);
+				auto *dsBool = dynamic_cast<datasystem::Bool *>(dsValue);
 				if(dsBool)
 					prop[key] = dsBool->GetBool();
-				auto *dsVec = dynamic_cast<ds::Vector *>(dsValue);
+				auto *dsVec = dynamic_cast<datasystem::Vector *>(dsValue);
 				if(dsVec)
 					prop[key] = dsVec->GetVector();
-				auto *dsVec4 = dynamic_cast<ds::Vector4 *>(dsValue);
+				auto *dsVec4 = dynamic_cast<datasystem::Vector4 *>(dsValue);
 				if(dsVec4)
 					prop[key] = dsVec4->GetVector4();
-				auto *dsVec2 = dynamic_cast<ds::Vector2 *>(dsValue);
+				auto *dsVec2 = dynamic_cast<datasystem::Vector2 *>(dsValue);
 				if(dsVec2)
 					prop[key] = dsVec2->GetVector2();
-				auto *dsTex = dynamic_cast<ds::Texture *>(dsValue);
+				auto *dsTex = dynamic_cast<datasystem::Texture *>(dsValue);
 				if(dsTex)
 					udm["textures"][key] = dsTex->GetString();
-				auto *dsCol = dynamic_cast<ds::Color *>(dsValue);
+				auto *dsCol = dynamic_cast<datasystem::Color *>(dsValue);
 				if(dsCol)
 					prop[key] = dsCol->GetColor().ToVector4();
 			}
 		}
 	};
 
-	outData.SetAssetType(material::PMAT_IDENTIFIER);
-	outData.SetAssetVersion(material::PMAT_VERSION);
+	outData.SetAssetType(ematerial::PMAT_IDENTIFIER);
+	outData.SetAssetVersion(ematerial::PMAT_VERSION);
 	dataBlockToUdm(udm["properties"], *m_data);
 	if(m_baseMaterial)
 		udm["base_material"] = m_baseMaterial->name;
 	return true;
 }
 extern const std::array<std::string, 5> g_knownMaterialFormats;
-bool msys::Material::Save(const std::string &relFileName, std::string &outErr, bool absolutePath)
+bool pragma::material::Material::Save(const std::string &relFileName, std::string &outErr, bool absolutePath)
 {
 	auto udmData = udm::Data::Create();
 	std::string err;
@@ -298,22 +298,22 @@ bool msys::Material::Save(const std::string &relFileName, std::string &outErr, b
 
 	std::string existingFilePath;
 	// If material already exists (e.g. inside an addon), make sure we have the correct path to overwrite it
-	if(FileManager::FindLocalPath(fileName, existingFilePath))
+	if(fs::find_local_path(fileName, existingFilePath))
 		fileName = std::move(existingFilePath);
 
 	std::string ext;
 	auto binary = false;
-	if(ufile::get_extension(fileName, &ext) && ustring::compare(ext.c_str(), material::FORMAT_MATERIAL_BINARY, false))
+	if(ufile::get_extension(fileName, &ext) && pragma::string::compare(ext.c_str(), ematerial::FORMAT_MATERIAL_BINARY, false))
 		binary = true;
 
 	ufile::remove_extension_from_filename(fileName, g_knownMaterialFormats);
 	if(binary)
-		fileName += '.' + std::string {material::FORMAT_MATERIAL_BINARY};
+		fileName += '.' + std::string {ematerial::FORMAT_MATERIAL_BINARY};
 	else
-		fileName += '.' + std::string {material::FORMAT_MATERIAL_ASCII};
+		fileName += '.' + std::string {ematerial::FORMAT_MATERIAL_ASCII};
 
-	FileManager::CreatePath(ufile::get_path_from_filename(fileName).c_str());
-	auto f = FileManager::OpenFile<VFilePtrReal>(fileName.c_str(), binary ? "wb" : "w");
+	fs::create_path(ufile::get_path_from_filename(fileName));
+	auto f = fs::open_file<fs::VFilePtrReal>(fileName, binary ? (fs::FileMode::Write | fs::FileMode::Binary) : fs::FileMode::Write);
 	if(f == nullptr) {
 		outErr = "Unable to open file '" + fileName + "'!";
 		return false;
@@ -328,16 +328,16 @@ bool msys::Material::Save(const std::string &relFileName, std::string &outErr, b
 	}
 	return true;
 }
-bool msys::Material::Save(std::string &outErr)
+bool pragma::material::Material::Save(std::string &outErr)
 {
 	auto mdlName = GetName();
 	std::string absFileName;
-	auto result = FileManager::FindAbsolutePath("materials/" + mdlName, absFileName);
+	auto result = fs::find_absolute_path("materials/" + mdlName, absFileName);
 	auto absolutePath = false;
 	if(result == false)
 		absFileName = mdlName;
 	else {
-		if(!filemanager::find_relative_path(absFileName, absFileName)) {
+		if(!fs::find_relative_path(absFileName, absFileName)) {
 			outErr = "Unable to determine relative path!";
 			return false;
 		}
@@ -345,7 +345,7 @@ bool msys::Material::Save(std::string &outErr)
 	}
 	return Save(absFileName, outErr, absolutePath);
 }
-bool msys::Material::SaveLegacy(std::shared_ptr<VFilePtrInternalReal> f) const
+bool pragma::material::Material::SaveLegacy(std::shared_ptr<fs::VFilePtrInternalReal> f) const
 {
 	std::stringstream ss;
 	ss << m_data->ToString(GetShaderIdentifier());
@@ -353,7 +353,7 @@ bool msys::Material::SaveLegacy(std::shared_ptr<VFilePtrInternalReal> f) const
 	f->WriteString(ss.str());
 	return true;
 }
-std::optional<std::string> msys::Material::GetAbsolutePath() const
+std::optional<std::string> pragma::material::Material::GetAbsolutePath() const
 {
 	auto name = const_cast<Material *>(this)->GetName();
 	if(name.empty())
@@ -362,11 +362,11 @@ std::optional<std::string> msys::Material::GetAbsolutePath() const
 	absPath += name;
 	ufile::remove_extension_from_filename(absPath, g_knownMaterialFormats);
 	absPath += ".wmi";
-	if(FileManager::FindLocalPath(absPath, absPath) == false)
+	if(fs::find_local_path(absPath, absPath) == false)
 		return {};
 	return absPath;
 }
-bool msys::Material::SaveLegacy() const
+bool pragma::material::Material::SaveLegacy() const
 {
 	auto name = const_cast<Material *>(this)->GetName();
 	if(name.empty())
@@ -375,15 +375,15 @@ bool msys::Material::SaveLegacy() const
 	absPath += name;
 	ufile::remove_extension_from_filename(absPath, g_knownMaterialFormats);
 	absPath += ".wmi";
-	if(FileManager::FindLocalPath(absPath, absPath) == false)
+	if(fs::find_local_path(absPath, absPath) == false)
 		absPath = "addons/converted/" + absPath;
 
-	auto f = FileManager::OpenFile<VFilePtrReal>(absPath.c_str(), "w");
+	auto f = fs::open_file<fs::VFilePtrReal>(absPath, fs::FileMode::Write);
 	if(f == nullptr)
 		return false;
 	return SaveLegacy(f);
 }
-bool msys::Material::SaveLegacy(const std::string &fileName, const std::string &inRootPath) const
+bool pragma::material::Material::SaveLegacy(const std::string &fileName, const std::string &inRootPath) const
 {
 	auto rootPath = inRootPath;
 	if(rootPath.empty() == false && rootPath.back() != '/' && rootPath.back() != '\\')
@@ -393,14 +393,14 @@ bool msys::Material::SaveLegacy(const std::string &fileName, const std::string &
 	fullPath += ".wmi";
 
 	auto pathWithoutFileName = ufile::get_path_from_filename(fullPath);
-	FileManager::CreatePath(pathWithoutFileName.c_str());
+	fs::create_path(pathWithoutFileName);
 
-	auto f = FileManager::OpenFile<VFilePtrReal>(fullPath.c_str(), "w");
+	auto f = fs::open_file<fs::VFilePtrReal>(fullPath, fs::FileMode::Write);
 	if(f == nullptr)
 		return false;
 	return SaveLegacy(f);
 }
-CallbackHandle msys::Material::CallOnLoaded(const std::function<void(void)> &f) const
+CallbackHandle pragma::material::Material::CallOnLoaded(const std::function<void(void)> &f) const
 {
 	if(IsLoaded()) {
 		f();
@@ -409,63 +409,63 @@ CallbackHandle msys::Material::CallOnLoaded(const std::function<void(void)> &f) 
 	m_callOnLoaded.push_back(FunctionCallback<>::Create(f));
 	return m_callOnLoaded.back();
 }
-bool msys::Material::IsLoaded() const { return umath::is_flag_set(m_stateFlags, StateFlags::Loaded); }
+bool pragma::material::Material::IsLoaded() const { return pragma::math::is_flag_set(m_stateFlags, StateFlags::Loaded); }
 
-const TextureInfo *msys::Material::GetDiffuseMap() const { return const_cast<Material *>(this)->GetDiffuseMap(); }
-TextureInfo *msys::Material::GetDiffuseMap()
+const TextureInfo *pragma::material::Material::GetDiffuseMap() const { return const_cast<Material *>(this)->GetDiffuseMap(); }
+TextureInfo *pragma::material::Material::GetDiffuseMap()
 {
 	UpdateTextures();
 	return m_texDiffuse;
 }
 
-const TextureInfo *msys::Material::GetAlbedoMap() const { return GetDiffuseMap(); }
-TextureInfo *msys::Material::GetAlbedoMap() { return GetDiffuseMap(); }
+const TextureInfo *pragma::material::Material::GetAlbedoMap() const { return GetDiffuseMap(); }
+TextureInfo *pragma::material::Material::GetAlbedoMap() { return GetDiffuseMap(); }
 
-const TextureInfo *msys::Material::GetNormalMap() const { return const_cast<Material *>(this)->GetNormalMap(); }
-TextureInfo *msys::Material::GetNormalMap()
+const TextureInfo *pragma::material::Material::GetNormalMap() const { return const_cast<Material *>(this)->GetNormalMap(); }
+TextureInfo *pragma::material::Material::GetNormalMap()
 {
 	UpdateTextures();
 	return m_texNormal;
 }
 
-const TextureInfo *msys::Material::GetGlowMap() const { return const_cast<Material *>(this)->GetGlowMap(); }
-TextureInfo *msys::Material::GetGlowMap()
+const TextureInfo *pragma::material::Material::GetGlowMap() const { return const_cast<Material *>(this)->GetGlowMap(); }
+TextureInfo *pragma::material::Material::GetGlowMap()
 {
 	UpdateTextures();
 	return m_texGlow;
 }
 
-const TextureInfo *msys::Material::GetAlphaMap() const { return const_cast<Material *>(this)->GetAlphaMap(); }
-TextureInfo *msys::Material::GetAlphaMap()
+const TextureInfo *pragma::material::Material::GetAlphaMap() const { return const_cast<Material *>(this)->GetAlphaMap(); }
+TextureInfo *pragma::material::Material::GetAlphaMap()
 {
 	UpdateTextures();
 	return m_texAlpha;
 }
 
-const TextureInfo *msys::Material::GetParallaxMap() const { return const_cast<Material *>(this)->GetParallaxMap(); }
-TextureInfo *msys::Material::GetParallaxMap()
+const TextureInfo *pragma::material::Material::GetParallaxMap() const { return const_cast<Material *>(this)->GetParallaxMap(); }
+TextureInfo *pragma::material::Material::GetParallaxMap()
 {
 	UpdateTextures();
 	return m_texParallax;
 }
 
-const TextureInfo *msys::Material::GetRMAMap() const { return const_cast<Material *>(this)->GetRMAMap(); }
-TextureInfo *msys::Material::GetRMAMap()
+const TextureInfo *pragma::material::Material::GetRMAMap() const { return const_cast<Material *>(this)->GetRMAMap(); }
+TextureInfo *pragma::material::Material::GetRMAMap()
 {
 	UpdateTextures();
 	return m_texRma;
 }
 
-AlphaMode msys::Material::GetAlphaMode() const { return m_alphaMode; }
-float msys::Material::GetAlphaCutoff() const { return GetProperty<float>("alpha_cutoff", 0.5f); }
+AlphaMode pragma::material::Material::GetAlphaMode() const { return m_alphaMode; }
+float pragma::material::Material::GetAlphaCutoff() const { return GetProperty<float>("alpha_cutoff", 0.5f); }
 
-bool msys::Material::HasPropertyBlock(const std::string_view &name) const { return GetPropertyBlock(name) != nullptr; }
+bool pragma::material::Material::HasPropertyBlock(const std::string_view &name) const { return GetPropertyBlock(name) != nullptr; }
 
-std::shared_ptr<ds::Block> msys::Material::GetPropertyBlock(const std::string_view &name) const
+std::shared_ptr<pragma::datasystem::Block> pragma::material::Material::GetPropertyBlock(const std::string_view &name) const
 {
 	if(name.empty())
 		return m_data;
-	auto path = util::FilePath(name);
+	auto path = pragma::util::FilePath(name);
 	auto data = m_data;
 	for(auto &segment : path) {
 		data = data->GetBlock(std::string {segment});
@@ -475,29 +475,29 @@ std::shared_ptr<ds::Block> msys::Material::GetPropertyBlock(const std::string_vi
 	return data;
 }
 
-msys::PropertyType msys::Material::GetPropertyType(const std::string_view &key) const
+pragma::material::PropertyType pragma::material::Material::GetPropertyType(const std::string_view &key) const
 {
 	auto dsVal = m_data->GetDataValue(std::string {key});
 	if(!dsVal) {
 		auto *baseMaterial = GetBaseMaterial();
 		if(baseMaterial)
 			return baseMaterial->GetPropertyType(key);
-		return msys::PropertyType::None;
+		return PropertyType::None;
 	}
 	if(dsVal->IsBlock())
-		return msys::PropertyType::Block;
-	if(typeid(*dsVal) == typeid(ds::Texture))
-		return msys::PropertyType::Texture;
-	return msys::PropertyType::Value;
+		return PropertyType::Block;
+	if(typeid(*dsVal) == typeid(datasystem::Texture))
+		return PropertyType::Texture;
+	return PropertyType::Value;
 }
 
-void msys::Material::ClearProperty(ds::Block &block, const std::string_view &key, bool clearBlocksIfEmpty)
+void pragma::material::Material::ClearProperty(datasystem::Block &block, const std::string_view &key, bool clearBlocksIfEmpty)
 {
 	if(key.find_first_of('/') != std::string::npos) {
-		auto path = util::FilePath(key);
-		auto data = std::static_pointer_cast<ds::Block>(block.shared_from_this());
+		auto path = pragma::util::FilePath(key);
+		auto data = std::static_pointer_cast<datasystem::Block>(block.shared_from_this());
 		auto parentBlock = data;
-		std::shared_ptr<ds::Block> secondToLastBlock;
+		std::shared_ptr<datasystem::Block> secondToLastBlock;
 		std::string_view lastSegment;
 		for(auto &segment : path) {
 			if(data == nullptr)
@@ -516,21 +516,21 @@ void msys::Material::ClearProperty(ds::Block &block, const std::string_view &key
 	}
 	block.RemoveValue(std::string {key});
 }
-void msys::Material::ClearProperty(const std::string_view &key, bool clearBlocksIfEmpty) { ClearProperty(*m_data, key, clearBlocksIfEmpty); }
-ds::ValueType msys::Material::GetPropertyValueType(const std::string_view &strPath) const
+void pragma::material::Material::ClearProperty(const std::string_view &key, bool clearBlocksIfEmpty) { ClearProperty(*m_data, key, clearBlocksIfEmpty); }
+pragma::datasystem::ValueType pragma::material::Material::GetPropertyValueType(const std::string_view &strPath) const
 {
 	auto [block, key] = ResolvePropertyPath(strPath);
 	if(block == nullptr)
-		return ds::ValueType::Invalid; // No path segments
+		return datasystem::ValueType::Invalid; // No path segments
 	auto &dsVal = block->GetValue(key);
 	if(dsVal && dsVal->IsValue())
-		return static_cast<ds::Value &>(*dsVal).GetType();
+		return static_cast<datasystem::Value &>(*dsVal).GetType();
 	auto *baseMaterial = GetBaseMaterial();
 	if(baseMaterial)
 		return baseMaterial->GetPropertyValueType(strPath);
-	return ds::ValueType::Invalid;
+	return datasystem::ValueType::Invalid;
 }
-void msys::Material::SetTextureProperty(const std::string_view &strPath, const std::string_view &tex)
+void pragma::material::Material::SetTextureProperty(const std::string_view &strPath, const std::string_view &tex)
 {
 	auto [block, key] = ResolvePropertyPath(strPath);
 	if(block == nullptr)
@@ -538,13 +538,13 @@ void msys::Material::SetTextureProperty(const std::string_view &strPath, const s
 	block->AddValue("texture", std::string {key}, std::string {tex});
 }
 
-std::pair<std::shared_ptr<ds::Block>, std::string> msys::Material::ResolvePropertyPath(const std::string_view &strPath) const
+std::pair<std::shared_ptr<pragma::datasystem::Block>, std::string> pragma::material::Material::ResolvePropertyPath(const std::string_view &strPath) const
 {
 	if(strPath.find('/') == std::string::npos)
 		return {m_data, std::string {strPath}}; // Fast exit if no path segments
-	auto path = util::FilePath(strPath);
+	auto path = pragma::util::FilePath(strPath);
 	auto data = m_data;
-	std::shared_ptr<ds::Block> secondToLastBlock;
+	std::shared_ptr<datasystem::Block> secondToLastBlock;
 	std::string_view lastSegment;
 	for(auto &segment : path) {
 		if(data == nullptr)
@@ -558,10 +558,10 @@ std::pair<std::shared_ptr<ds::Block>, std::string> msys::Material::ResolveProper
 	return {secondToLastBlock, std::string {lastSegment}};
 }
 
-void msys::Material::SetColorFactor(const Vector4 &colorFactor) { SetProperty("color_factor", colorFactor); }
-Vector4 msys::Material::GetColorFactor() const { return GetProperty<Vector4>("color_factor", {1.f, 1.f, 1.f, 1.f}); }
-void msys::Material::SetBloomColorFactor(const Vector4 &bloomColorFactor) { SetProperty("bloom_color_factor", bloomColorFactor); }
-std::optional<Vector4> msys::Material::GetBloomColorFactor() const
+void pragma::material::Material::SetColorFactor(const Vector4 &colorFactor) { SetProperty("color_factor", colorFactor); }
+Vector4 pragma::material::Material::GetColorFactor() const { return GetProperty<Vector4>("color_factor", {1.f, 1.f, 1.f, 1.f}); }
+void pragma::material::Material::SetBloomColorFactor(const Vector4 &bloomColorFactor) { SetProperty("bloom_color_factor", bloomColorFactor); }
+std::optional<Vector4> pragma::material::Material::GetBloomColorFactor() const
 {
 	Vector4 bloomColor;
 	if(!GetProperty<Vector4>("bloom_color_factor", &bloomColor))
@@ -569,14 +569,14 @@ std::optional<Vector4> msys::Material::GetBloomColorFactor() const
 	return bloomColor;
 }
 
-void msys::Material::SetName(const std::string &name) { m_name = name; }
-const std::string &msys::Material::GetName() const { return m_name; }
+void pragma::material::Material::SetName(const std::string &name) { m_name = name; }
+const std::string &pragma::material::Material::GetName() const { return m_name; }
 
-bool msys::Material::IsError() const { return umath::is_flag_set(m_stateFlags, StateFlags::Error); }
-void msys::Material::SetErrorFlag(bool set) { umath::set_flag(m_stateFlags, StateFlags::Error, set); }
+bool pragma::material::Material::IsError() const { return pragma::math::is_flag_set(m_stateFlags, StateFlags::Error); }
+void pragma::material::Material::SetErrorFlag(bool set) { pragma::math::set_flag(m_stateFlags, StateFlags::Error, set); }
 
-const util::ShaderInfo *msys::Material::GetShaderInfo() const { return m_shaderInfo.get(); }
-const std::string &msys::Material::GetShaderIdentifier() const
+const pragma::util::ShaderInfo *pragma::material::Material::GetShaderInfo() const { return m_shaderInfo.get(); }
+const std::string &pragma::material::Material::GetShaderIdentifier() const
 {
 	if(m_shaderInfo.expired() == false)
 		return m_shaderInfo.get()->GetIdentifier();
@@ -584,8 +584,8 @@ const std::string &msys::Material::GetShaderIdentifier() const
 	return m_shader ? *m_shader : empty;
 }
 
-const msys::Material *msys::Material::GetBaseMaterial() const { return const_cast<Material *>(this)->GetBaseMaterial(); }
-void msys::Material::UpdateBaseMaterial()
+const pragma::material::Material *pragma::material::Material::GetBaseMaterial() const { return const_cast<Material *>(this)->GetBaseMaterial(); }
+void pragma::material::Material::UpdateBaseMaterial()
 {
 	if(m_baseMaterial->material)
 		return;
@@ -595,20 +595,20 @@ void msys::Material::UpdateBaseMaterial()
 		m_baseMaterial->onBaseTexturesUpdated = baseMat->AddEventListener(Event::OnTexturesUpdated, [this]() { OnBaseMaterialChanged(); });
 	}
 }
-msys::Material *msys::Material::GetBaseMaterial()
+pragma::material::Material *pragma::material::Material::GetBaseMaterial()
 {
 	if(!m_baseMaterial)
 		return nullptr;
 	UpdateBaseMaterial();
 	return m_baseMaterial ? m_baseMaterial->material.get() : nullptr;
 }
-void msys::Material::SetBaseMaterial(const std::string &baseMaterial)
+void pragma::material::Material::SetBaseMaterial(const std::string &baseMaterial)
 {
 	m_baseMaterial = std::make_unique<BaseMaterial>();
 	m_baseMaterial->name = baseMaterial;
 	m_manager.PreloadAsset(m_baseMaterial->name);
 }
-void msys::Material::SetBaseMaterial(Material *baseMaterial)
+void pragma::material::Material::SetBaseMaterial(Material *baseMaterial)
 {
 	m_baseMaterial = nullptr;
 	if(!baseMaterial)
@@ -619,20 +619,20 @@ void msys::Material::SetBaseMaterial(Material *baseMaterial)
 	m_baseMaterial->name = baseMaterial->GetName();
 }
 
-void msys::Material::OnBaseMaterialChanged() {}
+void pragma::material::Material::OnBaseMaterialChanged() {}
 
-const TextureInfo *msys::Material::GetTextureInfo(const std::string_view &key) const { return const_cast<Material *>(this)->GetTextureInfo(key); }
+const TextureInfo *pragma::material::Material::GetTextureInfo(const std::string_view &key) const { return const_cast<Material *>(this)->GetTextureInfo(key); }
 
-TextureInfo *msys::Material::GetTextureInfo(const std::string_view &key)
+TextureInfo *pragma::material::Material::GetTextureInfo(const std::string_view &key)
 {
 	TextureInfo *texInfo = nullptr;
 	if(m_data) {
 		auto &base = m_data->GetValue(key);
 		if(base != nullptr && !base->IsBlock()) {
-			auto &val = static_cast<ds::Value &>(*base);
+			auto &val = static_cast<datasystem::Value &>(*base);
 			auto &type = typeid(val);
-			if(type == typeid(ds::Texture)) {
-				auto &datTex = static_cast<ds::Texture &>(val);
+			if(type == typeid(datasystem::Texture)) {
+				auto &datTex = static_cast<datasystem::Texture &>(val);
 				return &const_cast<TextureInfo &>(datTex.GetValue());
 			}
 		}
@@ -642,33 +642,33 @@ TextureInfo *msys::Material::GetTextureInfo(const std::string_view &key)
 	return nullptr;
 }
 
-msys::MaterialHandle msys::Material::GetHandle() { return shared_from_this(); }
+pragma::material::MaterialHandle pragma::material::Material::GetHandle() { return shared_from_this(); }
 
-std::shared_ptr<msys::Material> msys::Material::Copy(bool copyData) const
+std::shared_ptr<pragma::material::Material> pragma::material::Material::Copy(bool copyData) const
 {
-	std::shared_ptr<msys::Material> r = nullptr;
+	std::shared_ptr<Material> r = nullptr;
 	if(!IsValid())
 		r = GetManager().CreateMaterial("pbr", nullptr);
 	else if(m_shaderInfo.expired() == false) {
-		auto data = copyData ? std::shared_ptr<ds::Block>(m_data->Copy()) : std::make_shared<ds::Block>(m_data->GetDataSettings());
+		auto data = copyData ? std::shared_ptr<datasystem::Block>(m_data->Copy()) : std::make_shared<datasystem::Block>(m_data->GetDataSettings());
 		r = GetManager().CreateMaterial(m_shaderInfo->GetIdentifier(), data);
 	}
 	else {
-		auto data = copyData ? std::shared_ptr<ds::Block>(m_data->Copy()) : std::make_shared<ds::Block>(m_data->GetDataSettings());
+		auto data = copyData ? std::shared_ptr<datasystem::Block>(m_data->Copy()) : std::make_shared<datasystem::Block>(m_data->GetDataSettings());
 		r = GetManager().CreateMaterial(*m_shader, data);
 	}
 	if(IsLoaded())
 		r->SetLoaded(true);
 	r->m_stateFlags = m_stateFlags;
-	umath::set_flag(r->m_stateFlags, StateFlags::TexturesUpdated, false);
+	pragma::math::set_flag(r->m_stateFlags, StateFlags::TexturesUpdated, false);
 	return r;
 }
 
-std::ostream &operator<<(std::ostream &out, const msys::Material &o)
+std::ostream &operator<<(std::ostream &out, const pragma::material::Material &o)
 {
 	out << "Material";
 	out << "[Index:" << o.GetIndex() << "]";
-	out << "[Name:" << const_cast<msys::Material &>(o).GetName() << "]";
+	out << "[Name:" << const_cast<pragma::material::Material &>(o).GetName() << "]";
 	out << "[Shader:" << o.GetShaderIdentifier() << "]";
 	out << "[AlphaMode:" << magic_enum::enum_name(o.GetAlphaMode()) << "]";
 	out << "[AlphaCutoff:" << o.GetAlphaCutoff() << "]";

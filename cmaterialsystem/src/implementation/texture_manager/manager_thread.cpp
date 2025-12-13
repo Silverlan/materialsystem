@@ -47,7 +47,7 @@ void TextureManager::Update()
 	m_queueMutex->unlock();
 }
 
-void TextureManager::PushOnLoadQueue(std::unique_ptr<TextureQueueItem> item)
+void TextureManager::PushOnLoadQueue(std::unique_ptr<pragma::material::TextureQueueItem> item)
 {
 	m_loadMutex->lock();
 	m_loadQueue.push(std::move(item));
@@ -55,9 +55,9 @@ void TextureManager::PushOnLoadQueue(std::unique_ptr<TextureQueueItem> item)
 	m_loadMutex->unlock();
 }
 
-std::shared_ptr<msys::Texture> TextureManager::GetQueuedTexture(TextureQueueItem &item, bool bErase)
+std::shared_ptr<pragma::material::Texture> TextureManager::GetQueuedTexture(pragma::material::TextureQueueItem &item, bool bErase)
 {
-	std::shared_ptr<msys::Texture> texture = nullptr;
+	std::shared_ptr<pragma::material::Texture> texture = nullptr;
 	for(unsigned int i = 0; i < m_texturesTmp.size(); i++) {
 		if(m_texturesTmp[i]->GetName() == item.cache) {
 			texture = m_texturesTmp[i];

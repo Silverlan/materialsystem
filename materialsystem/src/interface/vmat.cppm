@@ -10,9 +10,9 @@ export module pragma.materialsystem:vmat;
 export import pragma.util;
 
 export namespace vmat {
-	DLLMATSYS util::Path get_vmat_texture_path(const std::string &strPath, std::string *optOutInputPath = nullptr)
+	DLLMATSYS pragma::util::Path get_vmat_texture_path(const std::string &strPath, std::string *optOutInputPath = nullptr)
 	{
-		::util::Path path {strPath};
+		pragma::util::Path path {strPath};
 		path.RemoveFileExtension();
 		path += ".vtex_c";
 
@@ -21,7 +21,7 @@ export namespace vmat {
 		path.PopFront();
 
 		auto outputPath = path;
-		if(ustring::compare<std::string_view>(front, "materials", false) == false)
+		if(pragma::string::compare<std::string_view>(front, "materials", false) == false)
 			outputPath = "models/" + outputPath;
 
 		if(optOutInputPath)

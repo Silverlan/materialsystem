@@ -12,9 +12,9 @@ import :texture_manager.format_handlers.vtf;
 
 import source2;
 
-static msys::detail::VulkanImageData vtex_format_to_vulkan_format(source2::VTexFormat format)
+static pragma::material::detail::VulkanImageData vtex_format_to_vulkan_format(source2::VTexFormat format)
 {
-	msys::detail::VulkanImageData vkImgData {};
+	pragma::material::detail::VulkanImageData vkImgData {};
 	switch(format) {
 	case source2::VTexFormat::DXT1:
 		vkImgData.format = prosper::Format::BC1_RGBA_UNorm_Block;
@@ -62,7 +62,7 @@ static msys::detail::VulkanImageData vtex_format_to_vulkan_format(source2::VTexF
 	return vkImgData;
 }
 
-bool msys::TextureFormatHandlerVtex::GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize)
+bool pragma::material::TextureFormatHandlerVtex::GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize)
 {
 	if(layer > 0)
 		return false;
@@ -72,7 +72,7 @@ bool msys::TextureFormatHandlerVtex::GetDataPtr(uint32_t layer, uint32_t mipmapI
 	return true;
 }
 
-bool msys::TextureFormatHandlerVtex::LoadData(InputTextureInfo &texInfo)
+bool pragma::material::TextureFormatHandlerVtex::LoadData(InputTextureInfo &texInfo)
 {
 	auto resource = ::source2::load_resource(*m_file);
 	auto *dataBlock = resource ? resource->FindBlock(::source2::BlockType::DATA) : nullptr;

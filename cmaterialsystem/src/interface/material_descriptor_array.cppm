@@ -10,7 +10,7 @@ export module pragma.cmaterialsystem:material_descriptor_array_manager;
 export import :texture_manager.texture;
 export import pragma.prosper;
 
-export {
+export namespace pragma::material {
 	class DLLCMATSYS MaterialDescriptorArrayManager : public prosper::DescriptorArrayManager {
 	  public:
 #pragma pack(push, 1)
@@ -26,20 +26,20 @@ export {
 
 		using DescriptorArrayManager::DescriptorArrayManager;
 		virtual ~MaterialDescriptorArrayManager() override;
-		std::optional<prosper::IBuffer::SubBufferIndex> RegisterMaterial(const msys::Material &mat, bool reInitialize = false);
+		std::optional<prosper::IBuffer::SubBufferIndex> RegisterMaterial(const material::Material &mat, bool reInitialize = false);
 		const std::shared_ptr<prosper::IUniformResizableBuffer> &GetMaterialInfoBuffer() const;
 		friend DescriptorArrayManager;
 	  private:
 		struct TextureData {
-			DescriptorArrayManager::ArrayIndex arrayIndex;
+			ArrayIndex arrayIndex;
 			CallbackHandle onRemoveCallback;
 		};
 		virtual void Initialize(prosper::IPrContext &context) override;
-		std::optional<ArrayIndex> AddItem(msys::Texture &tex);
-		void RemoveItem(const msys::Texture &tex);
-		std::unordered_map<const msys::Texture *, TextureData> m_texData {};
+		std::optional<ArrayIndex> AddItem(material::Texture &tex);
+		void RemoveItem(const material::Texture &tex);
+		std::unordered_map<const material::Texture *, TextureData> m_texData {};
 
-		std::unordered_map<const msys::Material *, std::shared_ptr<prosper::IBuffer>> m_materialRenderBuffers = {};
+		std::unordered_map<const material::Material *, std::shared_ptr<prosper::IBuffer>> m_materialRenderBuffers = {};
 		std::shared_ptr<prosper::IUniformResizableBuffer> m_materialInfoBuffer = nullptr;
 	};
 }

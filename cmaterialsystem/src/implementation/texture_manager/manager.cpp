@@ -9,16 +9,16 @@ import :texture_manager.manager;
 
 decltype(TextureManager::MAX_TEXTURE_COUNT) TextureManager::MAX_TEXTURE_COUNT = 4096;
 
-TextureManager::LoadInfo::LoadInfo() : mipmapLoadMode(msys::TextureMipmapMode::Load) {}
+TextureManager::LoadInfo::LoadInfo() : mipmapLoadMode(pragma::material::TextureMipmapMode::Load) {}
 
 TextureManager::TextureManager(prosper::IPrContext &context) : m_wpContext(context.shared_from_this()), m_textureSampler(nullptr), m_textureSamplerNoMipmap(nullptr), m_bThreadActive(false)
 {
 	auto samplerCreateInfo = prosper::util::SamplerCreateInfo {};
-	TextureManager::SetupSamplerMipmapMode(samplerCreateInfo, msys::TextureMipmapMode::Load);
+	SetupSamplerMipmapMode(samplerCreateInfo, pragma::material::TextureMipmapMode::Load);
 	m_textureSampler = context.CreateSampler(samplerCreateInfo);
 
 	samplerCreateInfo = {};
-	TextureManager::SetupSamplerMipmapMode(samplerCreateInfo, msys::TextureMipmapMode::Ignore);
+	SetupSamplerMipmapMode(samplerCreateInfo, pragma::material::TextureMipmapMode::Ignore);
 	m_textureSamplerNoMipmap = context.CreateSampler(samplerCreateInfo);
 }
 
@@ -48,10 +48,10 @@ void TextureManager::WaitForTextures()
 	Update();
 }
 
-void TextureManager::SetupSamplerMipmapMode(prosper::util::SamplerCreateInfo &createInfo, msys::TextureMipmapMode mode)
+void TextureManager::SetupSamplerMipmapMode(prosper::util::SamplerCreateInfo &createInfo, pragma::material::TextureMipmapMode mode)
 {
 	switch(mode) {
-	case msys::TextureMipmapMode::Ignore:
+	case pragma::material::TextureMipmapMode::Ignore:
 		{
 			createInfo.minFilter = prosper::Filter::Nearest;
 			createInfo.magFilter = prosper::Filter::Nearest;
@@ -75,21 +75,21 @@ const std::vector<std::weak_ptr<prosper::ISampler>> &TextureManager::GetCustomSa
 
 prosper::IPrContext &TextureManager::GetContext() const { return *m_wpContext.lock(); }
 
-void TextureManager::SetTextureFileHandler(const std::function<VFilePtr(const std::string &)> &fileHandler) { m_texFileHandler = fileHandler; }
+void TextureManager::SetTextureFileHandler(const std::function<pragma::fs::VFilePtr(const std::string &)> &fileHandler) { m_texFileHandler = fileHandler; }
 
-std::shared_ptr<msys::Texture> TextureManager::CreateTexture(const std::string &name, prosper::Texture &texture)
+std::shared_ptr<pragma::material::Texture> TextureManager::CreateTexture(const std::string &name, prosper::Texture &texture)
 {
-	auto it = std::find_if(m_textures.begin(), m_textures.end(), [&name](std::shared_ptr<msys::Texture> &tex) { return (tex->GetName() == name) ? true : false; });
+	auto it = std::find_if(m_textures.begin(), m_textures.end(), [&name](std::shared_ptr<pragma::material::Texture> &tex) { return (tex->GetName() == name) ? true : false; });
 	if(it != m_textures.end())
 		return *it;
-	auto tex = std::make_shared<msys::Texture>(GetContext());
+	auto tex = std::make_shared<pragma::material::Texture>(GetContext());
 	tex->SetVkTexture(texture.shared_from_this());
 	tex->SetName(name);
 	m_textures.push_back(tex);
 	return tex;
 }
 
-std::shared_ptr<msys::Texture> TextureManager::GetErrorTexture() { return m_error; }
+std::shared_ptr<pragma::material::Texture> TextureManager::GetErrorTexture() { return m_error; }
 
 /*std::shared_ptr<Texture> TextureManager::CreateTexture(prosper::Context &context,const std::string &name,unsigned int w,unsigned int h)
 {
@@ -120,7 +120,7 @@ std::shared_ptr<msys::Texture> TextureManager::GetErrorTexture() { return m_erro
 	}
 }*/
 
-std::shared_ptr<msys::Texture> TextureManager::GetTexture(const std::string &name)
+std::shared_ptr<pragma::material::Texture> TextureManager::GetTexture(const std::string &name)
 {
 	auto nameNoExt = name;
 	static std::vector<std::string> supportedExtensions;
@@ -131,10 +131,10 @@ std::shared_ptr<msys::Texture> TextureManager::GetTexture(const std::string &nam
 			supportedExtensions.push_back(format.extension);
 	}
 	ufile::remove_extension_from_filename(nameNoExt, supportedExtensions);
-	auto it = std::find_if(m_textures.begin(), m_textures.end(), [&nameNoExt](const std::shared_ptr<msys::Texture> &tex) {
+	auto it = std::find_if(m_textures.begin(), m_textures.end(), [&nameNoExt](const std::shared_ptr<pragma::material::Texture> &tex) {
 		auto texNoExt = tex->GetName();
 		ufile::remove_extension_from_filename(texNoExt, supportedExtensions);
-		return FileManager::ComparePath(nameNoExt, texNoExt);
+		return pragma::filesystem::compare_path(nameNoExt, texNoExt);
 	});
 	return (it != m_textures.end()) ? *it : nullptr;
 }
@@ -159,27 +159,27 @@ void TextureManager::ReloadTexture(uint32_t texId, const LoadInfo &loadInfo)
 	auto sampler = tex->GetSampler();
 	auto ptr = std::static_pointer_cast<void>(texture->shared_from_this());
 	Load(context, texture->GetName(), loadInfo, &ptr);
-	texture = std::static_pointer_cast<msys::Texture>(ptr);
+	texture = std::static_pointer_cast<pragma::material::Texture>(ptr);
 }
 
-void TextureManager::ReloadTexture(msys::Texture &texture, const LoadInfo &loadInfo)
+void TextureManager::ReloadTexture(pragma::material::Texture &texture, const LoadInfo &loadInfo)
 {
-	auto it = std::find_if(m_textures.begin(), m_textures.end(), [&texture](const std::shared_ptr<msys::Texture> &texOther) { return (texOther.get() == &texture) ? true : false; });
+	auto it = std::find_if(m_textures.begin(), m_textures.end(), [&texture](const std::shared_ptr<pragma::material::Texture> &texOther) { return (texOther.get() == &texture) ? true : false; });
 	if(it == m_textures.end())
 		return;
 	ReloadTexture(it - m_textures.begin(), loadInfo);
 }
 
-void TextureManager::SetErrorTexture(const std::shared_ptr<msys::Texture> &tex)
+void TextureManager::SetErrorTexture(const std::shared_ptr<pragma::material::Texture> &tex)
 {
 	if(m_error) {
 		auto flags = m_error->GetFlags();
-		umath::set_flag(flags, msys::Texture::Flags::Error, false);
+		pragma::math::set_flag(flags, pragma::material::Texture::Flags::Error, false);
 		m_error->SetFlags(flags);
 	}
 	m_error = tex;
 	if(tex)
-		tex->AddFlags(msys::Texture::Flags::Error);
+		tex->AddFlags(pragma::material::Texture::Flags::Error);
 }
 
 uint32_t TextureManager::Clear()
@@ -220,12 +220,12 @@ uint32_t TextureManager::ClearUnused()
 
 std::shared_ptr<prosper::ISampler> &TextureManager::GetTextureSampler() { return m_textureSampler; }
 
-std::shared_ptr<msys::Texture> TextureManager::FindTexture(const std::string &imgFile, bool *bLoading)
+std::shared_ptr<pragma::material::Texture> TextureManager::FindTexture(const std::string &imgFile, bool *bLoading)
 {
 	std::string cache;
 	return FindTexture(imgFile, &cache, bLoading);
 }
-std::shared_ptr<msys::Texture> TextureManager::FindTexture(const std::string &imgFile, bool bLoadedOnly)
+std::shared_ptr<pragma::material::Texture> TextureManager::FindTexture(const std::string &imgFile, bool bLoadedOnly)
 {
 	auto bLoading = false;
 	auto r = FindTexture(imgFile, &bLoading);
@@ -234,11 +234,11 @@ std::shared_ptr<msys::Texture> TextureManager::FindTexture(const std::string &im
 	return r;
 }
 
-std::shared_ptr<msys::Texture> TextureManager::FindTexture(const std::string &imgFile, std::string *cache, bool *bLoading)
+std::shared_ptr<pragma::material::Texture> TextureManager::FindTexture(const std::string &imgFile, std::string *cache, bool *bLoading)
 {
 	if(bLoading != nullptr)
 		*bLoading = false;
-	auto pathCache = FileManager::GetNormalizedPath(imgFile);
+	auto pathCache = pragma::fs::get_normalized_path(imgFile);
 	auto rBr = pathCache.find_last_of('\\');
 	if(rBr != std::string::npos) {
 		auto ext = pathCache.find('.', rBr + 1);

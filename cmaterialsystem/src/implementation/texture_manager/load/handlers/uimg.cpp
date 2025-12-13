@@ -7,7 +7,7 @@ module pragma.cmaterialsystem;
 
 import :texture_manager.format_handlers.uimg;
 
-bool msys::TextureFormatHandlerUimg::GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize)
+bool pragma::material::TextureFormatHandlerUimg::GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize)
 {
 	if(layer != 0 || mipmapIdx != 0)
 		return false;
@@ -16,9 +16,9 @@ bool msys::TextureFormatHandlerUimg::GetDataPtr(uint32_t layer, uint32_t mipmapI
 	return true;
 }
 
-bool msys::TextureFormatHandlerUimg::LoadData(InputTextureInfo &texInfo)
+bool pragma::material::TextureFormatHandlerUimg::LoadData(InputTextureInfo &texInfo)
 {
-	auto imgBuf = uimg::load_image(*m_file, uimg::PixelFormat::LDR, ShouldFlipTextureVertically());
+	auto imgBuf = image::load_image(*m_file, image::PixelFormat::LDR, ShouldFlipTextureVertically());
 	if(!imgBuf)
 		return false;
 	m_imgBuf = imgBuf;

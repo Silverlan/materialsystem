@@ -15,9 +15,9 @@ import :texture_manager.texture_processor;
 // (Enabling this may result in a VUID-VkImageMemoryBarrier-image-01932 error with the Vulkan Validator.)
 #define ENABLE_MT_IMAGE_INITIALIZATION 0
 
-bool msys::TextureProcessor::PrepareImage(prosper::IPrContext &context) { return InitializeProsperImage(context) && InitializeImageBuffers(context) && InitializeTexture(context); }
+bool pragma::material::TextureProcessor::PrepareImage(prosper::IPrContext &context) { return InitializeProsperImage(context) && InitializeImageBuffers(context) && InitializeTexture(context); }
 
-bool msys::TextureProcessor::InitializeTexture(prosper::IPrContext &context)
+bool pragma::material::TextureProcessor::InitializeTexture(prosper::IPrContext &context)
 {
 	auto &handler = GetHandler();
 	auto &loader = GetLoader();
@@ -37,10 +37,10 @@ bool msys::TextureProcessor::InitializeTexture(prosper::IPrContext &context)
 	return true;
 }
 
-msys::TextureLoader &msys::TextureProcessor::GetLoader() { return static_cast<TextureLoader &>(m_loader); }
-msys::ITextureFormatHandler &msys::TextureProcessor::GetHandler() { return static_cast<ITextureFormatHandler &>(*handler); }
+pragma::material::TextureLoader &pragma::material::TextureProcessor::GetLoader() { return static_cast<TextureLoader &>(m_loader); }
+pragma::material::ITextureFormatHandler &pragma::material::TextureProcessor::GetHandler() { return static_cast<ITextureFormatHandler &>(*handler); }
 
-bool msys::TextureProcessor::FinalizeImage(prosper::IPrContext &context)
+bool pragma::material::TextureProcessor::FinalizeImage(prosper::IPrContext &context)
 {
 	// These have to be executed from the main thread due to the use of a
 	// primary command buffer
@@ -56,11 +56,11 @@ bool msys::TextureProcessor::FinalizeImage(prosper::IPrContext &context)
 	return true;
 }
 
-msys::TextureProcessor::TextureProcessor(util::AssetFormatLoader &loader, std::unique_ptr<util::IAssetFormatHandler> &&handler) : util::FileAssetProcessor {loader, std::move(handler)} {}
+pragma::material::TextureProcessor::TextureProcessor(pragma::util::AssetFormatLoader &loader, std::unique_ptr<pragma::util::IAssetFormatHandler> &&handler) : FileAssetProcessor {loader, std::move(handler)} {}
 
-bool msys::TextureProcessor::Load()
+bool pragma::material::TextureProcessor::Load()
 {
-	if(!static_cast<msys::ITextureFormatHandler &>(*handler).LoadData())
+	if(!static_cast<ITextureFormatHandler &>(*handler).LoadData())
 		return false;
 	auto &loader = GetLoader();
 #if ENABLE_MT_IMAGE_INITIALIZATION == 1
@@ -69,7 +69,7 @@ bool msys::TextureProcessor::Load()
 	return true;
 #endif
 }
-bool msys::TextureProcessor::Finalize()
+bool pragma::material::TextureProcessor::Finalize()
 {
 	auto &loader = GetLoader();
 #if ENABLE_MT_IMAGE_INITIALIZATION == 1
@@ -79,7 +79,7 @@ bool msys::TextureProcessor::Finalize()
 #endif
 }
 
-bool msys::TextureProcessor::InitializeProsperImage(prosper::IPrContext &context)
+bool pragma::material::TextureProcessor::InitializeProsperImage(prosper::IPrContext &context)
 {
 	auto &handler = GetHandler();
 	auto &inputTextureInfo = handler.GetInputTextureInfo();
@@ -88,20 +88,20 @@ bool msys::TextureProcessor::InitializeProsperImage(prosper::IPrContext &context
 	const auto height = inputTextureInfo.height;
 
 	// In some cases the format may not be supported by the GPU altogether. We may still be able to convert it to a compatible format by hand.
-	std::function<void(const void *, std::shared_ptr<uimg::ImageBuffer> &, uint32_t, uint32_t)> manualConverter = nullptr;
+	std::function<void(const void *, std::shared_ptr<image::ImageBuffer> &, uint32_t, uint32_t)> manualConverter = nullptr;
 	const auto usage = prosper::ImageUsageFlags::TransferSrcBit | prosper::ImageUsageFlags::TransferDstBit | prosper::ImageUsageFlags::SampledBit;
 	if(imageFormat == prosper::Format::B8G8R8_UNorm_PoorCoverage && context.IsImageFormatSupported(imageFormat, usage, prosper::ImageType::e2D, prosper::ImageTiling::Optimal) == false) {
-		cpuImageConverter = [](const void *imgData, std::shared_ptr<uimg::ImageBuffer> &outImg, uint32_t width, uint32_t height) {
-			outImg = uimg::ImageBuffer::Create(imgData, width, height, uimg::Format::RGB8);
-			outImg->Convert(uimg::Format::RGBA8);
+		cpuImageConverter = [](const void *imgData, std::shared_ptr<image::ImageBuffer> &outImg, uint32_t width, uint32_t height) {
+			outImg = image::ImageBuffer::Create(imgData, width, height, image::Format::RGB8);
+			outImg->Convert(image::Format::RGBA8);
 		};
 
 		imageFormat = prosper::Format::B8G8R8A8_UNorm;
 	}
 	else if(imageFormat == prosper::Format::R8G8B8_UNorm_PoorCoverage && context.IsImageFormatSupported(imageFormat, usage, prosper::ImageType::e2D, prosper::ImageTiling::Optimal) == false) {
-		cpuImageConverter = [](const void *imgData, std::shared_ptr<uimg::ImageBuffer> &outImg, uint32_t width, uint32_t height) {
-			outImg = uimg::ImageBuffer::Create(imgData, width, height, uimg::Format::RGB8);
-			outImg->Convert(uimg::Format::RGBA8);
+		cpuImageConverter = [](const void *imgData, std::shared_ptr<image::ImageBuffer> &outImg, uint32_t width, uint32_t height) {
+			outImg = image::ImageBuffer::Create(imgData, width, height, image::Format::RGB8);
+			outImg->Convert(image::Format::RGBA8);
 		};
 
 		imageFormat = prosper::Format::R8G8B8A8_UNorm;
@@ -121,7 +121,7 @@ bool msys::TextureProcessor::InitializeProsperImage(prosper::IPrContext &context
 		}
 	}
 
-	auto cubemap = umath::is_flag_set(inputTextureInfo.flags, ITextureFormatHandler::InputTextureInfo::Flags::CubemapBit);
+	auto cubemap = pragma::math::is_flag_set(inputTextureInfo.flags, ITextureFormatHandler::InputTextureInfo::Flags::CubemapBit);
 
 	// Initialize output image
 	prosper::util::ImageCreateInfo createInfo {};
@@ -159,7 +159,7 @@ bool msys::TextureProcessor::InitializeProsperImage(prosper::IPrContext &context
 	return true;
 }
 
-bool msys::TextureProcessor::InitializeImageBuffers(prosper::IPrContext &context)
+bool pragma::material::TextureProcessor::InitializeImageBuffers(prosper::IPrContext &context)
 {
 	// Initialize image data as buffers, then copy to output image
 	auto &handler = GetHandler();
@@ -181,7 +181,7 @@ bool msys::TextureProcessor::InitializeImageBuffers(prosper::IPrContext &context
 			if(cpuImageConverter) {
 				uint32_t wMipmap, hMipmap;
 				prosper::util::calculate_mipmap_size(inputTextureInfo.width, inputTextureInfo.height, &wMipmap, &hMipmap, iMipmap);
-				std::shared_ptr<uimg::ImageBuffer> imgBuffer = nullptr;
+				std::shared_ptr<image::ImageBuffer> imgBuffer = nullptr;
 				cpuImageConverter(data, imgBuffer, wMipmap, hMipmap);
 				data = imgBuffer->GetData();
 				dataSize = imgBuffer->GetSize();
@@ -197,7 +197,7 @@ bool msys::TextureProcessor::InitializeImageBuffers(prosper::IPrContext &context
 	return true;
 }
 
-bool msys::TextureProcessor::CopyBuffersToImage(prosper::IPrContext &context)
+bool pragma::material::TextureProcessor::CopyBuffersToImage(prosper::IPrContext &context)
 {
 	// Note: We need a separate loop here, because the underlying VkBuffer of 'AllocateTemporaryBuffer' may get invalidated if the function
 	// is called multiple times.
@@ -222,7 +222,7 @@ bool msys::TextureProcessor::CopyBuffersToImage(prosper::IPrContext &context)
 	return true;
 }
 
-bool msys::TextureProcessor::ConvertImageFormat(prosper::IPrContext &context, prosper::Format targetFormat)
+bool pragma::material::TextureProcessor::ConvertImageFormat(prosper::IPrContext &context, prosper::Format targetFormat)
 {
 	auto &setupCmd = context.GetSetupCommandBuffer();
 
@@ -236,11 +236,11 @@ bool msys::TextureProcessor::ConvertImageFormat(prosper::IPrContext &context, pr
 	convertedImage = nullptr;
 	return true;
 }
-bool msys::TextureProcessor::GenerateMipmaps(prosper::IPrContext &context)
+bool pragma::material::TextureProcessor::GenerateMipmaps(prosper::IPrContext &context)
 {
 	auto &setupCmd = context.GetSetupCommandBuffer();
 	setupCmd->RecordGenerateMipmaps(*image, prosper::ImageLayout::TransferDstOptimal, prosper::AccessFlags::TransferWriteBit, prosper::PipelineStageFlags::TransferBit);
 	context.FlushSetupCommandBuffer();
 	return true;
 }
-void msys::TextureProcessor::SetTextureData(const std::shared_ptr<udm::Property> &textureData) { GetHandler().SetTextureData(textureData); }
+void pragma::material::TextureProcessor::SetTextureData(const std::shared_ptr<udm::Property> &textureData) { GetHandler().SetTextureData(textureData); }

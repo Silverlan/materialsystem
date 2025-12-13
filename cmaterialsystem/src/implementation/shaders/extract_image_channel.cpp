@@ -7,13 +7,13 @@ module pragma.cmaterialsystem;
 
 import :shaders.extract_image_channel;
 
-decltype(msys::ShaderExtractImageChannel::DESCRIPTOR_SET_TEXTURE) msys::ShaderExtractImageChannel::DESCRIPTOR_SET_TEXTURE = {
+decltype(pragma::material::ShaderExtractImageChannel::DESCRIPTOR_SET_TEXTURE) pragma::material::ShaderExtractImageChannel::DESCRIPTOR_SET_TEXTURE = {
   "TEXTURE",
   {prosper::DescriptorSetInfo::Binding {"IMAGE", prosper::DescriptorType::CombinedImageSampler, prosper::ShaderStageFlags::FragmentBit}},
 };
-msys::ShaderExtractImageChannel::ShaderExtractImageChannel(prosper::IPrContext &context, const std::string &identifier) : ShaderBaseImageProcessing {context, identifier, "programs/util/extract_image_channel"} { SetPipelineCount(2); }
+pragma::material::ShaderExtractImageChannel::ShaderExtractImageChannel(prosper::IPrContext &context, const std::string &identifier) : ShaderBaseImageProcessing {context, identifier, "programs/util/extract_image_channel"} { SetPipelineCount(2); }
 
-void msys::ShaderExtractImageChannel::InitializeShaderResources()
+void pragma::material::ShaderExtractImageChannel::InitializeShaderResources()
 {
 	ShaderGraphics::InitializeShaderResources();
 
@@ -21,22 +21,22 @@ void msys::ShaderExtractImageChannel::InitializeShaderResources()
 	AddDescriptorSetGroup(DESCRIPTOR_SET_TEXTURE);
 	AttachPushConstantRange(0u, sizeof(PushConstants), prosper::ShaderStageFlags::FragmentBit);
 }
-void msys::ShaderExtractImageChannel::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx) { ShaderGraphics::InitializeGfxPipeline(pipelineInfo, pipelineIdx); }
+void pragma::material::ShaderExtractImageChannel::InitializeGfxPipeline(prosper::GraphicsPipelineCreateInfo &pipelineInfo, uint32_t pipelineIdx) { ShaderGraphics::InitializeGfxPipeline(pipelineInfo, pipelineIdx); }
 
-void msys::ShaderExtractImageChannel::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass, uint32_t pipelineIdx)
+void pragma::material::ShaderExtractImageChannel::InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass, uint32_t pipelineIdx)
 {
 	auto pipeline = static_cast<Pipeline>(pipelineIdx);
 	switch(pipeline) {
 	case Pipeline::RGBA8:
-		CreateCachedRenderPass<msys::ShaderExtractImageChannel>(std::vector<prosper::util::RenderPassCreateInfo::AttachmentInfo> {{prosper::Format::R8G8B8A8_UNorm}}, outRenderPass, pipelineIdx);
+		CreateCachedRenderPass<ShaderExtractImageChannel>(std::vector<prosper::util::RenderPassCreateInfo::AttachmentInfo> {{prosper::Format::R8G8B8A8_UNorm}}, outRenderPass, pipelineIdx);
 		break;
 	case Pipeline::RGBA32:
-		CreateCachedRenderPass<msys::ShaderExtractImageChannel>(std::vector<prosper::util::RenderPassCreateInfo::AttachmentInfo> {{prosper::Format::R32G32B32A32_SFloat}}, outRenderPass, pipelineIdx);
+		CreateCachedRenderPass<ShaderExtractImageChannel>(std::vector<prosper::util::RenderPassCreateInfo::AttachmentInfo> {{prosper::Format::R32G32B32A32_SFloat}}, outRenderPass, pipelineIdx);
 		break;
 	}
 }
 
-std::shared_ptr<prosper::IImage> msys::ShaderExtractImageChannel::ExtractImageChannel(prosper::IPrContext &context, prosper::Texture &texSrc, const std::array<Channel, 4> &channelValues, Pipeline pipeline)
+std::shared_ptr<prosper::IImage> pragma::material::ShaderExtractImageChannel::ExtractImageChannel(prosper::IPrContext &context, prosper::Texture &texSrc, const std::array<Channel, 4> &channelValues, Pipeline pipeline)
 {
 	prosper::Format outputFormat;
 	switch(pipeline) {
@@ -63,11 +63,11 @@ std::shared_ptr<prosper::IImage> msys::ShaderExtractImageChannel::ExtractImageCh
 
 	prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
 	auto texOutput = context.CreateTexture({}, *imgOutput, imgViewCreateInfo);
-	auto rt = context.CreateRenderTarget({texOutput}, GetRenderPass(umath::to_integral(pipeline)));
+	auto rt = context.CreateRenderTarget({texOutput}, GetRenderPass(pragma::math::to_integral(pipeline)));
 
 	auto dsg = CreateDescriptorSetGroup(DESCRIPTOR_SET_TEXTURE.setIndex);
 	auto &ds = *dsg->GetDescriptorSet();
-	ds.SetBindingTexture(texSrc, umath::to_integral(TextureBinding::ImageMap));
+	ds.SetBindingTexture(texSrc, pragma::math::to_integral(TextureBinding::ImageMap));
 	auto &setupCmd = context.GetSetupCommandBuffer();
 	if(setupCmd->RecordBeginRenderPass(*rt)) {
 		prosper::ShaderBindState bindState {*setupCmd};

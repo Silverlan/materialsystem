@@ -13,20 +13,20 @@ import :texture_manager.manager;
 import source2;
 #endif
 
-VFilePtr TextureManager::OpenTextureFile(const std::string &fpath)
+pragma::fs::VFilePtr TextureManager::OpenTextureFile(const std::string &fpath)
 {
 	if(m_texFileHandler != nullptr) {
 		auto f = m_texFileHandler(fpath);
 		if(f != nullptr)
 			return f;
 	}
-	return filemanager::open_file(fpath.c_str(), filemanager::FileMode::Read | filemanager::FileMode::Binary);
+	return pragma::fs::open_file(fpath.c_str(), pragma::fs::FileMode::Read | pragma::fs::FileMode::Binary);
 }
 
-void TextureManager::InitializeTextureData(TextureQueueItem &item)
+void TextureManager::InitializeTextureData(pragma::material::TextureQueueItem &item)
 {
 	item.valid = false;
-	auto *surface = dynamic_cast<TextureQueueItemSurface *>(&item);
+	auto *surface = dynamic_cast<pragma::material::TextureQueueItemSurface *>(&item);
 	if(surface != nullptr) {
 		auto f = item.file;
 		if(f == nullptr)
@@ -47,20 +47,20 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 		}
 	}
 	else {
-		auto *png = dynamic_cast<TextureQueueItemPNG *>(&item);
+		auto *png = dynamic_cast<pragma::material::TextureQueueItemPNG *>(&item);
 		if(png != nullptr) {
-			fsys::File f {item.file};
-			png->pnginfo = item.file ? uimg::load_image(f) : uimg::load_image(png->path.c_str());
+			pragma::fs::File f {item.file};
+			png->pnginfo = item.file ? pragma::image::load_image(f) : pragma::image::load_image(png->path.c_str());
 			if(png->cubemap || png->pnginfo == nullptr)
 				png->valid = false;
 			else
 				png->valid = true;
 		}
 		else {
-			auto *tga = dynamic_cast<TextureQueueItemStbi *>(&item);
+			auto *tga = dynamic_cast<pragma::material::TextureQueueItemStbi *>(&item);
 			if(tga != nullptr) {
-				fsys::File f {item.file};
-				tga->imageBuffer = item.file ? uimg::load_image(f) : uimg::load_image(tga->path.c_str());
+				pragma::fs::File f {item.file};
+				tga->imageBuffer = item.file ? pragma::image::load_image(f) : pragma::image::load_image(tga->path.c_str());
 				if(tga->cubemap || tga->imageBuffer == nullptr)
 					tga->valid = false;
 				else
@@ -68,7 +68,7 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 			}
 			else {
 #ifndef DISABLE_VTF_SUPPORT
-				auto *vtf = dynamic_cast<TextureQueueItemVTF *>(&item);
+				auto *vtf = dynamic_cast<pragma::material::TextureQueueItemVTF *>(&item);
 				if(vtf != nullptr) {
 					auto fp = vtf->file;
 					if(fp == nullptr)
@@ -76,25 +76,25 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 					if(fp == nullptr)
 						vtf->valid = false;
 					else {
-						fsys::File f {fp};
+						pragma::fs::File f {fp};
 
 						vtf->texture = std::make_unique<VTFLib::CVTFFile>();
 						vtf->valid = vtf->texture->Load(&f, false);
 						if(vtf->valid == true) {
 							auto format = vtf->texture->GetFormat();
 							switch(format) {
-							case VTFImageFormat::IMAGE_FORMAT_DXT1:
-							case VTFImageFormat::IMAGE_FORMAT_DXT3:
-							case VTFImageFormat::IMAGE_FORMAT_DXT5:
-							case VTFImageFormat::IMAGE_FORMAT_RGB888:
-							case VTFImageFormat::IMAGE_FORMAT_RGBA8888:
-							case VTFImageFormat::IMAGE_FORMAT_BGR888:
-							case VTFImageFormat::IMAGE_FORMAT_BGRA8888:
-							case VTFImageFormat::IMAGE_FORMAT_UV88:
-							case VTFImageFormat::IMAGE_FORMAT_RGBA16161616F:
-							case VTFImageFormat::IMAGE_FORMAT_RGBA32323232F:
-							case VTFImageFormat::IMAGE_FORMAT_ABGR8888:
-							case VTFImageFormat::IMAGE_FORMAT_BGRX8888:
+							case IMAGE_FORMAT_DXT1:
+							case IMAGE_FORMAT_DXT3:
+							case IMAGE_FORMAT_DXT5:
+							case IMAGE_FORMAT_RGB888:
+							case IMAGE_FORMAT_RGBA8888:
+							case IMAGE_FORMAT_BGR888:
+							case IMAGE_FORMAT_BGRA8888:
+							case IMAGE_FORMAT_UV88:
+							case IMAGE_FORMAT_RGBA16161616F:
+							case IMAGE_FORMAT_RGBA32323232F:
+							case IMAGE_FORMAT_ABGR8888:
+							case IMAGE_FORMAT_BGRX8888:
 								break; // Note: When adding new formats, make sure to also add them to texture_initialize.cpp:vtf_format_to_vulkan_format
 							default:
 								vtf->valid = false; // Unsupported format
@@ -104,7 +104,7 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 				}
 #endif
 #ifndef DISABLE_VTEX_SUPPORT
-				auto *vtex = dynamic_cast<TextureQueueItemVTex *>(&item);
+				auto *vtex = dynamic_cast<pragma::material::TextureQueueItemVTex *>(&item);
 				if(vtex != nullptr) {
 					auto fp = vtex->file;
 					if(fp == nullptr)
@@ -112,7 +112,7 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 					if(fp == nullptr)
 						vtex->valid = false;
 					else {
-						vtex->fptr = std::make_unique<fsys::File>(fp);
+						vtex->fptr = std::make_unique<pragma::fs::File>(fp);
 						auto resource = source2::load_resource(*vtex->fptr);
 						auto *dataBlock = resource ? resource->FindBlock(source2::BlockType::DATA) : nullptr;
 						if(dataBlock) {
@@ -143,7 +143,7 @@ void TextureManager::InitializeTextureData(TextureQueueItem &item)
 					}
 				}
 #endif
-				static_assert(umath::to_integral(msys::TextureType::Count) == 13, "Update this implementation when new texture types have been added!");
+				static_assert(pragma::math::to_integral(pragma::material::TextureType::Count) == 13, "Update this implementation when new texture types have been added!");
 			}
 		}
 	}

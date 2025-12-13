@@ -9,21 +9,21 @@ export module pragma.materialsystem:material_property_block_view;
 
 export import :material;
 
-export namespace msys {
+export namespace pragma::material {
 	struct DLLMATSYS MaterialPropertyBlockView {
 		struct DLLMATSYS IterationData {
 			IterationData(MaterialPropertyBlockView &blockView);
 			MaterialPropertyBlockView *blockView;
-			std::unordered_map<std::string_view, ds::Base *> map;
+			std::unordered_map<std::string_view, datasystem::Base *> map;
 		};
 
-		MaterialPropertyBlockView(Material &mat, const util::Path &path = {});
+		MaterialPropertyBlockView(Material &mat, const pragma::util::Path &path = {});
 
 		// Nested iterator class that iterates only over the keys.
 		class DLLMATSYS Iterator {
 		  public:
 			// Underlying map iterator type.
-			using map_iterator = std::unordered_map<std::string_view, ds::Base *>::const_iterator;
+			using map_iterator = std::unordered_map<std::string_view, datasystem::Base *>::const_iterator;
 			using iterator_category = std::forward_iterator_tag;
 			using value_type = std::string_view;
 			using difference_type = std::ptrdiff_t;
@@ -61,7 +61,7 @@ export namespace msys {
 		Iterator begin() const { return Iterator(iterationData->map.cbegin()); }
 		Iterator end() const { return Iterator(iterationData->map.cend()); }
 	  private:
-		std::vector<ds::Block *> blocks;
+		std::vector<datasystem::Block *> blocks;
 		std::unique_ptr<IterationData> iterationData;
 	};
 };

@@ -7,7 +7,7 @@ module pragma.materialsystem;
 
 import :material_property_block_view;
 
-msys::MaterialPropertyBlockView::IterationData::IterationData(MaterialPropertyBlockView &blockView) : blockView {&blockView}
+pragma::material::MaterialPropertyBlockView::IterationData::IterationData(MaterialPropertyBlockView &blockView) : blockView {&blockView}
 {
 	std::unordered_set<std::string_view> subBlockNames;
 	for(auto *block : blockView.blocks) {
@@ -21,7 +21,7 @@ msys::MaterialPropertyBlockView::IterationData::IterationData(MaterialPropertyBl
 	}
 }
 
-msys::MaterialPropertyBlockView::MaterialPropertyBlockView(Material &mat, const util::Path &path)
+pragma::material::MaterialPropertyBlockView::MaterialPropertyBlockView(Material &mat, const pragma::util::Path &path)
 {
 	std::vector<Material *> mats;
 	mats.push_back(&mat);

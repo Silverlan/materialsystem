@@ -49,19 +49,19 @@ static void merge_dx_node_values(ValveKeyValueFormat::KVNode &node)
 		for(auto opIdx : {2,3,1,0}) // Order is important! (Ordered by string length per operator type (e.g. '<=' has to come before '<'))
 		{
 			auto &candidate = acceptedOperators.at(opIdx);
-			if(ustring::compare(name,candidate.c_str(),true,candidate.length()) == false)
+			if(pragma::string::compare(name,candidate.c_str(),true,candidate.length()) == false)
 				continue;
 			op = static_cast<Operator>(opIdx);
 		}
 		if(op == Operator::None)
 			dxLevelValue = name;
 		else
-			dxLevelValue = ustring::substr(std::string{name},acceptedOperators.at(umath::to_integral(op)).length());
-		ustring::to_lower(dxLevelValue);
+			dxLevelValue = pragma::string::substr(std::string{name},acceptedOperators.at(pragma::math::to_integral(op)).length());
+		pragma::string::to_lower(dxLevelValue);
 		auto it = dxStringToEnum.find(dxLevelValue);
 		if(it == dxStringToEnum.end())
 			continue;
-		if(umath::to_integral(it->second) <= umath::to_integral(bestDxVersion) && umath::to_integral(op) <= umath::to_integral(bestOperator))
+		if(pragma::math::to_integral(it->second) <= pragma::math::to_integral(bestDxVersion) && pragma::math::to_integral(op) <= pragma::math::to_integral(bestOperator))
 			continue;
 		dxNode = pNode;
 		bestDxVersion = it->second;
@@ -77,24 +77,24 @@ static void merge_dx_node_values(ValveKeyValueFormat::KVNode &node)
 #endif
 }
 
-static std::optional<util::LogSeverity> to_util_severity(ValveKeyValueFormat::LogLevel severity)
+static std::optional<pragma::util::LogSeverity> to_util_severity(ValveKeyValueFormat::LogLevel severity)
 {
 	switch(severity) {
 	case ValveKeyValueFormat::LogLevel::ALL:
-		return util::LogSeverity::Info;
+		return pragma::util::LogSeverity::Info;
 	case ValveKeyValueFormat::LogLevel::TRACE:
-		return util::LogSeverity::Trace;
+		return pragma::util::LogSeverity::Trace;
 	case ValveKeyValueFormat::LogLevel::DEBUG:
-		return util::LogSeverity::Debug;
+		return pragma::util::LogSeverity::Debug;
 	case ValveKeyValueFormat::LogLevel::WARN:
-		return util::LogSeverity::Warning;
+		return pragma::util::LogSeverity::Warning;
 	case ValveKeyValueFormat::LogLevel::ERR:
-		return util::LogSeverity::Error;
+		return pragma::util::LogSeverity::Error;
 	}
 	return {};
 }
 
-msys::SourceVmtFormatHandler2::SourceVmtFormatHandler2(util::IAssetManager &assetManager) : ISourceVmtFormatHandler {assetManager}
+pragma::material::SourceVmtFormatHandler2::SourceVmtFormatHandler2(pragma::util::IAssetManager &assetManager) : ISourceVmtFormatHandler {assetManager}
 {
 	ValveKeyValueFormat::setLogCallback([&assetManager](const std::string &message, ValveKeyValueFormat::LogLevel severity) {
 		if(!assetManager.ShouldLog())
@@ -105,7 +105,7 @@ msys::SourceVmtFormatHandler2::SourceVmtFormatHandler2(util::IAssetManager &asse
 		assetManager.Log(message, *utilSeverity);
 	});
 }
-bool msys::SourceVmtFormatHandler2::Import(const std::string &outputPath, std::string &outFilePath)
+bool pragma::material::SourceVmtFormatHandler2::Import(const std::string &outputPath, std::string &outFilePath)
 {
 	auto size = m_file->GetSize();
 	if(size == 0)
@@ -127,16 +127,16 @@ bool msys::SourceVmtFormatHandler2::Import(const std::string &outputPath, std::s
 	}
 	auto *vmtRoot = kvNode.get();
 	merge_dx_node_values(*vmtRoot);
-	m_rootNode = util::make_shared<VkvNode>(*kvNode);
+	m_rootNode = pragma::util::make_shared<VkvNode>(*kvNode);
 	return LoadVMT(*m_rootNode, outputPath, outFilePath);
 }
 
-std::string msys::SourceVmtFormatHandler2::GetShader() const
+std::string pragma::material::SourceVmtFormatHandler2::GetShader() const
 {
 	auto &kvNode = GetVkvNode(*m_rootNode);
 	return std::string {kvNode.get_key()};
 }
-std::shared_ptr<const msys::IVmtNode> msys::SourceVmtFormatHandler2::GetNode(const std::string &key, const IVmtNode *optParent) const
+std::shared_ptr<const pragma::material::IVmtNode> pragma::material::SourceVmtFormatHandler2::GetNode(const std::string &key, const IVmtNode *optParent) const
 {
 	if(!optParent)
 		return GetNode(key, m_rootNode.get());
@@ -147,16 +147,16 @@ std::shared_ptr<const msys::IVmtNode> msys::SourceVmtFormatHandler2::GetNode(con
 	auto it = kvBranch.branches.find(key);
 	if(it == kvBranch.branches.end())
 		return nullptr;
-	return util::make_shared<VkvNode>(*it->second);
+	return pragma::util::make_shared<VkvNode>(*it->second);
 }
-std::optional<std::string> msys::SourceVmtFormatHandler2::GetStringValue(const IVmtNode &node) const
+std::optional<std::string> pragma::material::SourceVmtFormatHandler2::GetStringValue(const IVmtNode &node) const
 {
 	auto &kvNode = GetVkvNode(node);
 	if(kvNode.get_type() != ValveKeyValueFormat::KVNodeType::LEAF)
 		return {};
 	return std::string {static_cast<const ValveKeyValueFormat::KVLeaf &>(kvNode).value};
 }
-std::optional<bool> msys::SourceVmtFormatHandler2::GetBooleanValue(const IVmtNode &node) const
+std::optional<bool> pragma::material::SourceVmtFormatHandler2::GetBooleanValue(const IVmtNode &node) const
 {
 	auto &kvNode = GetVkvNode(node);
 	if(kvNode.get_type() != ValveKeyValueFormat::KVNodeType::LEAF)
@@ -167,7 +167,7 @@ std::optional<bool> msys::SourceVmtFormatHandler2::GetBooleanValue(const IVmtNod
 		return {};
 	return value;
 }
-std::optional<float> msys::SourceVmtFormatHandler2::GetFloatValue(const IVmtNode &node) const
+std::optional<float> pragma::material::SourceVmtFormatHandler2::GetFloatValue(const IVmtNode &node) const
 {
 	auto &kvNode = GetVkvNode(node);
 	if(kvNode.get_type() != ValveKeyValueFormat::KVNodeType::LEAF)
@@ -178,14 +178,14 @@ std::optional<float> msys::SourceVmtFormatHandler2::GetFloatValue(const IVmtNode
 		return {};
 	return value;
 }
-std::optional<Vector3> msys::SourceVmtFormatHandler2::GetColorValue(const IVmtNode &node) const
+std::optional<Vector3> pragma::material::SourceVmtFormatHandler2::GetColorValue(const IVmtNode &node) const
 {
 	auto &kvNode = GetVkvNode(node);
 	if(kvNode.get_type() != ValveKeyValueFormat::KVNodeType::LEAF)
 		return {};
 	return vmt_parameter_to_color(std::string {static_cast<const ValveKeyValueFormat::KVLeaf &>(kvNode).value});
 }
-std::optional<uint8_t> msys::SourceVmtFormatHandler2::GetUint8Value(const IVmtNode &node) const
+std::optional<uint8_t> pragma::material::SourceVmtFormatHandler2::GetUint8Value(const IVmtNode &node) const
 {
 	auto &kvNode = GetVkvNode(node);
 	if(kvNode.get_type() != ValveKeyValueFormat::KVNodeType::LEAF)
@@ -196,7 +196,7 @@ std::optional<uint8_t> msys::SourceVmtFormatHandler2::GetUint8Value(const IVmtNo
 		return {};
 	return value;
 }
-std::optional<int32_t> msys::SourceVmtFormatHandler2::GetInt32Value(const IVmtNode &node) const
+std::optional<int32_t> pragma::material::SourceVmtFormatHandler2::GetInt32Value(const IVmtNode &node) const
 {
 	auto &kvNode = GetVkvNode(node);
 	if(kvNode.get_type() != ValveKeyValueFormat::KVNodeType::LEAF)
@@ -207,7 +207,7 @@ std::optional<int32_t> msys::SourceVmtFormatHandler2::GetInt32Value(const IVmtNo
 		return {};
 	return value;
 }
-std::optional<std::array<float, 3>> msys::SourceVmtFormatHandler2::GetMatrixValue(const IVmtNode &node) const
+std::optional<std::array<float, 3>> pragma::material::SourceVmtFormatHandler2::GetMatrixValue(const IVmtNode &node) const
 {
 	auto &kvNode = GetVkvNode(node);
 	if(kvNode.get_type() != ValveKeyValueFormat::KVNodeType::LEAF)
@@ -217,6 +217,6 @@ std::optional<std::array<float, 3>> msys::SourceVmtFormatHandler2::GetMatrixValu
 	return get_vmt_matrix(strVal);
 }
 
-const ValveKeyValueFormat::KVNode &msys::SourceVmtFormatHandler2::GetVkvNode(const IVmtNode &vmtNode) const { return static_cast<const VkvNode &>(vmtNode).vkvNode; }
+const ValveKeyValueFormat::KVNode &pragma::material::SourceVmtFormatHandler2::GetVkvNode(const IVmtNode &vmtNode) const { return static_cast<const VkvNode &>(vmtNode).vkvNode; }
 #endif
 #endif

@@ -7,61 +7,61 @@ module pragma.materialsystem;
 
 import :enums;
 
-std::string msys::to_string(msys::DetailMode detailMode)
+std::string pragma::material::to_string(DetailMode detailMode)
 {
 	switch(detailMode) {
-	case msys::DetailMode::DecalModulate:
+	case DetailMode::DecalModulate:
 		return "decal_modulate";
-	case msys::DetailMode::Additive:
+	case DetailMode::Additive:
 		return "additive";
-	case msys::DetailMode::TranslucentDetail:
+	case DetailMode::TranslucentDetail:
 		return "translucent_detail";
-	case msys::DetailMode::BlendFactorFade:
+	case DetailMode::BlendFactorFade:
 		return "blend_factor_fade";
-	case msys::DetailMode::TranslucentBase:
+	case DetailMode::TranslucentBase:
 		return "translucent_base";
-	case msys::DetailMode::UnlitAdditive:
+	case DetailMode::UnlitAdditive:
 		return "unlit_additive";
-	case msys::DetailMode::UnlitAdditiveThresholdFade:
+	case DetailMode::UnlitAdditiveThresholdFade:
 		return "unlit_additive_threshold_fade";
-	case msys::DetailMode::TwoPatternDecalModulate:
+	case DetailMode::TwoPatternDecalModulate:
 		return "two_pattern_decal_modulate";
-	case msys::DetailMode::Multiply:
+	case DetailMode::Multiply:
 		return "multiply";
-	case msys::DetailMode::BaseMaskViaDetailAlpha:
+	case DetailMode::BaseMaskViaDetailAlpha:
 		return "base_mask_via_detail_alpha";
-	case msys::DetailMode::SelfShadowedBumpmap:
+	case DetailMode::SelfShadowedBumpmap:
 		return "self_shadowed_bumpmap";
-	case msys::DetailMode::SSBumpAlbedo:
+	case DetailMode::SSBumpAlbedo:
 		return "ssbump_albedo";
 	}
 	return "";
 }
-msys::DetailMode msys::to_detail_mode(const std::string &detailMode)
+pragma::material::DetailMode pragma::material::to_detail_mode(const std::string &detailMode)
 {
-	if(ustring::compare<std::string>(detailMode, "decal_modulate", false))
-		return msys::DetailMode::DecalModulate;
-	else if(ustring::compare<std::string>(detailMode, "additive", false))
-		return msys::DetailMode::Additive;
-	else if(ustring::compare<std::string>(detailMode, "translucent_detail", false))
-		return msys::DetailMode::TranslucentDetail;
-	else if(ustring::compare<std::string>(detailMode, "blend_factor_fade", false))
-		return msys::DetailMode::BlendFactorFade;
-	else if(ustring::compare<std::string>(detailMode, "translucent_base", false))
-		return msys::DetailMode::TranslucentBase;
-	else if(ustring::compare<std::string>(detailMode, "unlit_additive", false))
-		return msys::DetailMode::UnlitAdditive;
-	else if(ustring::compare<std::string>(detailMode, "unlit_additive_threshold_fade", false))
-		return msys::DetailMode::UnlitAdditiveThresholdFade;
-	else if(ustring::compare<std::string>(detailMode, "two_pattern_decal_modulate", false))
-		return msys::DetailMode::TwoPatternDecalModulate;
-	else if(ustring::compare<std::string>(detailMode, "multiply", false))
-		return msys::DetailMode::Multiply;
-	else if(ustring::compare<std::string>(detailMode, "base_mask_via_detail_alpha", false))
-		return msys::DetailMode::BaseMaskViaDetailAlpha;
-	else if(ustring::compare<std::string>(detailMode, "self_shadowed_bumpmap", false))
-		return msys::DetailMode::SelfShadowedBumpmap;
-	else if(ustring::compare<std::string>(detailMode, "ssbump_albedo", false))
-		return msys::DetailMode::SSBumpAlbedo;
-	return msys::DetailMode::Invalid;
+	if(pragma::string::compare<std::string>(detailMode, "decal_modulate", false))
+		return DetailMode::DecalModulate;
+	else if(pragma::string::compare<std::string>(detailMode, "additive", false))
+		return DetailMode::Additive;
+	else if(pragma::string::compare<std::string>(detailMode, "translucent_detail", false))
+		return DetailMode::TranslucentDetail;
+	else if(pragma::string::compare<std::string>(detailMode, "blend_factor_fade", false))
+		return DetailMode::BlendFactorFade;
+	else if(pragma::string::compare<std::string>(detailMode, "translucent_base", false))
+		return DetailMode::TranslucentBase;
+	else if(pragma::string::compare<std::string>(detailMode, "unlit_additive", false))
+		return DetailMode::UnlitAdditive;
+	else if(pragma::string::compare<std::string>(detailMode, "unlit_additive_threshold_fade", false))
+		return DetailMode::UnlitAdditiveThresholdFade;
+	else if(pragma::string::compare<std::string>(detailMode, "two_pattern_decal_modulate", false))
+		return DetailMode::TwoPatternDecalModulate;
+	else if(pragma::string::compare<std::string>(detailMode, "multiply", false))
+		return DetailMode::Multiply;
+	else if(pragma::string::compare<std::string>(detailMode, "base_mask_via_detail_alpha", false))
+		return DetailMode::BaseMaskViaDetailAlpha;
+	else if(pragma::string::compare<std::string>(detailMode, "self_shadowed_bumpmap", false))
+		return DetailMode::SelfShadowedBumpmap;
+	else if(pragma::string::compare<std::string>(detailMode, "ssbump_albedo", false))
+		return DetailMode::SSBumpAlbedo;
+	return DetailMode::Invalid;
 }

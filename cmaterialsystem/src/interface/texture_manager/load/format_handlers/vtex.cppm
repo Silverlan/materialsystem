@@ -12,10 +12,10 @@ export import :texture_manager.texture_format_handler;
 #ifndef DISABLE_VTEX_SUPPORT
 import source2;
 
-export namespace msys {
+export namespace pragma::material {
 	class DLLCMATSYS TextureFormatHandlerVtex : public ITextureFormatHandler {
 	  public:
-		TextureFormatHandlerVtex(util::IAssetManager &assetManager) : ITextureFormatHandler {assetManager} {}
+		TextureFormatHandlerVtex(pragma::util::IAssetManager &assetManager) : ITextureFormatHandler {assetManager} {}
 		virtual bool GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize) override;
 	  protected:
 		virtual bool LoadData(InputTextureInfo &texInfo) override;

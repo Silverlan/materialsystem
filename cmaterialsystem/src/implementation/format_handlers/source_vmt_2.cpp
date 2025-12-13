@@ -11,8 +11,8 @@ import :format_handlers.source_vmt;
 #ifdef ENABLE_VKV_PARSER
 #include "util_vmt.hpp"
 #include <VKVParser/library.h>
-msys::CSourceVmtFormatHandler2::CSourceVmtFormatHandler2(util::IAssetManager &assetManager) : SourceVmtFormatHandler2 {assetManager} {}
-bool msys::CSourceVmtFormatHandler2::LoadVmtData(const std::string &vmtShader, ds::Block &rootData, std::string &matShader)
+material::CSourceVmtFormatHandler2::CSourceVmtFormatHandler2(pragma::util::IAssetManager &assetManager) : SourceVmtFormatHandler2 {assetManager} {}
+bool material::CSourceVmtFormatHandler2::LoadVmtData(const std::string &vmtShader, datasystem::Block &rootData, std::string &matShader)
 {
 	auto r = SourceVmtFormatHandler2::LoadVmtData(vmtShader, rootData, matShader);
 	if(!r)

@@ -9,7 +9,7 @@ export module pragma.cmaterialsystem:shaders.source2.decompose_metalness_reflect
 
 export import pragma.prosper;
 
-export namespace msys {
+export namespace pragma::material {
 	namespace source2 {
 		class DLLCMATSYS ShaderDecomposeMetalnessReflectance : public prosper::ShaderBaseImageProcessing {
 		  public:

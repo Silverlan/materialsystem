@@ -8,12 +8,12 @@ module pragma.materialsystem;
 import :format_handlers;
 import :material_manager2;
 
-msys::MaterialFormatHandler::MaterialFormatHandler(util::IAssetManager &assetManager) : util::IAssetFormatHandler {assetManager} {}
+pragma::material::MaterialFormatHandler::MaterialFormatHandler(pragma::util::IAssetManager &assetManager) : IAssetFormatHandler {assetManager} {}
 
-bool msys::udm_to_data_block(udm::LinkedPropertyWrapper &udmDataRoot, ds::Block &root)
+bool pragma::material::udm_to_data_block(udm::LinkedPropertyWrapper &udmDataRoot, datasystem::Block &root)
 {
-	std::function<void(const std::string &key, udm::LinkedPropertyWrapper &prop, ds::Block &block, bool texture)> udmToDataSys = nullptr;
-	udmToDataSys = [&udmToDataSys](const std::string &key, udm::LinkedPropertyWrapper &prop, ds::Block &block, bool texture) {
+	std::function<void(const std::string &key, udm::LinkedPropertyWrapper &prop, datasystem::Block &block, bool texture)> udmToDataSys = nullptr;
+	udmToDataSys = [&udmToDataSys](const std::string &key, udm::LinkedPropertyWrapper &prop, datasystem::Block &block, bool texture) {
 		prop.InitializeProperty();
 		if(prop.prop) {
 			switch(prop.prop->type) {
@@ -60,7 +60,7 @@ bool msys::udm_to_data_block(udm::LinkedPropertyWrapper &udmDataRoot, ds::Block 
 					if(texture) {
 						auto texPath = prop["texture"]->ToValue<std::string>("");
 						auto dsVal = block.AddValue("texture", key, texPath);
-						auto *dsTex = dynamic_cast<ds::Texture *>(dsVal.get());
+						auto *dsTex = dynamic_cast<datasystem::Texture *>(dsVal.get());
 						if(dsTex)
 							dsTex->GetValue().userData = prop->Copy(true);
 					}
@@ -72,7 +72,7 @@ bool msys::udm_to_data_block(udm::LinkedPropertyWrapper &udmDataRoot, ds::Block 
 					break;
 				}
 			}
-			static_assert(umath::to_integral(udm::Type::Count) == 36u);
+			static_assert(pragma::math::to_integral(udm::Type::Count) == 36u);
 		}
 	};
 	auto udmTextures = udmDataRoot["textures"];
@@ -84,7 +84,7 @@ bool msys::udm_to_data_block(udm::LinkedPropertyWrapper &udmDataRoot, ds::Block 
 		udmToDataSys(std::string {udmProp.key}, udmProp.property, root, false);
 	return true;
 }
-bool msys::PmatFormatHandler::LoadData(MaterialProcessor &processor, MaterialLoadInfo &info)
+bool pragma::material::PmatFormatHandler::LoadData(MaterialProcessor &processor, MaterialLoadInfo &info)
 {
 	std::shared_ptr<udm::Data> udmData = nullptr;
 	try {
@@ -98,7 +98,7 @@ bool msys::PmatFormatHandler::LoadData(MaterialProcessor &processor, MaterialLoa
 	auto udmDataRoot = udmData->GetAssetData().GetData();
 
 	auto dataSettings = static_cast<MaterialManager &>(GetAssetManager()).CreateDataSettings();
-	auto root = util::make_shared<ds::Block>(*dataSettings);
+	auto root = pragma::util::make_shared<datasystem::Block>(*dataSettings);
 	auto it = udmDataRoot.begin_el();
 	if(it == udmDataRoot.end_el())
 		return false;
@@ -110,24 +110,24 @@ bool msys::PmatFormatHandler::LoadData(MaterialProcessor &processor, MaterialLoa
 	data = root;
 	return true;
 }
-msys::PmatFormatHandler::PmatFormatHandler(util::IAssetManager &assetManager) : MaterialFormatHandler {assetManager} {}
+pragma::material::PmatFormatHandler::PmatFormatHandler(pragma::util::IAssetManager &assetManager) : MaterialFormatHandler {assetManager} {}
 
 ///////////
 
-msys::WmiFormatHandler::WmiFormatHandler(util::IAssetManager &assetManager) : MaterialFormatHandler {assetManager} {}
-bool msys::WmiFormatHandler::LoadData(MaterialProcessor &processor, MaterialLoadInfo &info)
+pragma::material::WmiFormatHandler::WmiFormatHandler(pragma::util::IAssetManager &assetManager) : MaterialFormatHandler {assetManager} {}
+bool pragma::material::WmiFormatHandler::LoadData(MaterialProcessor &processor, MaterialLoadInfo &info)
 {
-	auto root = ds::System::ReadData(*m_file, {});
+	auto root = datasystem::System::ReadData(*m_file, {});
 	if(root == nullptr)
 		return false;
 	auto *data = root->GetData();
 	std::string shader;
-	std::shared_ptr<ds::Block> matData = nullptr;
+	std::shared_ptr<datasystem::Block> matData = nullptr;
 	for(auto it = data->begin(); it != data->end(); it++) {
 		auto &val = it->second;
 		if(val->IsBlock()) // Shader has to be first block
 		{
-			matData = std::static_pointer_cast<ds::Block>(val);
+			matData = std::static_pointer_cast<datasystem::Block>(val);
 			shader = it->first;
 			break;
 		}
@@ -143,9 +143,9 @@ bool msys::WmiFormatHandler::LoadData(MaterialProcessor &processor, MaterialLoad
 
 ///////////
 
-std::unique_ptr<util::IAssetProcessor> msys::MaterialLoader::CreateAssetProcessor(const std::string &identifier, const std::string &ext, std::unique_ptr<util::IAssetFormatHandler> &&formatHandler)
+std::unique_ptr<pragma::util::IAssetProcessor> pragma::material::MaterialLoader::CreateAssetProcessor(const std::string &identifier, const std::string &ext, std::unique_ptr<pragma::util::IAssetFormatHandler> &&formatHandler)
 {
-	auto processor = util::TAssetFormatLoader<MaterialProcessor>::CreateAssetProcessor(identifier, ext, std::move(formatHandler));
+	auto processor = TAssetFormatLoader<MaterialProcessor>::CreateAssetProcessor(identifier, ext, std::move(formatHandler));
 	auto &mdlProcessor = static_cast<MaterialProcessor &>(*processor);
 	mdlProcessor.identifier = identifier;
 	mdlProcessor.formatExtension = ext;
@@ -154,9 +154,9 @@ std::unique_ptr<util::IAssetProcessor> msys::MaterialLoader::CreateAssetProcesso
 
 ///////////
 
-msys::MaterialLoadInfo::MaterialLoadInfo(util::AssetLoadFlags flags) : util::AssetLoadInfo {flags} {}
-msys::MaterialProcessor::MaterialProcessor(util::AssetFormatLoader &loader, std::unique_ptr<util::IAssetFormatHandler> &&handler) : util::FileAssetProcessor {loader, std::move(handler)} {}
-bool msys::MaterialProcessor::Load()
+pragma::material::MaterialLoadInfo::MaterialLoadInfo(pragma::util::AssetLoadFlags flags) : AssetLoadInfo {flags} {}
+pragma::material::MaterialProcessor::MaterialProcessor(pragma::util::AssetFormatLoader &loader, std::unique_ptr<pragma::util::IAssetFormatHandler> &&handler) : FileAssetProcessor {loader, std::move(handler)} {}
+bool pragma::material::MaterialProcessor::Load()
 {
 	auto &matHandler = static_cast<MaterialFormatHandler &>(*handler);
 	auto r = matHandler.LoadData(*this, static_cast<MaterialLoadInfo &>(*loadInfo));
@@ -170,26 +170,26 @@ bool msys::MaterialProcessor::Load()
 	material = mat;
 	return true;
 }
-bool msys::MaterialProcessor::Finalize() { return true; }
+bool pragma::material::MaterialProcessor::Finalize() { return true; }
 
-std::shared_ptr<msys::MaterialManager> msys::MaterialManager::Create()
+std::shared_ptr<pragma::material::MaterialManager> pragma::material::MaterialManager::Create()
 {
 	auto matManager = std::shared_ptr<MaterialManager> {new MaterialManager {}};
 	matManager->Initialize();
 	return matManager;
 }
-msys::MaterialManager::MaterialManager()
+pragma::material::MaterialManager::MaterialManager()
 {
-	auto fileHandler = std::make_unique<util::AssetFileHandler>();
-	fileHandler->open = [](const std::string &path, util::AssetFormatType formatType) -> std::unique_ptr<ufile::IFile> {
-		auto openMode = filemanager::FileMode::Read;
-		openMode |= filemanager::FileMode::Binary;
-		auto f = filemanager::open_file(path, openMode);
+	auto fileHandler = std::make_unique<pragma::util::AssetFileHandler>();
+	fileHandler->open = [](const std::string &path, pragma::util::AssetFormatType formatType) -> std::unique_ptr<ufile::IFile> {
+		auto openMode = fs::FileMode::Read;
+		openMode |= fs::FileMode::Binary;
+		auto f = fs::open_file(path, openMode);
 		if(!f)
 			return nullptr;
-		return std::make_unique<fsys::File>(f);
+		return std::make_unique<fs::File>(f);
 	};
-	fileHandler->exists = [](const std::string &path) -> bool { return filemanager::exists(path); };
+	fileHandler->exists = [](const std::string &path) -> bool { return fs::exists(path); };
 	SetFileHandler(std::move(fileHandler));
 	SetRootDirectory("materials");
 	m_loader = std::make_unique<MaterialLoader>(*this);
@@ -198,26 +198,26 @@ msys::MaterialManager::MaterialManager()
 	//for(auto &ext : get_model_extensions())
 	//	RegisterFileExtension(ext);
 }
-void msys::MaterialManager::Initialize()
+void pragma::material::MaterialManager::Initialize()
 {
 	RegisterFormatHandler<PmatFormatHandler>("pmat_b");
-	RegisterFormatHandler<PmatFormatHandler>("pmat", util::AssetFormatType::Text);
-	RegisterFormatHandler<WmiFormatHandler>("wmi", util::AssetFormatType::Text);
+	RegisterFormatHandler<PmatFormatHandler>("pmat", pragma::util::AssetFormatType::Text);
+	RegisterFormatHandler<WmiFormatHandler>("wmi", pragma::util::AssetFormatType::Text);
 	InitializeImportHandlers();
 }
-void msys::MaterialManager::Reset()
+void pragma::material::MaterialManager::Reset()
 {
 	m_error = nullptr;
-	util::TFileAssetManager<Material, MaterialLoadInfo>::Reset();
+	TFileAssetManager<Material, MaterialLoadInfo>::Reset();
 }
-std::shared_ptr<msys::Material> msys::MaterialManager::ReloadAsset(const std::string &path, std::unique_ptr<MaterialLoadInfo> &&loadInfo, PreloadResult *optOutResult)
+std::shared_ptr<pragma::material::Material> pragma::material::MaterialManager::ReloadAsset(const std::string &path, std::unique_ptr<MaterialLoadInfo> &&loadInfo, PreloadResult *optOutResult)
 {
 	auto *asset = FindCachedAsset(path);
 	if(!asset) {
 		ClearCachedResult(GetIdentifierHash(path));
 		return LoadAsset(path, std::move(loadInfo), optOutResult);
 	}
-	auto matNew = LoadAsset(path, util::AssetLoadFlags::IgnoreCache | util::AssetLoadFlags::DontCache, optOutResult);
+	auto matNew = LoadAsset(path, pragma::util::AssetLoadFlags::IgnoreCache | pragma::util::AssetLoadFlags::DontCache, optOutResult);
 	if(!matNew)
 		return nullptr;
 	auto matOld = GetAssetObject(*asset);
@@ -225,16 +225,16 @@ std::shared_ptr<msys::Material> msys::MaterialManager::ReloadAsset(const std::st
 	OnAssetReloaded(path);
 	return matOld;
 }
-util::AssetObject msys::MaterialManager::ReloadAsset(const std::string &path, std::unique_ptr<util::AssetLoadInfo> &&loadInfo, PreloadResult *optOutResult)
+pragma::util::AssetObject pragma::material::MaterialManager::ReloadAsset(const std::string &path, std::unique_ptr<pragma::util::AssetLoadInfo> &&loadInfo, PreloadResult *optOutResult)
 {
-	return ReloadAsset(path, util::static_unique_pointer_cast<util::AssetLoadInfo, MaterialLoadInfo>(std::move(loadInfo)), optOutResult);
+	return ReloadAsset(path, pragma::util::static_unique_pointer_cast<pragma::util::AssetLoadInfo, MaterialLoadInfo>(std::move(loadInfo)), optOutResult);
 }
 
 static bool g_shouldUseVkvVmtParser = false;
-void msys::set_use_vkv_vmt_parser(bool useVkvParser) { g_shouldUseVkvVmtParser = useVkvParser; }
-bool msys::should_use_vkv_vmt_parser() { return g_shouldUseVkvVmtParser; }
+void pragma::material::set_use_vkv_vmt_parser(bool useVkvParser) { g_shouldUseVkvVmtParser = useVkvParser; }
+bool pragma::material::should_use_vkv_vmt_parser() { return g_shouldUseVkvVmtParser; }
 
-void msys::MaterialManager::InitializeImportHandlers()
+void pragma::material::MaterialManager::InitializeImportHandlers()
 {
 #ifndef DISABLE_VMT_SUPPORT
 	if(should_use_vkv_vmt_parser())
@@ -246,7 +246,7 @@ void msys::MaterialManager::InitializeImportHandlers()
 	RegisterImportHandler<Source2VmatFormatHandler>("vmat_c");
 #endif
 }
-void msys::MaterialManager::SetErrorMaterial(Material *mat)
+void pragma::material::MaterialManager::SetErrorMaterial(Material *mat)
 {
 	if(mat == nullptr)
 		m_error = nullptr;
@@ -255,20 +255,20 @@ void msys::MaterialManager::SetErrorMaterial(Material *mat)
 		m_error = mat->GetHandle();
 	}
 }
-msys::Material *msys::MaterialManager::GetErrorMaterial() const { return const_cast<Material *>(m_error.get()); }
-void msys::MaterialManager::InitializeProcessor(util::IAssetProcessor &processor) {}
-util::AssetObject msys::MaterialManager::InitializeAsset(const util::Asset &asset, const util::AssetLoadJob &job)
+pragma::material::Material *pragma::material::MaterialManager::GetErrorMaterial() const { return const_cast<Material *>(m_error.get()); }
+void pragma::material::MaterialManager::InitializeProcessor(pragma::util::IAssetProcessor &processor) {}
+pragma::util::AssetObject pragma::material::MaterialManager::InitializeAsset(const pragma::util::Asset &asset, const pragma::util::AssetLoadJob &job)
 {
 	auto &matProcessor = *static_cast<MaterialProcessor *>(job.processor.get());
 	matProcessor.material->SetIndex(asset.index);
 	return matProcessor.material;
 }
-std::shared_ptr<ds::Settings> msys::MaterialManager::CreateDataSettings() const { return ds::create_data_settings({}); }
-std::shared_ptr<msys::Material> msys::MaterialManager::CreateMaterialObject(const std::string &shader, const std::shared_ptr<ds::Block> &data) { return Material::Create(*this, shader, data); }
-std::shared_ptr<msys::Material> msys::MaterialManager::CreateMaterial(const udm::AssetData &assetData, std::string &outErr)
+std::shared_ptr<pragma::datasystem::Settings> pragma::material::MaterialManager::CreateDataSettings() const { return datasystem::create_data_settings({}); }
+std::shared_ptr<pragma::material::Material> pragma::material::MaterialManager::CreateMaterialObject(const std::string &shader, const std::shared_ptr<datasystem::Block> &data) { return Material::Create(*this, shader, data); }
+std::shared_ptr<pragma::material::Material> pragma::material::MaterialManager::CreateMaterial(const udm::AssetData &assetData, std::string &outErr)
 {
 	auto dataSettings = CreateDataSettings();
-	auto root = util::make_shared<ds::Block>(*dataSettings);
+	auto root = pragma::util::make_shared<datasystem::Block>(*dataSettings);
 	auto data = assetData.GetData();
 	auto it = data.begin_el();
 	if(it == data.end_el()) {
@@ -284,7 +284,7 @@ std::shared_ptr<msys::Material> msys::MaterialManager::CreateMaterial(const udm:
 	std::string baseMaterial;
 	firstEl.property["base_material"](baseMaterial);
 	auto mat = CreateMaterialObject(std::string {shader}, root);
-	auto asset = std::make_shared<util::Asset>();
+	auto asset = std::make_shared<pragma::util::Asset>();
 	asset->assetObject = mat;
 	auto index = AddToIndex(asset);
 	mat->SetIndex(index);
@@ -293,17 +293,17 @@ std::shared_ptr<msys::Material> msys::MaterialManager::CreateMaterial(const udm:
 		mat->SetBaseMaterial(baseMaterial);
 	return mat;
 }
-std::shared_ptr<msys::Material> msys::MaterialManager::CreateMaterial(const std::string &shader, const std::shared_ptr<ds::Block> &data)
+std::shared_ptr<pragma::material::Material> pragma::material::MaterialManager::CreateMaterial(const std::string &shader, const std::shared_ptr<datasystem::Block> &data)
 {
 	auto mat = CreateMaterialObject(shader, data);
-	auto asset = std::make_shared<util::Asset>();
+	auto asset = std::make_shared<pragma::util::Asset>();
 	asset->assetObject = mat;
 	auto index = AddToIndex(asset);
 	mat->SetIndex(index);
 	mat->SetLoaded(true);
 	return mat;
 }
-std::shared_ptr<msys::Material> msys::MaterialManager::CreateMaterial(const std::string &identifier, const std::string &shader, const std::shared_ptr<ds::Block> &data)
+std::shared_ptr<pragma::material::Material> pragma::material::MaterialManager::CreateMaterial(const std::string &identifier, const std::string &shader, const std::shared_ptr<datasystem::Block> &data)
 {
 	auto tmpMat = CreateMaterialObject(shader, data);
 	std::shared_ptr<Material> mat = nullptr;
@@ -313,7 +313,7 @@ std::shared_ptr<msys::Material> msys::MaterialManager::CreateMaterial(const std:
 		mat->Assign(*tmpMat);
 	}
 	else {
-		auto asset = std::make_shared<util::Asset>();
+		auto asset = std::make_shared<pragma::util::Asset>();
 		asset->assetObject = tmpMat;
 		auto idx = AddToCache(identifier, asset);
 		mat = tmpMat;

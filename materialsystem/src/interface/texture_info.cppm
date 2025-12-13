@@ -22,13 +22,13 @@ export {
 		std::shared_ptr<void> userData;
 	};
 
-	namespace ds {
+	namespace pragma::datasystem {
 		class DLLMATSYS Texture : public Value {
 		  public:
 			static void register_type();
 
-			Texture(ds::Settings &dataSettings, const std::string &value);
-			Texture(ds::Settings &dataSettings, const TextureInfo &value);
+			Texture(Settings &dataSettings, const std::string &value);
+			Texture(Settings &dataSettings, const TextureInfo &value);
 			virtual Texture *Copy() override;
 			const TextureInfo &GetValue() const;
 			TextureInfo &GetValue();
@@ -40,11 +40,11 @@ export {
 			virtual float GetFloat() const override;
 			virtual bool GetBool() const override;
 			virtual ::Color GetColor() const override;
-			virtual ::Vector3 GetVector() const override;
+			virtual Vector3 GetVector() const override;
 			virtual ::Vector2 GetVector2() const override;
 			virtual ::Vector4 GetVector4() const override;
 		  protected:
-			Texture(ds::Settings &dataSettings, const std::string &value, bool bCubemap);
+			Texture(Settings &dataSettings, const std::string &value, bool bCubemap);
 		  private:
 			TextureInfo m_value;
 		};
@@ -54,7 +54,7 @@ export {
 		{
 		public:
 			using Texture::Texture;
-			Cubemap(ds::Settings &dataSettings,const std::string &value);
+			Cubemap(datasystem::Settings &dataSettings,const std::string &value);
 			virtual std::string GetTypeString() const override;
 		};*/
 	};

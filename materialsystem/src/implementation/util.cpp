@@ -7,17 +7,17 @@ module pragma.materialsystem;
 
 import :util;
 
-std::string translate_image_path(const std::string &imgFile, msys::TextureType &type, std::string path, const std::function<VFilePtr(const std::string &)> &fileHandler, bool *optOutFound)
+std::string pragma::material::translate_image_path(const std::string &imgFile, pragma::material::TextureType &type, std::string path, const std::function<pragma::fs::VFilePtr(const std::string &)> &fileHandler, bool *optOutFound)
 {
-	path += FileManager::GetNormalizedPath(imgFile);
-	ustring::to_lower(path);
-	auto formats = MaterialManager::get_supported_image_formats();
+	path += pragma::fs::get_normalized_path(imgFile);
+	pragma::string::to_lower(path);
+	auto formats = ::MaterialManager::get_supported_image_formats();
 	type = formats.front().type;
 
 	std::string ext {};
 	ufile::get_extension(path, &ext);
 	auto bFoundType = false;
-	auto it = std::find_if(formats.begin(), formats.end(), [&ext](const MaterialManager::ImageFormat &format) { return ext == format.extension; });
+	auto it = std::find_if(formats.begin(), formats.end(), [&ext](const ::MaterialManager::ImageFormat &format) { return ext == format.extension; });
 	if(it != formats.end()) {
 		type = it->type;
 		bFoundType = true;
@@ -27,7 +27,7 @@ std::string translate_image_path(const std::string &imgFile, msys::TextureType &
 			for(auto &format : formats) {
 				auto formatPath = path;
 				formatPath += '.' + format.extension;
-				if(FileManager::Exists(formatPath)) {
+				if(pragma::fs::exists(formatPath)) {
 					path = formatPath;
 					type = format.type;
 					bFoundType = true;
@@ -46,7 +46,7 @@ std::string translate_image_path(const std::string &imgFile, msys::TextureType &
 		*optOutFound = bFoundType;
 	return path;
 }
-std::string translate_image_path(const std::string &imgFile, msys::TextureType &type, const std::function<VFilePtr(const std::string &)> &fileHandler, bool *optOutFound)
+std::string pragma::material::translate_image_path(const std::string &imgFile, pragma::material::TextureType &type, const std::function<pragma::fs::VFilePtr(const std::string &)> &fileHandler, bool *optOutFound)
 {
-	return translate_image_path(imgFile, type, MaterialManager::GetRootMaterialLocation() + '/', fileHandler, optOutFound);
+	return translate_image_path(imgFile, type, ::MaterialManager::GetRootMaterialLocation() + '/', fileHandler, optOutFound);
 }

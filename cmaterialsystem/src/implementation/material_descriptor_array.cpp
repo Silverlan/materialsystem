@@ -7,7 +7,7 @@ module pragma.cmaterialsystem;
 
 import :material_descriptor_array_manager;
 
-MaterialDescriptorArrayManager::~MaterialDescriptorArrayManager()
+pragma::material::MaterialDescriptorArrayManager::~MaterialDescriptorArrayManager()
 {
 	for(auto &pair : m_texData) {
 		auto &cb = pair.second.onRemoveCallback;
@@ -15,7 +15,7 @@ MaterialDescriptorArrayManager::~MaterialDescriptorArrayManager()
 			cb.Remove();
 	}
 }
-void MaterialDescriptorArrayManager::Initialize(prosper::IPrContext &context)
+void pragma::material::MaterialDescriptorArrayManager::Initialize(prosper::IPrContext &context)
 {
 	auto instanceSize = sizeof(MaterialRenderInfoBufferData);
 	auto instanceCount = 4'096;
@@ -27,8 +27,8 @@ void MaterialDescriptorArrayManager::Initialize(prosper::IPrContext &context)
 	m_materialInfoBuffer = context.CreateUniformResizableBuffer(createInfo, instanceSize, instanceSize * maxInstanceCount, 0.1f);
 	m_materialInfoBuffer->SetDebugName("material_info_buf");
 }
-const std::shared_ptr<prosper::IUniformResizableBuffer> &MaterialDescriptorArrayManager::GetMaterialInfoBuffer() const { return m_materialInfoBuffer; }
-std::optional<prosper::IBuffer::SubBufferIndex> MaterialDescriptorArrayManager::RegisterMaterial(const msys::Material &mat, bool reInitialize)
+const std::shared_ptr<prosper::IUniformResizableBuffer> &pragma::material::MaterialDescriptorArrayManager::GetMaterialInfoBuffer() const { return m_materialInfoBuffer; }
+std::optional<prosper::IBuffer::SubBufferIndex> pragma::material::MaterialDescriptorArrayManager::RegisterMaterial(const material::Material &mat, bool reInitialize)
 {
 	auto it = m_materialRenderBuffers.find(&mat);
 	if(it != m_materialRenderBuffers.end()) {
@@ -55,35 +55,35 @@ std::optional<prosper::IBuffer::SubBufferIndex> MaterialDescriptorArrayManager::
 	MaterialRenderInfoBufferData matRenderInfo {};
 	auto *pDiffuseMap = loaded ? mat.GetDiffuseMap() : errTex;
 	if(pDiffuseMap && pDiffuseMap->texture) {
-		auto index = AddItem(*std::static_pointer_cast<msys::Texture>(pDiffuseMap->texture));
+		auto index = AddItem(*std::static_pointer_cast<material::Texture>(pDiffuseMap->texture));
 		if(index.has_value())
 			matRenderInfo.albedoTextureArrayIndex = *index;
 	}
 
 	auto *pAlbedoMap = loaded ? mat.GetTextureInfo("albedo_map") : errTex;
 	if(pAlbedoMap && pAlbedoMap->texture) {
-		auto index = AddItem(*std::static_pointer_cast<msys::Texture>(pAlbedoMap->texture));
+		auto index = AddItem(*std::static_pointer_cast<material::Texture>(pAlbedoMap->texture));
 		if(index.has_value())
 			matRenderInfo.albedoTextureArrayIndex = *index;
 	}
 
 	auto *pNormalMap = loaded ? mat.GetNormalMap() : errTex;
 	if(pNormalMap && pNormalMap->texture) {
-		auto index = AddItem(*std::static_pointer_cast<msys::Texture>(pNormalMap->texture));
+		auto index = AddItem(*std::static_pointer_cast<material::Texture>(pNormalMap->texture));
 		if(index.has_value())
 			matRenderInfo.normalTextureArrayIndex = *index;
 	}
 
 	pNormalMap = loaded ? mat.GetTextureInfo("normal_map") : errTex;
 	if(pNormalMap && pNormalMap->texture) {
-		auto index = AddItem(*std::static_pointer_cast<msys::Texture>(pNormalMap->texture));
+		auto index = AddItem(*std::static_pointer_cast<material::Texture>(pNormalMap->texture));
 		if(index.has_value())
 			matRenderInfo.normalTextureArrayIndex = *index;
 	}
 
 	auto *pRmaMap = loaded ? mat.GetTextureInfo("rma_map") : errTex;
 	if(pRmaMap && pRmaMap->texture) {
-		auto index = AddItem(*std::static_pointer_cast<msys::Texture>(pRmaMap->texture));
+		auto index = AddItem(*std::static_pointer_cast<material::Texture>(pRmaMap->texture));
 		if(index.has_value())
 			matRenderInfo.rmaTextureArrayIndex = *index;
 	}
@@ -96,8 +96,8 @@ std::optional<prosper::IBuffer::SubBufferIndex> MaterialDescriptorArrayManager::
 	return matBuffer->GetBaseIndex();
 
 	// Add material textures to texture array
-	/*std::function<void(ds::Block &dataBlock)> fIterateTextures = nullptr;
-	fIterateTextures = [this,&fIterateTextures](ds::Block &dataBlock) {
+	/*std::function<void(datasystem::Block &dataBlock)> fIterateTextures = nullptr;
+	fIterateTextures = [this,&fIterateTextures](datasystem::Block &dataBlock) {
 		auto *data = dataBlock.GetData();
 		if(data == nullptr)
 			return;
@@ -108,10 +108,10 @@ std::optional<prosper::IBuffer::SubBufferIndex> MaterialDescriptorArrayManager::
 				continue;
 			if(dataVal->IsBlock())
 			{
-				fIterateTextures(static_cast<ds::Block&>(*dataVal));
+				fIterateTextures(static_cast<datasystem::Block&>(*dataVal));
 				continue;
 			}
-			auto *dsTex = dynamic_cast<ds::Texture*>(dataVal.get());
+			auto *dsTex = dynamic_cast<datasystem::Texture*>(dataVal.get());
 			if(dsTex == nullptr)
 				continue;
 			auto &texInfo = dsTex->GetValue();
@@ -138,7 +138,7 @@ std::optional<prosper::IBuffer::SubBufferIndex> MaterialDescriptorArrayManager::
 	if(rootDataBlock)
 		fIterateTextures(*rootDataBlock);*/
 }
-std::optional<prosper::DescriptorArrayManager::ArrayIndex> MaterialDescriptorArrayManager::AddItem(msys::Texture &tex)
+std::optional<prosper::DescriptorArrayManager::ArrayIndex> pragma::material::MaterialDescriptorArrayManager::AddItem(material::Texture &tex)
 {
 	auto it = m_texData.find(&tex);
 	if(it != m_texData.end())
@@ -150,7 +150,7 @@ std::optional<prosper::DescriptorArrayManager::ArrayIndex> MaterialDescriptorArr
 	m_texData[&tex] = {*index, cb};
 	return index;
 }
-void MaterialDescriptorArrayManager::RemoveItem(const msys::Texture &tex)
+void pragma::material::MaterialDescriptorArrayManager::RemoveItem(const material::Texture &tex)
 {
 	auto it = m_texData.find(&tex);
 	if(it == m_texData.end())

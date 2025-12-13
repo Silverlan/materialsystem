@@ -11,7 +11,7 @@ export module pragma.cmaterialsystem:shaders.source2.decompose_pbr;
 export import pragma.prosper;
 
 export {
-	namespace msys {
+	namespace pragma::material {
 		namespace source2 {
 			class DLLCMATSYS ShaderDecomposePBR : public prosper::ShaderBaseImageProcessing {
 			  public:
@@ -46,8 +46,8 @@ export {
 				virtual void InitializeRenderPass(std::shared_ptr<prosper::IRenderPass> &outRenderPass, uint32_t pipelineIdx) override;
 				virtual void InitializeShaderResources() override;
 			};
-			using namespace umath::scoped_enum::bitwise;
+			using namespace pragma::math::scoped_enum::bitwise;
 		};
 	};
-	REGISTER_ENUM_FLAGS(msys::source2::ShaderDecomposePBR::Flags)
+	REGISTER_ENUM_FLAGS(pragma::material::source2::ShaderDecomposePBR::Flags)
 }

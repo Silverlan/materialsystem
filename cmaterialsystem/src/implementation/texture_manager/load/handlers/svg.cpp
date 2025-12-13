@@ -7,7 +7,7 @@ module pragma.cmaterialsystem;
 
 import :texture_manager.format_handlers.svg;
 
-bool msys::TextureFormatHandlerSvg::GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize)
+bool pragma::material::TextureFormatHandlerSvg::GetDataPtr(uint32_t layer, uint32_t mipmapIdx, void **outPtr, size_t &outSize)
 {
 	if(layer != 0 || mipmapIdx != 0)
 		return false;
@@ -15,9 +15,9 @@ bool msys::TextureFormatHandlerSvg::GetDataPtr(uint32_t layer, uint32_t mipmapId
 	outSize = m_imgBuf->GetSize();
 	return true;
 }
-bool msys::TextureFormatHandlerSvg::LoadData(InputTextureInfo &texInfo)
+bool pragma::material::TextureFormatHandlerSvg::LoadData(InputTextureInfo &texInfo)
 {
-	uimg::SvgImageInfo svgInfo {};
+	image::SvgImageInfo svgInfo {};
 	if(texInfo.textureData) {
 		udm::LinkedPropertyWrapper prop {*texInfo.textureData};
 		prop["width"] >> svgInfo.width;
@@ -41,7 +41,7 @@ bool msys::TextureFormatHandlerSvg::LoadData(InputTextureInfo &texInfo)
 			svgInfo.styleSheet = ss.str();
 		}
 	}
-	auto imgBuf = uimg::load_svg(*m_file, svgInfo);
+	auto imgBuf = image::load_svg(*m_file, svgInfo);
 	if(!imgBuf)
 		return false;
 	m_imgBuf = imgBuf;

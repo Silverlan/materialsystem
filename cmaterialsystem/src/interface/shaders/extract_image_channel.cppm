@@ -9,7 +9,7 @@ export module pragma.cmaterialsystem:shaders.extract_image_channel;
 
 export import pragma.prosper;
 
-export namespace msys {
+export namespace pragma::material {
 	class DLLCMATSYS ShaderExtractImageChannel : public prosper::ShaderBaseImageProcessing {
 	  public:
 		static prosper::DescriptorSetInfo DESCRIPTOR_SET_TEXTURE;

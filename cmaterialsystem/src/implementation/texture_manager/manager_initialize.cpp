@@ -19,11 +19,11 @@ static void change_image_transfer_dst_layout_to_shader_read(prosper::ICommandBuf
 
 struct ImageFormatLoader {
 	void *userData = nullptr;
-	std::function<void(void *, const TextureQueueItem &, uint32_t &, uint32_t &, prosper::Format &, bool &, uint32_t &, uint32_t &, std::optional<prosper::Format> &)> get_image_info = nullptr;
-	std::function<const void *(void *, const TextureQueueItem &, uint32_t, uint32_t, uint32_t &)> get_image_data = nullptr;
+	std::function<void(void *, const pragma::material::TextureQueueItem &, uint32_t &, uint32_t &, prosper::Format &, bool &, uint32_t &, uint32_t &, std::optional<prosper::Format> &)> get_image_info = nullptr;
+	std::function<const void *(void *, const pragma::material::TextureQueueItem &, uint32_t, uint32_t, uint32_t &)> get_image_data = nullptr;
 };
 
-static void initialize_image(TextureQueueItem &item, const msys::Texture &texture, const ImageFormatLoader &imgLoader, std::shared_ptr<prosper::IImage> &outImage)
+static void initialize_image(pragma::material::TextureQueueItem &item, const pragma::material::Texture &texture, const ImageFormatLoader &imgLoader, std::shared_ptr<prosper::IImage> &outImage)
 {
 	auto &context = *item.context.lock();
 
@@ -36,12 +36,12 @@ static void initialize_image(TextureQueueItem &item, const msys::Texture &textur
 	imgLoader.get_image_info(imgLoader.userData, item, width, height, format, item.cubemap, numLayers, numMipMaps, conversionFormat);
 
 	// In some cases the format may not be supported by the GPU altogether. We may still be able to convert it to a compatible format by hand.
-	std::function<void(const void *, std::shared_ptr<uimg::ImageBuffer> &, uint32_t, uint32_t)> manualConverter = nullptr;
+	std::function<void(const void *, std::shared_ptr<pragma::image::ImageBuffer> &, uint32_t, uint32_t)> manualConverter = nullptr;
 	const auto usage = prosper::ImageUsageFlags::TransferSrcBit | prosper::ImageUsageFlags::TransferDstBit | prosper::ImageUsageFlags::SampledBit;
 	if(format == prosper::Format::B8G8R8_UNorm_PoorCoverage && context.IsImageFormatSupported(format, usage, prosper::ImageType::e2D, prosper::ImageTiling::Optimal) == false) {
-		manualConverter = [](const void *imgData, std::shared_ptr<uimg::ImageBuffer> &outImg, uint32_t width, uint32_t height) {
-			outImg = uimg::ImageBuffer::Create(imgData, width, height, uimg::Format::RGB8);
-			outImg->Convert(uimg::Format::RGBA8);
+		manualConverter = [](const void *imgData, std::shared_ptr<pragma::image::ImageBuffer> &outImg, uint32_t width, uint32_t height) {
+			outImg = pragma::image::ImageBuffer::Create(imgData, width, height, pragma::image::Format::RGB8);
+			outImg->Convert(pragma::image::Format::RGBA8);
 		};
 		format = prosper::Format::B8G8R8A8_UNorm;
 		conversionFormat = {};
@@ -50,7 +50,7 @@ static void initialize_image(TextureQueueItem &item, const msys::Texture &textur
 		return;
 
 	auto numMipMapsLoad = numMipMaps;
-	auto bGenerateMipmaps = (item.mipmapMode == msys::TextureMipmapMode::Generate || (item.mipmapMode == msys::TextureMipmapMode::LoadOrGenerate && numMipMaps <= 1)) ? true : false;
+	auto bGenerateMipmaps = (item.mipmapMode == pragma::material::TextureMipmapMode::Generate || (item.mipmapMode == pragma::material::TextureMipmapMode::LoadOrGenerate && numMipMaps <= 1)) ? true : false;
 	if(bGenerateMipmaps == true)
 		numMipMaps = prosper::util::calculate_mipmap_count(width, height);
 
@@ -79,7 +79,7 @@ static void initialize_image(TextureQueueItem &item, const msys::Texture &textur
 	static uint64_t totalAllocatedSize = 0;
 	auto allocatedSize = outImage->GetMemoryBuffer()->GetSize();
 	totalAllocatedSize += allocatedSize;
-	std::cout<<"Allocated "<<::util::get_pretty_bytes(allocatedSize)<<" for image '"<<item.name<<"'. Total allocated: "<<::util::get_pretty_bytes(totalAllocatedSize)<<std::endl;
+	std::cout<<"Allocated "<<pragma::util::get_pretty_bytes(allocatedSize)<<" for image '"<<item.name<<"'. Total allocated: "<<pragma::util::get_pretty_bytes(totalAllocatedSize)<<std::endl;
 #endif
 
 	outImage->SetDebugName("texture_asset_img");
@@ -92,7 +92,7 @@ static void initialize_image(TextureQueueItem &item, const msys::Texture &textur
 	};
 	std::vector<BufferInfo> buffers {};
 	buffers.reserve(numLayers * numMipMapsLoad);
-	std::vector<std::shared_ptr<uimg::ImageBuffer>> imgBuffers {};
+	std::vector<std::shared_ptr<pragma::image::ImageBuffer>> imgBuffers {};
 	imgBuffers.reserve(numLayers * numMipMapsLoad);
 	auto &setupCmd = context.GetSetupCommandBuffer();
 	for(auto iLayer = decltype(numLayers) {0u}; iLayer < numLayers; ++iLayer) {
@@ -106,7 +106,7 @@ static void initialize_image(TextureQueueItem &item, const msys::Texture &textur
 			if(manualConverter) {
 				uint32_t wMipmap, hMipmap;
 				prosper::util::calculate_mipmap_size(width, height, &wMipmap, &hMipmap, iMipmap);
-				std::shared_ptr<uimg::ImageBuffer> imgBuffer = nullptr;
+				std::shared_ptr<pragma::image::ImageBuffer> imgBuffer = nullptr;
 				manualConverter(data, imgBuffer, wMipmap, hMipmap);
 				data = imgBuffer->GetData();
 				dataSize = imgBuffer->GetSize();
@@ -179,43 +179,43 @@ static VulkanImageData vtf_format_to_vulkan_format(VTFImageFormat format)
 {
 	VulkanImageData vkImgData {};
 	switch(format) {
-	case VTFImageFormat::IMAGE_FORMAT_DXT1:
+	case IMAGE_FORMAT_DXT1:
 		vkImgData.format = prosper::Format::BC1_RGBA_UNorm_Block;
 		break;
-	case VTFImageFormat::IMAGE_FORMAT_DXT3:
+	case IMAGE_FORMAT_DXT3:
 		vkImgData.format = prosper::Format::BC2_UNorm_Block;
 		break;
-	case VTFImageFormat::IMAGE_FORMAT_DXT5:
+	case IMAGE_FORMAT_DXT5:
 		vkImgData.format = prosper::Format::BC3_UNorm_Block;
 		break;
-	case VTFImageFormat::IMAGE_FORMAT_RGBA8888:
+	case IMAGE_FORMAT_RGBA8888:
 		vkImgData.format = prosper::Format::R8G8B8A8_UNorm;
 		break;
-	case VTFImageFormat::IMAGE_FORMAT_RGB888: // Needs to be converted
+	case IMAGE_FORMAT_RGB888: // Needs to be converted
 		vkImgData.conversionFormat = prosper::Format::R8G8B8A8_UNorm;
 		vkImgData.format = prosper::Format::R8G8B8_UNorm_PoorCoverage;
 		break;
-	case VTFImageFormat::IMAGE_FORMAT_BGRA8888:
+	case IMAGE_FORMAT_BGRA8888:
 		vkImgData.format = prosper::Format::B8G8R8A8_UNorm;
 		break;
-	case VTFImageFormat::IMAGE_FORMAT_BGR888: // Needs to be converted
+	case IMAGE_FORMAT_BGR888: // Needs to be converted
 		vkImgData.conversionFormat = prosper::Format::B8G8R8A8_UNorm;
 		vkImgData.format = prosper::Format::B8G8R8_UNorm_PoorCoverage;
 		break;
-	case VTFImageFormat::IMAGE_FORMAT_UV88:
+	case IMAGE_FORMAT_UV88:
 		vkImgData.format = prosper::Format::R8G8_UNorm;
 		break;
-	case VTFImageFormat::IMAGE_FORMAT_RGBA16161616F:
+	case IMAGE_FORMAT_RGBA16161616F:
 		vkImgData.format = prosper::Format::R16G16B16A16_SFloat;
 		break;
-	case VTFImageFormat::IMAGE_FORMAT_RGBA32323232F:
+	case IMAGE_FORMAT_RGBA32323232F:
 		vkImgData.format = prosper::Format::R32G32B32A32_SFloat;
 		break;
-	case VTFImageFormat::IMAGE_FORMAT_ABGR8888:
+	case IMAGE_FORMAT_ABGR8888:
 		vkImgData.swizzle = {prosper::ComponentSwizzle::A, prosper::ComponentSwizzle::B, prosper::ComponentSwizzle::G, prosper::ComponentSwizzle::R};
 		vkImgData.format = prosper::Format::A8B8G8R8_UNorm_Pack32;
 		break;
-	case VTFImageFormat::IMAGE_FORMAT_BGRX8888:
+	case IMAGE_FORMAT_BGRX8888:
 		vkImgData.format = prosper::Format::B8G8R8A8_UNorm;
 		break;
 	default:
@@ -281,11 +281,11 @@ static VulkanImageData vtex_format_to_vulkan_format(source2::VTexFormat format)
 
 #endif
 
-void TextureManager::InitializeImage(TextureQueueItem &item)
+void TextureManager::InitializeImage(pragma::material::TextureQueueItem &item)
 {
 	item.initialized = true;
 	auto texture = GetQueuedTexture(item);
-	texture->SetFlags(texture->GetFlags() | msys::Texture::Flags::Error);
+	texture->SetFlags(texture->GetFlags() | pragma::material::Texture::Flags::Error);
 	if(item.valid == false) {
 		auto texError = GetErrorTexture();
 		texture->SetVkTexture(texError ? texError->GetVkTexture() : nullptr);
@@ -293,16 +293,16 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 	else {
 		std::shared_ptr<prosper::IImage> image = nullptr;
 		std::array<prosper::ComponentSwizzle, 4> swizzle = {prosper::ComponentSwizzle::R, prosper::ComponentSwizzle::G, prosper::ComponentSwizzle::B, prosper::ComponentSwizzle::A};
-		auto *surface = dynamic_cast<TextureQueueItemSurface *>(&item);
+		auto *surface = dynamic_cast<pragma::material::TextureQueueItemSurface *>(&item);
 		if(surface != nullptr) {
 			auto &img = surface->texture;
 			// In theory the input image should have a srgb flag if it's srgb, but in practice that's almost never the case,
 			// so we just assume the image is srgb by default.
 			// if(gli::is_srgb(img->format()))
-			texture->AddFlags(msys::Texture::Flags::SRGB);
+			texture->AddFlags(pragma::material::Texture::Flags::SRGB);
 			ImageFormatLoader gliLoader {};
 			gliLoader.userData = static_cast<gli::texture2d *>(img.get());
-			gliLoader.get_image_info = [](void *userData, const TextureQueueItem &item, uint32_t &outWidth, uint32_t &outHeight, prosper::Format &outFormat, bool &outCubemap, uint32_t &outLayerCount, uint32_t &outMipmapCount, std::optional<prosper::Format> &outConversionFormat) -> void {
+			gliLoader.get_image_info = [](void *userData, const pragma::material::TextureQueueItem &item, uint32_t &outWidth, uint32_t &outHeight, prosper::Format &outFormat, bool &outCubemap, uint32_t &outLayerCount, uint32_t &outMipmapCount, std::optional<prosper::Format> &outConversionFormat) -> void {
 				auto &texture = *static_cast<gli::texture2d *>(userData);
 				auto extents = texture.extent();
 				outWidth = extents.x;
@@ -312,7 +312,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 				outLayerCount = item.cubemap ? texture.faces() : texture.layers();
 				outMipmapCount = texture.levels();
 			};
-			gliLoader.get_image_data = [](void *userData, const TextureQueueItem &item, uint32_t layer, uint32_t mipmapIdx, uint32_t &outDataSize) -> const void * {
+			gliLoader.get_image_data = [](void *userData, const pragma::material::TextureQueueItem &item, uint32_t layer, uint32_t mipmapIdx, uint32_t &outDataSize) -> const void * {
 				auto &texture = *static_cast<gli::texture2d *>(userData);
 				auto gliLayer = item.cubemap ? 0 : layer;
 				auto gliFace = item.cubemap ? layer : 0;
@@ -322,15 +322,15 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 			initialize_image(item, *texture, gliLoader, image);
 		}
 		else {
-			auto *png = dynamic_cast<TextureQueueItemPNG *>(&item);
+			auto *png = dynamic_cast<pragma::material::TextureQueueItemPNG *>(&item);
 			if(png != nullptr && png->pnginfo->GetChannelCount() == 4) {
-				texture->AddFlags(msys::Texture::Flags::SRGB);
+				texture->AddFlags(pragma::material::Texture::Flags::SRGB);
 
 				ImageFormatLoader pngLoader {};
-				pngLoader.userData = static_cast<uimg::ImageBuffer *>(png->pnginfo.get());
+				pngLoader.userData = static_cast<pragma::image::ImageBuffer *>(png->pnginfo.get());
 				pngLoader.get_image_info
-				  = [](void *userData, const TextureQueueItem &item, uint32_t &outWidth, uint32_t &outHeight, prosper::Format &outFormat, bool &outCubemap, uint32_t &outLayerCount, uint32_t &outMipmapCount, std::optional<prosper::Format> &outConversionFormat) -> void {
-					auto &png = *static_cast<uimg::ImageBuffer *>(userData);
+				  = [](void *userData, const pragma::material::TextureQueueItem &item, uint32_t &outWidth, uint32_t &outHeight, prosper::Format &outFormat, bool &outCubemap, uint32_t &outLayerCount, uint32_t &outMipmapCount, std::optional<prosper::Format> &outConversionFormat) -> void {
+					auto &png = *static_cast<pragma::image::ImageBuffer *>(userData);
 					outWidth = png.GetWidth();
 					outHeight = png.GetHeight();
 					outFormat = prosper::util::get_vk_format(png.GetFormat());
@@ -338,28 +338,28 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 					outLayerCount = 1;
 					outMipmapCount = 1;
 				};
-				pngLoader.get_image_data = [](void *userData, const TextureQueueItem &item, uint32_t layer, uint32_t mipmapIdx, uint32_t &outDataSize) -> const void * {
-					auto &png = *static_cast<uimg::ImageBuffer *>(userData);
+				pngLoader.get_image_data = [](void *userData, const pragma::material::TextureQueueItem &item, uint32_t layer, uint32_t mipmapIdx, uint32_t &outDataSize) -> const void * {
+					auto &png = *static_cast<pragma::image::ImageBuffer *>(userData);
 					outDataSize = png.GetSize();
 					return png.GetData();
 				};
 				initialize_image(item, *texture, pngLoader, image);
 			}
 			else {
-				auto *stbi = dynamic_cast<TextureQueueItemStbi *>(&item);
+				auto *stbi = dynamic_cast<pragma::material::TextureQueueItemStbi *>(&item);
 				if(stbi != nullptr && (stbi->imageBuffer->GetChannelCount() == 3 || stbi->imageBuffer->GetChannelCount() == 4)) {
 					static constexpr auto TGA_VK_FORMAT = prosper::Format::R8G8B8A8_UNorm;
-					texture->AddFlags(msys::Texture::Flags::SRGB);
+					texture->AddFlags(pragma::material::Texture::Flags::SRGB);
 
 					auto &tgaInfo = *stbi->imageBuffer;
-					auto imgBuffer = uimg::ImageBuffer::Create(tgaInfo.GetData(), tgaInfo.GetWidth(), tgaInfo.GetHeight(), (stbi->imageBuffer->GetChannelCount() == 3) ? uimg::Format::RGB8 : uimg::Format::RGBA8);
-					imgBuffer->Convert(uimg::Format::RGBA8);
+					auto imgBuffer = pragma::image::ImageBuffer::Create(tgaInfo.GetData(), tgaInfo.GetWidth(), tgaInfo.GetHeight(), (stbi->imageBuffer->GetChannelCount() == 3) ? pragma::image::Format::RGB8 : pragma::image::Format::RGBA8);
+					imgBuffer->Convert(pragma::image::Format::RGBA8);
 
 					ImageFormatLoader tgaLoader {};
-					tgaLoader.userData = static_cast<uimg::ImageBuffer *>(stbi->imageBuffer.get());
+					tgaLoader.userData = static_cast<pragma::image::ImageBuffer *>(stbi->imageBuffer.get());
 					tgaLoader.get_image_info
-					  = [](void *userData, const TextureQueueItem &item, uint32_t &outWidth, uint32_t &outHeight, prosper::Format &outFormat, bool &outCubemap, uint32_t &outLayerCount, uint32_t &outMipmapCount, std::optional<prosper::Format> &outConversionFormat) -> void {
-						auto &tga = *static_cast<uimg::ImageBuffer *>(userData);
+					  = [](void *userData, const pragma::material::TextureQueueItem &item, uint32_t &outWidth, uint32_t &outHeight, prosper::Format &outFormat, bool &outCubemap, uint32_t &outLayerCount, uint32_t &outMipmapCount, std::optional<prosper::Format> &outConversionFormat) -> void {
+						auto &tga = *static_cast<pragma::image::ImageBuffer *>(userData);
 						outWidth = tga.GetWidth();
 						outHeight = tga.GetHeight();
 						outFormat = TGA_VK_FORMAT;
@@ -368,8 +368,8 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 						outMipmapCount = 1;
 					};
 
-					tgaLoader.get_image_data = [imgBuffer](void *userData, const TextureQueueItem &item, uint32_t layer, uint32_t mipmapIdx, uint32_t &outDataSize) -> const void * {
-						auto &tga = *static_cast<uimg::ImageBuffer *>(userData);
+					tgaLoader.get_image_data = [imgBuffer](void *userData, const pragma::material::TextureQueueItem &item, uint32_t layer, uint32_t mipmapIdx, uint32_t &outDataSize) -> const void * {
+						auto &tga = *static_cast<pragma::image::ImageBuffer *>(userData);
 						outDataSize = imgBuffer->GetSize();
 						return imgBuffer->GetData();
 					};
@@ -377,18 +377,18 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 				}
 				else {
 #ifndef DISABLE_VTF_SUPPORT
-					auto *vtf = dynamic_cast<TextureQueueItemVTF *>(&item);
+					auto *vtf = dynamic_cast<pragma::material::TextureQueueItemVTF *>(&item);
 					if(vtf != nullptr) {
 						//if(vtfFile->GetFlag(VTFImageFlag::TEXTUREFLAGS_SRGB))
 						// In theory the input image should have a srgb flag if it's srgb, but in practice that's almost never the case,
 						// so we just assume the image is srgb by default.
-						texture->AddFlags(msys::Texture::Flags::SRGB);
+						texture->AddFlags(pragma::material::Texture::Flags::SRGB);
 
 						auto &vtfFile = vtf->texture;
 						ImageFormatLoader vtfLoader {};
 						vtfLoader.userData = static_cast<VTFLib::CVTFFile *>(vtfFile.get());
 						vtfLoader.get_image_info
-						  = [&swizzle](void *userData, const TextureQueueItem &item, uint32_t &outWidth, uint32_t &outHeight, prosper::Format &outFormat, bool &outCubemap, uint32_t &outLayerCount, uint32_t &outMipmapCount, std::optional<prosper::Format> &outConversionFormat) -> void {
+						  = [&swizzle](void *userData, const pragma::material::TextureQueueItem &item, uint32_t &outWidth, uint32_t &outHeight, prosper::Format &outFormat, bool &outCubemap, uint32_t &outLayerCount, uint32_t &outMipmapCount, std::optional<prosper::Format> &outConversionFormat) -> void {
 							auto &vtfFile = *static_cast<VTFLib::CVTFFile *>(userData);
 							auto vkFormat = vtf_format_to_vulkan_format(vtfFile.GetFormat());
 							outWidth = vtfFile.GetWidth();
@@ -399,10 +399,10 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 							outLayerCount = outCubemap ? 6 : 1;
 							outMipmapCount = vtfFile.GetMipmapCount();
 							swizzle = vkFormat.swizzle;
-							if(vtfFile.GetFlag(VTFImageFlag::TEXTUREFLAGS_NOMIP))
+							if(vtfFile.GetFlag(TEXTUREFLAGS_NOMIP))
 								outMipmapCount = 1u;
 						};
-						vtfLoader.get_image_data = [](void *userData, const TextureQueueItem &item, uint32_t layer, uint32_t mipmapIdx, uint32_t &outDataSize) -> const void * {
+						vtfLoader.get_image_data = [](void *userData, const pragma::material::TextureQueueItem &item, uint32_t layer, uint32_t mipmapIdx, uint32_t &outDataSize) -> const void * {
 							auto &vtfFile = *static_cast<VTFLib::CVTFFile *>(userData);
 							outDataSize = VTFLib::CVTFFile::ComputeMipmapSize(vtfFile.GetWidth(), vtfFile.GetHeight(), vtfFile.GetDepth(), mipmapIdx, vtfFile.GetFormat());
 							return vtfFile.GetData(0, layer, 0, mipmapIdx);
@@ -411,15 +411,15 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 					}
 #endif
 #ifndef DISABLE_VTEX_SUPPORT
-					auto *vtex = dynamic_cast<TextureQueueItemVTex *>(&item);
+					auto *vtex = dynamic_cast<pragma::material::TextureQueueItemVTex *>(&item);
 					if(vtex != nullptr) {
-						texture->AddFlags(msys::Texture::Flags::SRGB);
+						texture->AddFlags(pragma::material::Texture::Flags::SRGB);
 
 						auto &vtexFile = vtex->texture;
 						ImageFormatLoader vtexLoader {};
 						vtexLoader.userData = static_cast<source2::resource::Texture *>(vtexFile.get());
 						vtexLoader.get_image_info
-						  = [&swizzle](void *userData, const TextureQueueItem &item, uint32_t &outWidth, uint32_t &outHeight, prosper::Format &outFormat, bool &outCubemap, uint32_t &outLayerCount, uint32_t &outMipmapCount, std::optional<prosper::Format> &outConversionFormat) -> void {
+						  = [&swizzle](void *userData, const pragma::material::TextureQueueItem &item, uint32_t &outWidth, uint32_t &outHeight, prosper::Format &outFormat, bool &outCubemap, uint32_t &outLayerCount, uint32_t &outMipmapCount, std::optional<prosper::Format> &outConversionFormat) -> void {
 							auto &vtexFile = *static_cast<source2::resource::Texture *>(userData);
 							auto vkFormat = vtex_format_to_vulkan_format(vtexFile.GetFormat());
 							outWidth = vtexFile.GetWidth();
@@ -432,7 +432,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 							swizzle = vkFormat.swizzle;
 						};
 						std::vector<uint8_t> mipmapData {};
-						vtexLoader.get_image_data = [&mipmapData](void *userData, const TextureQueueItem &item, uint32_t layer, uint32_t mipmapIdx, uint32_t &outDataSize) -> const void * {
+						vtexLoader.get_image_data = [&mipmapData](void *userData, const pragma::material::TextureQueueItem &item, uint32_t layer, uint32_t mipmapIdx, uint32_t &outDataSize) -> const void * {
 							auto &vtexFile = *static_cast<source2::resource::Texture *>(userData);
 							mipmapData.clear();
 							vtexFile.ReadTextureData(mipmapIdx, mipmapData);
@@ -442,7 +442,7 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 						initialize_image(item, *texture, vtexLoader, image);
 					}
 #endif
-					static_assert(umath::to_integral(msys::TextureType::Count) == 13, "Update this implementation when new texture types have been added!");
+					static_assert(pragma::math::to_integral(pragma::material::TextureType::Count) == 13, "Update this implementation when new texture types have been added!");
 				}
 			}
 		}
@@ -460,20 +460,20 @@ void TextureManager::InitializeImage(TextureQueueItem &item)
 			vkTex->SetDebugName(item.name);
 			texture->SetVkTexture(vkTex);
 
-			texture->SetFlags(texture->GetFlags() & ~msys::Texture::Flags::Error);
+			texture->SetFlags(texture->GetFlags() & ~pragma::material::Texture::Flags::Error);
 		}
 	}
 }
 
-void TextureManager::FinalizeTexture(TextureQueueItem &item)
+void TextureManager::FinalizeTexture(pragma::material::TextureQueueItem &item)
 {
 	auto texture = GetQueuedTexture(item, true);
 	if(texture->IsIndexed() == false && item.addToCache) {
 		if(m_textures.size() == m_textures.capacity())
 			m_textures.reserve(m_textures.size() * 1.5f + 100);
 		m_textures.push_back(texture);
-		texture->SetFlags(texture->GetFlags() | msys::Texture::Flags::Indexed);
+		texture->SetFlags(texture->GetFlags() | pragma::material::Texture::Flags::Indexed);
 	}
-	texture->SetFlags(texture->GetFlags() | msys::Texture::Flags::Loaded);
+	texture->SetFlags(texture->GetFlags() | pragma::material::Texture::Flags::Loaded);
 	texture->RunOnLoadedCallbacks();
 }
