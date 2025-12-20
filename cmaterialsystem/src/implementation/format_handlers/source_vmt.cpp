@@ -23,12 +23,12 @@ import :material_manager2;
 static void _msvc_workaround () {
 	auto msvc_fix = pragma::filesystem::SearchFlags::Virtual | pragma::filesystem::SearchFlags::Package;
 }
+#endif
 template<typename T>
 static T bor(T v0, T v1)
 {
 	return static_cast<T>(pragma::math::to_integral(v0) | pragma::math::to_integral(v1));
 }
-#endif
 
 #ifndef DISABLE_VMT_SUPPORT
 template<class T>
