@@ -7,6 +7,7 @@ module;
 #include <VMTFile.h>
 #include <VTFLib.h>
 #endif
+#include <util_enum_flags.hpp>
 
 module pragma.cmaterialsystem;
 
@@ -16,12 +17,18 @@ import :material_manager2;
 #undef max
 #undef CreateFile
 
-// msvc compiler is unable to locate the | operator overload, so we have to use a workaround
+#ifdef MSVC_COMPILER_FIX
+// msvc compiler is unable to locate the | operator overload. For some reason the function below fixes that,
+// even though it's never called.
+static void _msvc_workaround () {
+	auto msvc_fix = pragma::filesystem::SearchFlags::Virtual | pragma::filesystem::SearchFlags::Package;
+}
 template<typename T>
 static T bor(T v0, T v1)
 {
 	return static_cast<T>(pragma::math::to_integral(v0) | pragma::math::to_integral(v1));
 }
+#endif
 
 #ifndef DISABLE_VMT_SUPPORT
 template<class T>
