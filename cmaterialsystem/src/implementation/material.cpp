@@ -241,14 +241,11 @@ void pragma::material::CMaterial::LoadTexture(TextureMipmapMode mipmapMode, Text
 			textureManager.PreloadAsset(texInfo.name, std::move(loadInfo));
 			return;
 		}
-		if(callbackInfo && callbackInfo->onload.IsValid()) {
-			loadInfo->onLoaded = [callbackInfo](pragma::util::Asset &asset) {
-				if(callbackInfo->onload.IsValid())
-					TextureManager::GetAssetObject(asset)->CallOnLoaded(callbackInfo->onload);
-			};
-		}
 		auto tex = textureManager.LoadAsset(texInfo.name, std::move(loadInfo));
 		if(tex) {
+			if(callbackInfo && callbackInfo->onload.IsValid())
+				tex->CallOnLoaded(callbackInfo->onload);
+
 			auto &vkTex = tex->GetVkTexture();
 			if(vkTex && m_sampler)
 				vkTex->SetSampler(*m_sampler);
