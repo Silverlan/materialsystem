@@ -8,6 +8,8 @@ option(CONFIG_DISABLE_VMAT_SUPPORT "Disable support for VMat files." OFF)
 set(PROJ_NAME materialsystem)
 pr_add_library(${PROJ_NAME} SHARED)
 
+pr_include_windows_clang_export_definitions_workaround(${PROJ_NAME})
+
 pr_add_dependency(${PROJ_NAME} datasystem TARGET PUBLIC)
 pr_add_dependency(${PROJ_NAME} util_image TARGET PUBLIC)
 pr_add_dependency(${PROJ_NAME} util_source2 TARGET PUBLIC)

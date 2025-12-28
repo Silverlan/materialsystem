@@ -1,0 +1,16 @@
+LIBRARY "materialsystem"
+EXPORTS
+    ?DIFFUSE_MAP_IDENTIFIER@ematerial@material@pragma@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@B
+    ?ALBEDO_MAP_IDENTIFIER@ematerial@material@pragma@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@B
+    ?ALBEDO_MAP2_IDENTIFIER@ematerial@material@pragma@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@B
+    ?ALBEDO_MAP3_IDENTIFIER@ematerial@material@pragma@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@B
+    ?NORMAL_MAP_IDENTIFIER@ematerial@material@pragma@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@B
+    ?GLOW_MAP_IDENTIFIER@ematerial@material@pragma@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@B
+    ?EMISSION_MAP_IDENTIFIER@ematerial@material@pragma@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@B
+    ?PARALLAX_MAP_IDENTIFIER@ematerial@material@pragma@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@B
+    ?ALPHA_MAP_IDENTIFIER@ematerial@material@pragma@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@B
+    ?RMA_MAP_IDENTIFIER@ematerial@material@pragma@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@B
+    ?DUDV_MAP_IDENTIFIER@ematerial@material@pragma@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@B
+    ?WRINKLE_STRETCH_MAP_IDENTIFIER@ematerial@material@pragma@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@B
+    ?WRINKLE_COMPRESS_MAP_IDENTIFIER@ematerial@material@pragma@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@B
+    ?EXPONENT_MAP_IDENTIFIER@ematerial@material@pragma@@3V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@B
