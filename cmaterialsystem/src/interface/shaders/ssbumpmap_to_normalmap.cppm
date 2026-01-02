@@ -1,10 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2020 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
-#include "definitions.hpp"
-
 export module pragma.cmaterialsystem:shaders.ssbumpmap_to_normalmap;
 
 export import pragma.prosper;

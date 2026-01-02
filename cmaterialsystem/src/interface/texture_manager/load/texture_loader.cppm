@@ -1,10 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2021 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
-#include "definitions.hpp"
-
 export module pragma.cmaterialsystem:texture_manager.texture_loader;
 
 export import :texture_manager.texture_processor;

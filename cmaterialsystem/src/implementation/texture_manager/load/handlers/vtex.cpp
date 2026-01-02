@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2021 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
 module pragma.cmaterialsystem;
 
 import :texture_manager.format_handlers.vtex;

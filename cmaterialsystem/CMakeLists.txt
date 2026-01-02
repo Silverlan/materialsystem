@@ -4,6 +4,7 @@ option(CONFIG_DISABLE_VTF_SUPPORT "Enable support for VMT/VTF files." OFF)
 
 set(PROJ_NAME cmaterialsystem)
 pr_add_library(${PROJ_NAME} SHARED)
+pr_add_export_macro(${PROJ_NAME} DLLCMATSYS)
 
 pr_add_dependency(${PROJ_NAME} iglfw TARGET PUBLIC)
 pr_add_dependency(${PROJ_NAME} prosper TARGET PUBLIC)

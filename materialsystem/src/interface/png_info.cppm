@@ -3,7 +3,6 @@
 
 module;
 
-#include "definitions.hpp"
 #include <png.h>
 
 export module pragma.materialsystem:png_info;

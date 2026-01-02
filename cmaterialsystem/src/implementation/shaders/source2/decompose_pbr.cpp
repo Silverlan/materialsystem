@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2020 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
 module pragma.cmaterialsystem;
 
 import :shaders.source2.decompose_pbr;

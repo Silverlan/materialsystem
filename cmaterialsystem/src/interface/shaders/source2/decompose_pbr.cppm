@@ -3,7 +3,6 @@
 
 module;
 
-#include "definitions.hpp"
 #include "util_enum_flags.hpp"
 
 export module pragma.cmaterialsystem:shaders.source2.decompose_pbr;

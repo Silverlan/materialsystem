@@ -1,10 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2025 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
-#include "definitions.hpp"
-
 export module pragma.cmaterialsystem:texture_manager.format_handlers.svg;
 
 export import :texture_manager.texture_format_handler;

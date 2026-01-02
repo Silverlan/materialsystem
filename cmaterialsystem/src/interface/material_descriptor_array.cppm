@@ -1,10 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2019 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
-#include "definitions.hpp"
-
 export module pragma.cmaterialsystem:material_descriptor_array_manager;
 
 export import :texture_manager.texture;

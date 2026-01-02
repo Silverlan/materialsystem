@@ -1,12 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2021 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
-#ifndef DISABLE_VMT_SUPPORT
-#include "definitions.hpp"
-#endif
-
 export module pragma.cmaterialsystem:format_handlers.source_vmt;
 
 export import pragma.materialsystem;

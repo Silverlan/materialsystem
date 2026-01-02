@@ -3,7 +3,6 @@
 
 module;
 
-#include "definitions.hpp"
 #include <VTFFile.h>
 
 export module pragma.cmaterialsystem:texture_manager.format_handlers.vtf;

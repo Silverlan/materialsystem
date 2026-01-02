@@ -3,7 +3,6 @@
 
 module;
 
-#include "definitions.hpp"
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #endif

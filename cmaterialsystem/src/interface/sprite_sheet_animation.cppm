@@ -1,10 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2020 Silverlan <opensource@pragma-engine.com>
 // SPDX-License-Identifier: MIT
 
-module;
-
-#include "definitions.hpp"
-
 export module pragma.cmaterialsystem:sprite_sheet_animation;
 
 export import pragma.filesystem;
