@@ -12,6 +12,64 @@ import :material_manager;
 
 #undef CreateFile
 
+#ifdef WINDOWS_CLANG_COMPILER_FIX
+const std::string &pragma::material::ematerial::GET_DIFFUSE_MAP_IDENTIFIER() {
+	static std::string str = "diffuse_map";
+	return str;
+}
+const std::string &pragma::material::ematerial::GET_ALBEDO_MAP_IDENTIFIER() {
+	static std::string str = "albedo_map";
+	return str;
+}
+const std::string &pragma::material::ematerial::GET_ALBEDO_MAP2_IDENTIFIER() {
+	static std::string str = "albedo_map2";
+	return str;
+}
+const std::string &pragma::material::ematerial::GET_ALBEDO_MAP3_IDENTIFIER() {
+	static std::string str = "albedo_map3";
+	return str;
+}
+const std::string &pragma::material::ematerial::GET_NORMAL_MAP_IDENTIFIER() {
+	static std::string str = "normal_map";
+	return str;
+}
+const std::string &pragma::material::ematerial::GET_GLOW_MAP_IDENTIFIER() {
+	static std::string str = "emission_map";
+	return str;
+}
+const std::string &pragma::material::ematerial::GET_EMISSION_MAP_IDENTIFIER() {
+	static std::string str = GLOW_MAP_IDENTIFIER;
+	return str;
+}
+const std::string &pragma::material::ematerial::GET_PARALLAX_MAP_IDENTIFIER() {
+	static std::string str = "parallax_map";
+	return str;
+}
+const std::string &pragma::material::ematerial::GET_ALPHA_MAP_IDENTIFIER() {
+	static std::string str = "alpha_map";
+	return str;
+}
+const std::string &pragma::material::ematerial::GET_RMA_MAP_IDENTIFIER() {
+	static std::string str = "rma_map";
+	return str;
+}
+const std::string &pragma::material::ematerial::GET_DUDV_MAP_IDENTIFIER() {
+	static std::string str = "dudv_map";
+	return str;
+}
+const std::string &pragma::material::ematerial::GET_WRINKLE_STRETCH_MAP_IDENTIFIER() {
+	static std::string str = "wrinkle_stretch_map";
+	return str;
+}
+const std::string &pragma::material::ematerial::GET_WRINKLE_COMPRESS_MAP_IDENTIFIER() {
+	static std::string str = "wrinkle_compress_map";
+	return str;
+}
+const std::string &pragma::material::ematerial::GET_EXPONENT_MAP_IDENTIFIER() {
+	static std::string str = "exponent_map";
+	return str;
+}
+#else
 decltype(pragma::material::ematerial::DIFFUSE_MAP_IDENTIFIER) pragma::material::ematerial::DIFFUSE_MAP_IDENTIFIER = "diffuse_map";
 decltype(pragma::material::ematerial::ALBEDO_MAP_IDENTIFIER) pragma::material::ematerial::ALBEDO_MAP_IDENTIFIER = "albedo_map";
 decltype(pragma::material::ematerial::ALBEDO_MAP2_IDENTIFIER) pragma::material::ematerial::ALBEDO_MAP2_IDENTIFIER = "albedo_map2";
@@ -26,6 +84,7 @@ decltype(pragma::material::ematerial::DUDV_MAP_IDENTIFIER) pragma::material::ema
 decltype(pragma::material::ematerial::WRINKLE_STRETCH_MAP_IDENTIFIER) pragma::material::ematerial::WRINKLE_STRETCH_MAP_IDENTIFIER = "wrinkle_stretch_map";
 decltype(pragma::material::ematerial::WRINKLE_COMPRESS_MAP_IDENTIFIER) pragma::material::ematerial::WRINKLE_COMPRESS_MAP_IDENTIFIER = "wrinkle_compress_map";
 decltype(pragma::material::ematerial::EXPONENT_MAP_IDENTIFIER) pragma::material::ematerial::EXPONENT_MAP_IDENTIFIER = "exponent_map";
+#endif
 
 pragma::material::Material::BaseMaterial::~BaseMaterial()
 {

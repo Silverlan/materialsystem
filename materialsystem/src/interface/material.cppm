@@ -112,6 +112,22 @@ export {
 			CONSTEXPR_DLL_COMPAT auto FORMAT_MATERIAL_ASCII = "pmat";
 			CONSTEXPR_DLL_COMPAT auto FORMAT_MATERIAL_LEGACY = "wmi";
 
+#ifdef WINDOWS_CLANG_COMPILER_FIX
+			DLLMATSYS const std::string &GET_DIFFUSE_MAP_IDENTIFIER();
+			DLLMATSYS const std::string &GET_ALBEDO_MAP_IDENTIFIER();
+			DLLMATSYS const std::string &GET_ALBEDO_MAP2_IDENTIFIER();
+			DLLMATSYS const std::string &GET_ALBEDO_MAP3_IDENTIFIER();
+			DLLMATSYS const std::string &GET_NORMAL_MAP_IDENTIFIER();
+			DLLMATSYS const std::string &GET_GLOW_MAP_IDENTIFIER();
+			DLLMATSYS const std::string &GET_EMISSION_MAP_IDENTIFIER();
+			DLLMATSYS const std::string &GET_PARALLAX_MAP_IDENTIFIER();
+			DLLMATSYS const std::string &GET_ALPHA_MAP_IDENTIFIER();
+			DLLMATSYS const std::string &GET_RMA_MAP_IDENTIFIER();
+			DLLMATSYS const std::string &GET_DUDV_MAP_IDENTIFIER();
+			DLLMATSYS const std::string &GET_WRINKLE_STRETCH_MAP_IDENTIFIER();
+			DLLMATSYS const std::string &GET_WRINKLE_COMPRESS_MAP_IDENTIFIER();
+			DLLMATSYS const std::string &GET_EXPONENT_MAP_IDENTIFIER();
+#else
 			// inline static class-strings cause an internal compiler error with VS2019, so we can't use them for the time being
 			// inline static const std::string DIFFUSE_MAP_IDENTIFIER = "diffuse_map";
 			CLASS_ENUM_COMPAT const std::string DIFFUSE_MAP_IDENTIFIER;
@@ -128,6 +144,7 @@ export {
 			CLASS_ENUM_COMPAT const std::string WRINKLE_STRETCH_MAP_IDENTIFIER;
 			CLASS_ENUM_COMPAT const std::string WRINKLE_COMPRESS_MAP_IDENTIFIER;
 			CLASS_ENUM_COMPAT const std::string EXPONENT_MAP_IDENTIFIER;
+#endif
 		}
 		class DLLMATSYS Material : public std::enable_shared_from_this<Material> {
 		  public:
