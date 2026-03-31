@@ -170,11 +170,15 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt, LoadInfo &info, 
 
 				imgCreateInfo.width = pragma::math::max(irisMap->GetWidth(), corneaMap->GetWidth());
 				imgCreateInfo.height = pragma::math::max(irisMap->GetHeight(), corneaMap->GetHeight());
+				imgCreateInfo.debugName = "source_eye_refract_albedo";
 				auto imgAlbedo = context.CreateImage(imgCreateInfo);
 
 				imgCreateInfo.format = prosper::Format::R32G32B32A32_SFloat;
+				imgCreateInfo.debugName = "source_eye_refract_normal";
 				auto imgNormal = context.CreateImage(imgCreateInfo);
+				imgCreateInfo.debugName = "source_eye_refract_parallax";
 				auto imgParallax = context.CreateImage(imgCreateInfo);
+				imgCreateInfo.debugName = "source_eye_refract_noise";
 				auto imgNoise = context.CreateImage(imgCreateInfo);
 
 				prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
@@ -403,6 +407,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt, LoadInfo &info, 
 
 				imgCreateInfo.width = bumpMap->GetWidth();
 				imgCreateInfo.height = bumpMap->GetHeight();
+				imgCreateInfo.debugName = "source_bumpmap";
 				auto imgNormal = context.CreateImage(imgCreateInfo);
 
 				prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
@@ -465,7 +470,8 @@ void CMaterialManager::SetErrorMaterial(pragma::material::Material *mat)
 	m_textureManager->SetErrorTexture(nullptr);
 }
 
-pragma::material::Material *CMaterialManager::Load(const std::string &path, const std::function<void(pragma::material::Material *)> &onMaterialLoaded, const std::function<void(std::shared_ptr<pragma::material::Texture>)> &onTextureLoaded, bool bReload, bool *bFirstTimeError, bool bLoadInstantly)
+pragma::material::Material *CMaterialManager::Load(const std::string &path, const std::function<void(pragma::material::Material *)> &onMaterialLoaded, const std::function<void(std::shared_ptr<pragma::material::Texture>)> &onTextureLoaded, bool bReload, bool *bFirstTimeError,
+  bool bLoadInstantly)
 {
 	auto &context = GetContext();
 	auto &shaderManager = context.GetShaderManager();

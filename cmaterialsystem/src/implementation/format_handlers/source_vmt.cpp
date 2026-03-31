@@ -77,11 +77,15 @@ bool pragma::material::load_vmt_data(T &formatHandler, const std::string &vmtSha
 
 				imgCreateInfo.width = pragma::math::max(irisMap->GetWidth(), corneaMap->GetWidth());
 				imgCreateInfo.height = pragma::math::max(irisMap->GetHeight(), corneaMap->GetHeight());
+				imgCreateInfo.debugName = "source_eye_albedo";
 				auto imgAlbedo = context.CreateImage(imgCreateInfo);
 
 				imgCreateInfo.format = prosper::Format::R32G32B32A32_SFloat;
+				imgCreateInfo.debugName = "source_eye_normal";
 				auto imgNormal = context.CreateImage(imgCreateInfo);
+				imgCreateInfo.debugName = "source_eye_parallax";
 				auto imgParallax = context.CreateImage(imgCreateInfo);
+				imgCreateInfo.debugName = "source_eye_noise";
 				auto imgNoise = context.CreateImage(imgCreateInfo);
 
 				prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
@@ -295,6 +299,7 @@ bool pragma::material::load_vmt_data(T &formatHandler, const std::string &vmtSha
 
 				imgCreateInfo.width = bumpMap->GetWidth();
 				imgCreateInfo.height = bumpMap->GetHeight();
+				imgCreateInfo.debugName = "source_bumpmap_to_normal_map";
 				auto imgNormal = context.CreateImage(imgCreateInfo);
 
 				prosper::util::ImageViewCreateInfo imgViewCreateInfo {};

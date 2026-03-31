@@ -135,11 +135,11 @@ bool pragma::material::TextureProcessor::InitializeProsperImage(prosper::IPrCont
 	createInfo.postCreateLayout = prosper::ImageLayout::TransferDstOptimal;
 	if(cubemap)
 		createInfo.flags |= prosper::util::ImageCreateInfo::Flags::Cubemap;
+	createInfo.debugName = "texture_asset_img";
 
 	auto img = context.CreateImage(createInfo);
 	if(img == nullptr)
 		return false;
-	img->SetDebugName("texture_asset_img");
 	image = img;
 
 	if(targetGpuConversionFormat.has_value()) {

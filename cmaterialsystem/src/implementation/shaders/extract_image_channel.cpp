@@ -57,6 +57,7 @@ std::shared_ptr<prosper::IImage> pragma::material::ShaderExtractImageChannel::Ex
 	auto extents = imgSrc.GetExtents();
 	imgCreateInfo.width = extents.width;
 	imgCreateInfo.height = extents.height;
+	imgCreateInfo.debugName = "extract_image_channel";
 	auto imgOutput = context.CreateImage(imgCreateInfo);
 
 	prosper::util::ImageViewCreateInfo imgViewCreateInfo {};

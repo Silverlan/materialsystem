@@ -29,7 +29,9 @@ pragma::material::source2::ShaderDecomposePBR::DecomposedImageSet pragma::materi
 	auto extents = imgAlbedo.GetExtents();
 	imgCreateInfo.width = extents.width;
 	imgCreateInfo.height = extents.height;
+	imgCreateInfo.debugName = "decompose_pbr_albedo";
 	auto imgAlbedoOut = context.CreateImage(imgCreateInfo);
+	imgCreateInfo.debugName = "decompose_pbr_metallic_roughness";
 	auto imgMetallicRoughnessOut = context.CreateImage(imgCreateInfo);
 
 	prosper::util::ImageViewCreateInfo imgViewCreateInfo {};

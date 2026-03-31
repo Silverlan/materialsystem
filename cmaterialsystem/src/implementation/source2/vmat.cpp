@@ -68,6 +68,7 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 
 					imgCreateInfo.width = pMetalnessReflectanceMap->GetWidth();
 					imgCreateInfo.height = pMetalnessReflectanceMap->GetHeight();
+					imgCreateInfo.debugName = "source2_extract_image_channel_rma";
 					auto imgRMA = context.CreateImage(imgCreateInfo);
 
 					prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
@@ -304,6 +305,7 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 
 						imgCreateInfo.width = pNormalMap->GetWidth();
 						imgCreateInfo.height = pNormalMap->GetHeight();
+						imgCreateInfo.debugName = "source2_generate_tangent_space_normal_map_normal";
 						auto imgNormal = context.CreateImage(imgCreateInfo);
 
 						prosper::util::ImageViewCreateInfo imgViewCreateInfo {};

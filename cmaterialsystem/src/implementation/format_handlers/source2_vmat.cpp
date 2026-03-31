@@ -77,6 +77,7 @@ bool pragma::material::CSource2VmatFormatHandler::InitializeVMatData(::source2::
 
 					imgCreateInfo.width = pMetalnessReflectanceMap->GetWidth();
 					imgCreateInfo.height = pMetalnessReflectanceMap->GetHeight();
+					imgCreateInfo.debugName = "source2_rma";
 					auto imgRMA = context.CreateImage(imgCreateInfo);
 
 					prosper::util::ImageViewCreateInfo imgViewCreateInfo {};
@@ -314,6 +315,7 @@ bool pragma::material::CSource2VmatFormatHandler::InitializeVMatData(::source2::
 
 						imgCreateInfo.width = pNormalMap->GetWidth();
 						imgCreateInfo.height = pNormalMap->GetHeight();
+						imgCreateInfo.debugName = "source2_generate_tangent_space_normal_map";
 						auto imgNormal = context.CreateImage(imgCreateInfo);
 
 						prosper::util::ImageViewCreateInfo imgViewCreateInfo {};

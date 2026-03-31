@@ -70,6 +70,7 @@ static void initialize_image(pragma::material::TextureQueueItem &item, const pra
 	createInfo.postCreateLayout = prosper::ImageLayout::TransferDstOptimal;
 	if(bCubemap == true)
 		createInfo.flags |= prosper::util::ImageCreateInfo::Flags::Cubemap;
+	createInfo.debugName = "texture_asset_img";
 
 	outImage = context.CreateImage(createInfo);
 	if(outImage == nullptr)
@@ -81,8 +82,6 @@ static void initialize_image(pragma::material::TextureQueueItem &item, const pra
 	totalAllocatedSize += allocatedSize;
 	std::cout<<"Allocated "<<pragma::util::get_pretty_bytes(allocatedSize)<<" for image '"<<item.name<<"'. Total allocated: "<<pragma::util::get_pretty_bytes(totalAllocatedSize)<<std::endl;
 #endif
-
-	outImage->SetDebugName("texture_asset_img");
 
 	// Initialize image data as buffers, then copy to output image
 	struct BufferInfo {
@@ -456,8 +455,8 @@ void TextureManager::InitializeImage(pragma::material::TextureQueueItem &item)
 			imgViewCreateInfo.swizzleBlue = swizzle.at(2);
 			imgViewCreateInfo.swizzleAlpha = swizzle.at(3);
 			createInfo.flags |= prosper::util::TextureCreateInfo::Flags::CreateImageViewForEachLayer;
+			createInfo.debugName = item.name;
 			auto vkTex = context.CreateTexture(createInfo, *image, imgViewCreateInfo);
-			vkTex->SetDebugName(item.name);
 			texture->SetVkTexture(vkTex);
 
 			texture->SetFlags(texture->GetFlags() & ~pragma::material::Texture::Flags::Error);

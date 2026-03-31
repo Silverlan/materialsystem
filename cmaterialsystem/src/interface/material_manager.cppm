@@ -37,7 +37,8 @@ export {
 		virtual void SetErrorMaterial(pragma::material::Material *mat) override;
 		void SetShaderHandler(const std::function<void(pragma::material::Material *)> &handler);
 		std::function<void(pragma::material::Material *)> GetShaderHandler() const;
-		pragma::material::Material *Load(const std::string &path, const std::function<void(pragma::material::Material *)> &onMaterialLoaded, const std::function<void(std::shared_ptr<pragma::material::Texture>)> &onTextureLoaded = nullptr, bool bReload = false, bool *bFirstTimeError = nullptr, bool bLoadInstantly = false);
+		pragma::material::Material *Load(const std::string &path, const std::function<void(pragma::material::Material *)> &onMaterialLoaded, const std::function<void(std::shared_ptr<pragma::material::Texture>)> &onTextureLoaded = nullptr, bool bReload = false,
+		  bool *bFirstTimeError = nullptr, bool bLoadInstantly = false);
 		virtual pragma::material::Material *Load(const std::string &path, bool bReload = false, bool loadInstantly = true, bool *bFirstTimeError = nullptr) override;
 		void ReloadMaterialShaders();
 		void MarkForReload(pragma::material::CMaterial &mat);
