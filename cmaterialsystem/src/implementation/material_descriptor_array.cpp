@@ -16,14 +16,13 @@ pragma::material::MaterialDescriptorArrayManager::~MaterialDescriptorArrayManage
 void pragma::material::MaterialDescriptorArrayManager::Initialize(prosper::IPrContext &context)
 {
 	auto instanceSize = sizeof(MaterialRenderInfoBufferData);
-	auto instanceCount = 4'096;
-	auto maxInstanceCount = instanceCount * 10u;
+	constexpr uint32_t initialInstanceCount = 4'096;
 	prosper::util::BufferCreateInfo createInfo {};
 	createInfo.memoryFeatures = prosper::MemoryFeatureFlags::GPUBulk;
-	createInfo.size = instanceSize * instanceCount;
+	createInfo.size = instanceSize * initialInstanceCount;
 	createInfo.usageFlags = prosper::BufferUsageFlags::StorageBufferBit | prosper::BufferUsageFlags::UniformBufferBit | prosper::BufferUsageFlags::TransferSrcBit | prosper::BufferUsageFlags::TransferDstBit;
 	createInfo.debugName = "material_info_buf";
-	m_materialInfoBuffer = context.CreateUniformResizableBuffer(createInfo, instanceSize, instanceSize * maxInstanceCount, 0.1f);
+	m_materialInfoBuffer = context.CreateUniformResizableBuffer(createInfo, instanceSize);
 }
 const std::shared_ptr<prosper::IUniformResizableBuffer> &pragma::material::MaterialDescriptorArrayManager::GetMaterialInfoBuffer() const { return m_materialInfoBuffer; }
 std::optional<prosper::IBuffer::SubBufferIndex> pragma::material::MaterialDescriptorArrayManager::RegisterMaterial(const material::Material &mat, bool reInitialize)
