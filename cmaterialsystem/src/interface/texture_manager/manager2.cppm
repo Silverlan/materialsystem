@@ -15,7 +15,7 @@ export namespace pragma::material {
 	  public:
 		using AssetType = Texture;
 
-		TextureManager(prosper::IPrContext &context);
+		TextureManager(prosper::IPrContext &context, const util::Heap *heap = nullptr);
 		virtual ~TextureManager() override;
 
 		std::shared_ptr<Texture> GetErrorTexture();

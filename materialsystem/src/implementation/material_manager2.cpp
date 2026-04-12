@@ -172,13 +172,13 @@ bool pragma::material::MaterialProcessor::Load()
 }
 bool pragma::material::MaterialProcessor::Finalize() { return true; }
 
-std::shared_ptr<pragma::material::MaterialManager> pragma::material::MaterialManager::Create()
+std::shared_ptr<pragma::material::MaterialManager> pragma::material::MaterialManager::Create(const util::Heap *heap)
 {
-	auto matManager = std::shared_ptr<MaterialManager> {new MaterialManager {}};
+	auto matManager = std::shared_ptr<MaterialManager> {new MaterialManager {heap}};
 	matManager->Initialize();
 	return matManager;
 }
-pragma::material::MaterialManager::MaterialManager()
+pragma::material::MaterialManager::MaterialManager(const util::Heap *heap) : util::TFileAssetManager<Material, MaterialLoadInfo> {heap}
 {
 	auto fileHandler = std::make_unique<pragma::util::AssetFileHandler>();
 	fileHandler->open = [](const std::string &path, pragma::util::AssetFormatType formatType) -> std::unique_ptr<ufile::IFile> {

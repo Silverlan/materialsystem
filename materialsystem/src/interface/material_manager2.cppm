@@ -49,7 +49,7 @@ export namespace pragma::material {
 	};
 	class DLLMATSYS MaterialManager : public pragma::util::TFileAssetManager<Material, MaterialLoadInfo> {
 	  public:
-		static std::shared_ptr<MaterialManager> Create();
+		static std::shared_ptr<MaterialManager> Create(const util::Heap *heap = nullptr);
 		virtual ~MaterialManager() = default;
 
 		void SetErrorMaterial(Material *mat);
@@ -63,7 +63,7 @@ export namespace pragma::material {
 		std::shared_ptr<Material> CreateMaterial(const std::string &identifier, const std::string &shader, const std::shared_ptr<datasystem::Block> &data);
 	  protected:
 		friend MaterialProcessor;
-		MaterialManager();
+		MaterialManager(const util::Heap *heap);
 		virtual void Reset() override;
 		virtual void Initialize();
 		virtual void InitializeImportHandlers();

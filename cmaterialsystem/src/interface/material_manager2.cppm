@@ -12,7 +12,7 @@ export namespace pragma::material {
 		static void SetFlipTexturesVerticallyOnLoad(bool flip);
 		static bool ShouldFlipTextureVerticallyOnLoad();
 
-		static std::shared_ptr<CMaterialManager> Create(prosper::IPrContext &context);
+		static std::shared_ptr<CMaterialManager> Create(prosper::IPrContext &context, const util::Heap *heap = nullptr, const util::Heap *textureHeap = nullptr);
 		virtual ~CMaterialManager() override;
 
 		virtual std::shared_ptr<Material> CreateMaterialObject(const std::string &shader, const std::shared_ptr<datasystem::Block> &data) override;
@@ -26,7 +26,7 @@ export namespace pragma::material {
 		TextureManager &GetTextureManager() { return *m_textureManager; }
 		virtual void Poll() override;
 	  private:
-		CMaterialManager(prosper::IPrContext &context);
+		CMaterialManager(prosper::IPrContext &context, const util::Heap *heap, const util::Heap *textureHeap);
 		virtual void InitializeImportHandlers() override;
 		std::function<void(Material *)> m_shaderHandler;
 		prosper::IPrContext &m_context;

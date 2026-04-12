@@ -9,15 +9,17 @@ import :material_manager2;
 void pragma::material::CMaterialManager::SetFlipTexturesVerticallyOnLoad(bool flip) { ITextureFormatHandler ::SetFlipTexturesVertically(flip); }
 bool pragma::material::CMaterialManager::ShouldFlipTextureVerticallyOnLoad() { return ITextureFormatHandler::ShouldFlipTextureVertically(); }
 
-std::shared_ptr<pragma::material::CMaterialManager> pragma::material::CMaterialManager::Create(prosper::IPrContext &context)
+std::shared_ptr<pragma::material::CMaterialManager> pragma::material::CMaterialManager::Create(prosper::IPrContext &context, const util::Heap *heap, const util::Heap *textureHeap)
 {
-	auto matManager = std::shared_ptr<CMaterialManager> {new CMaterialManager {context}};
+	auto matManager = std::shared_ptr<CMaterialManager> {new CMaterialManager {context, heap, textureHeap}};
 	matManager->Initialize();
 	return matManager;
 }
-pragma::material::CMaterialManager::CMaterialManager(prosper::IPrContext &context) : m_context {context}
+pragma::material::CMaterialManager::CMaterialManager(prosper::IPrContext &context, const util::Heap *heap, const util::Heap *textureHeap) : MaterialManager {heap}, m_context {context}
 {
-	m_textureManager = std::make_unique<TextureManager>(context);
+	if(!textureHeap)
+		textureHeap = heap;
+	m_textureManager = std::make_unique<TextureManager>(context, textureHeap);
 	m_textureManager->SetRootDirectory("materials");
 
 	// TODO: Move this into an importer interface

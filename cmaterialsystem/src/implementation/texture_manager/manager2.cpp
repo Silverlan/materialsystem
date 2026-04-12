@@ -11,7 +11,7 @@ pragma::material::TextureLoadInfo::TextureLoadInfo(pragma::util::AssetLoadFlags 
 
 /////////////
 
-pragma::material::TextureManager::TextureManager(prosper::IPrContext &context) : m_context {context}
+pragma::material::TextureManager::TextureManager(prosper::IPrContext &context, const util::Heap *heap) : util::TFileAssetManager<Texture, TextureLoadInfo> {heap}, m_context {context}
 {
 	auto fileHandler = std::make_unique<pragma::util::AssetFileHandler>();
 	fileHandler->open = [](const std::string &path, pragma::util::AssetFormatType formatType) -> std::unique_ptr<ufile::IFile> {
