@@ -128,20 +128,20 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 		if((node = vmtRoot->GetNode("$fogstart")) != nullptr) {
 			auto fogStart = 0.f;
 			pragma::material::vmt_parameter_to_numeric_type<float>(node, fogStart);
-			fog->AddValue("float", "start", std::to_string(fInchesToMeters(fogStart)));
+			fog->AddValue("float", "start", pragma::util::to_string(fInchesToMeters(fogStart)));
 		}
 
 		if((node = vmtRoot->GetNode("$fogend")) != nullptr) {
 			auto fogEnd = 0.f;
 			pragma::material::vmt_parameter_to_numeric_type<float>(node, fogEnd);
-			fog->AddValue("float", "end", std::to_string(fInchesToMeters(fogEnd)));
+			fog->AddValue("float", "end", pragma::util::to_string(fInchesToMeters(fogEnd)));
 		}
 
 		if((node = vmtRoot->GetNode("$fogcolor")) != nullptr) {
 			auto vColor = pragma::material::vmt_parameter_to_color(*node);
 			if(vColor.has_value()) {
 				Color color {*vColor};
-				fog->AddValue("color", "color", std::to_string(color.r) + ' ' + std::to_string(color.g) + ' ' + std::to_string(color.b));
+				fog->AddValue("color", "color", pragma::util::to_string(color.r) + ' ' + pragma::util::to_string(color.g) + ' ' + pragma::util::to_string(color.b));
 			}
 		}
 	}
@@ -247,7 +247,7 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 						pragma::material::vmt_parameter_to_numeric_type<float>(node, uvScale.x);
 						uvScale.y = uvScale.x;
 					}
-					root->AddValue("vector2", "detail_uv_scale", std::to_string(uvScale[0]) + ' ' + std::to_string(uvScale[1]));
+					root->AddValue("vector2", "detail_uv_scale", pragma::util::to_string(uvScale[0]) + ' ' + pragma::util::to_string(uvScale[1]));
 				}
 
 				node = vmtRoot->GetNode("$detailblendfactor");
@@ -260,7 +260,7 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 					}
 					else
 						pragma::material::vmt_parameter_to_numeric_type<float>(node, detailBlendFactor);
-					root->AddValue("float", "detail_factor", std::to_string(detailBlendFactor));
+					root->AddValue("float", "detail_factor", pragma::util::to_string(detailBlendFactor));
 				}
 
 				Vector3 detailColorFactor {1.f, 1.f, 1.f};
@@ -270,7 +270,7 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 					if(color.has_value())
 						detailColorFactor = *color;
 				}
-				root->AddValue("vector", "detail_color_factor", std::to_string(detailColorFactor[0]) + ' ' + std::to_string(detailColorFactor[1]) + ' ' + std::to_string(detailColorFactor[2]));
+				root->AddValue("vector", "detail_color_factor", pragma::util::to_string(detailColorFactor[0]) + ' ' + pragma::util::to_string(detailColorFactor[1]) + ' ' + pragma::util::to_string(detailColorFactor[2]));
 			}
 		}
 	}
@@ -289,22 +289,22 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 	if((node = vmtRoot->GetNode("$metalnessfactor")) != nullptr) {
 		float factor = 0.f;
 		if(pragma::material::vmt_parameter_to_numeric_type<float>(node, factor))
-			root->AddData("metalness_factor", pragma::util::make_shared<pragma::datasystem::Float>(*dataSettings, std::to_string(factor)));
+			root->AddData("metalness_factor", pragma::util::make_shared<pragma::datasystem::Float>(*dataSettings, pragma::util::to_string(factor)));
 	}
 	if((node = vmtRoot->GetNode("$roughnessfactor")) != nullptr) {
 		float factor = 0.f;
 		if(pragma::material::vmt_parameter_to_numeric_type<float>(node, factor))
-			root->AddData("roughness_factor", pragma::util::make_shared<pragma::datasystem::Float>(*dataSettings, std::to_string(factor)));
+			root->AddData("roughness_factor", pragma::util::make_shared<pragma::datasystem::Float>(*dataSettings, pragma::util::to_string(factor)));
 	}
 	if((node = vmtRoot->GetNode("$specularfactor")) != nullptr) {
 		float factor = 0.f;
 		if(pragma::material::vmt_parameter_to_numeric_type<float>(node, factor))
-			root->AddData("specular_factor", pragma::util::make_shared<pragma::datasystem::Float>(*dataSettings, std::to_string(factor)));
+			root->AddData("specular_factor", pragma::util::make_shared<pragma::datasystem::Float>(*dataSettings, pragma::util::to_string(factor)));
 	}
 	if((node = vmtRoot->GetNode("$emissionfactor")) != nullptr) {
 		float factor = 0.f;
 		if(pragma::material::vmt_parameter_to_numeric_type<float>(node, factor))
-			root->AddData("emission_factor", pragma::util::make_shared<pragma::datasystem::Float>(*dataSettings, std::to_string(factor)));
+			root->AddData("emission_factor", pragma::util::make_shared<pragma::datasystem::Float>(*dataSettings, pragma::util::to_string(factor)));
 	}
 
 	if(bHasGlow) {
@@ -338,7 +338,7 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 		}
 	}
 	if((node = vmtRoot->GetNode("$additive")) != nullptr) {
-		root->AddValue("int", "alpha_mode", std::to_string(pragma::math::to_integral(AlphaMode::Blend)));
+		root->AddValue("int", "alpha_mode", pragma::util::to_string(pragma::math::to_integral(AlphaMode::Blend)));
 		pragma::material::get_vmt_data<pragma::datasystem::Bool, int32_t>(root, *dataSettings, "black_to_alpha", node);
 	}
 	if((node = vmtRoot->GetNode("$phong")) != nullptr)
@@ -348,7 +348,7 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 			pragma::material::get_vmt_data<pragma::datasystem::Float, float>(root, *dataSettings, "phong_intensity", node, [](float v) -> float { return sqrtf(v); });
 		}
 		else
-			root->AddData("phong_intensity", pragma::util::make_shared<pragma::datasystem::Float>(*dataSettings, std::to_string(phongOverride)));
+			root->AddData("phong_intensity", pragma::util::make_shared<pragma::datasystem::Float>(*dataSettings, pragma::util::to_string(phongOverride)));
 	}
 	if((node = vmtRoot->GetNode("$phongboost")) != nullptr) {
 		pragma::material::get_vmt_data<pragma::datasystem::Float, float>(root, *dataSettings, "phong_shininess", node, [](float v) -> float { return v * 2.f; });
@@ -365,15 +365,15 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 
 	auto translucent = false;
 	if(((node = vmtRoot->GetNode("$translucent")) && pragma::material::vmt_parameter_to_numeric_type<bool>(node, translucent)))
-		root->AddValue("int", "alpha_mode", std::to_string(pragma::math::to_integral(AlphaMode::Blend)));
+		root->AddValue("int", "alpha_mode", pragma::util::to_string(pragma::math::to_integral(AlphaMode::Blend)));
 
 	auto alphaTest = false;
 	if(((node = vmtRoot->GetNode("$alphatest")) && pragma::material::vmt_parameter_to_numeric_type<bool>(node, alphaTest))) {
-		root->AddValue("int", "alpha_mode", std::to_string(pragma::math::to_integral(AlphaMode::Mask)));
+		root->AddValue("int", "alpha_mode", pragma::util::to_string(pragma::math::to_integral(AlphaMode::Mask)));
 		auto alphaCutoff = 0.5f; // TODO: Confirm that the default for Source is 0.5
 		if((node = vmtRoot->GetNode("$alphatestreference")))
 			pragma::material::vmt_parameter_to_numeric_type<float>(node, alphaCutoff);
-		root->AddValue("float", "alpha_cutoff", std::to_string(alphaCutoff));
+		root->AddValue("float", "alpha_cutoff", pragma::util::to_string(alphaCutoff));
 	}
 
 	if((node = vmtRoot->GetNode("$surfaceprop")) != nullptr) {
@@ -444,7 +444,7 @@ bool MaterialManager::LoadVMT(VTFLib::CVMTFile &vmt, LoadInfo &info)
 		if(((node = vmtRoot->GetNode("$color")) || (node = vmtRoot->GetNode("$color2"))) && node->GetType() == NODE_TYPE_STRING) {
 			auto color = pragma::material::vmt_parameter_to_color(*node);
 			if(color.has_value()) {
-				root->AddValue("vector4", "color_factor", std::to_string(color->r) + ' ' + std::to_string(color->g) + ' ' + std::to_string(color->b) + " 1.0");
+				root->AddValue("vector4", "color_factor", pragma::util::to_string(color->r) + ' ' + pragma::util::to_string(color->g) + ' ' + pragma::util::to_string(color->b) + " 1.0");
 				if(root->HasValue(pragma::material::ematerial::ALBEDO_MAP_IDENTIFIER) == false) // $color / $color2 attributes work without a diffuse texture
 					root->AddData(pragma::material::ematerial::ALBEDO_MAP_IDENTIFIER, pragma::util::make_shared<pragma::datasystem::Texture>(*dataSettings, "white"));
 			}

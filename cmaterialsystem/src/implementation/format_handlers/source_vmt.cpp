@@ -261,7 +261,7 @@ bool pragma::material::load_vmt_data(T &formatHandler, const std::string &vmtSha
 				colorFactor = static_cast<datasystem::Vector4 &>(*vColorFactor).GetValue();
 			colorFactor += Vector4 {*overbrightFactor, *overbrightFactor, *overbrightFactor, 0.f};
 
-			rootData.AddValue("vector4", "bloom_color_factor", std::to_string(colorFactor.r) + ' ' + std::to_string(colorFactor.g) + ' ' + std::to_string(colorFactor.b) + " 1.0");
+			rootData.AddValue("vector4", "bloom_color_factor", util::to_string(colorFactor.r) + ' ' + util::to_string(colorFactor.g) + ' ' + util::to_string(colorFactor.b) + " 1.0");
 		}
 
 		auto addSelf = fh.GetFloatValue("$addself");
@@ -272,7 +272,7 @@ bool pragma::material::load_vmt_data(T &formatHandler, const std::string &vmtSha
 				colorFactor = static_cast<datasystem::Vector4 &>(*vColorFactor).GetValue();
 			colorFactor += Vector4 {*addSelf, *addSelf, *addSelf, 0.f};
 
-			rootData.AddValue("vector4", "color_factor", std::to_string(colorFactor.r) + ' ' + std::to_string(colorFactor.g) + ' ' + std::to_string(colorFactor.b) + " 1.0");
+			rootData.AddValue("vector4", "color_factor", util::to_string(colorFactor.r) + ' ' + util::to_string(colorFactor.g) + ' ' + util::to_string(colorFactor.b) + " 1.0");
 		}
 	}
 	auto ssBump = fh.GetInt32Value("$ssbump");

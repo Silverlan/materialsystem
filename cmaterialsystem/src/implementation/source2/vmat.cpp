@@ -255,7 +255,7 @@ bool CMaterialManager::InitializeVMatData(source2::resource::Resource &resource,
 				rootData.DetachData(*aoValue);
 
 			if(useAlpha)
-				rootData.AddValue("int", "alpha_mode", std::to_string(pragma::math::to_integral(AlphaMode::Blend)));
+				rootData.AddValue("int", "alpha_mode", pragma::util::to_string(pragma::math::to_integral(AlphaMode::Blend)));
 		}
 	}
 

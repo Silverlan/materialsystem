@@ -28,31 +28,31 @@ bool pragma::material::udm_to_data_block(udm::LinkedPropertyWrapper &udmDataRoot
 			case udm::Type::UInt32:
 			case udm::Type::Int64:
 			case udm::Type::UInt64:
-				block.AddValue("int", key, std::to_string(prop.prop->ToValue<int32_t>(0)));
+				block.AddValue("int", key, util::to_string(prop.prop->ToValue<int32_t>(0)));
 				break;
 			case udm::Type::Float:
 			case udm::Type::Double:
-				block.AddValue("float", key, std::to_string(prop.prop->ToValue<float>(0.f)));
+				block.AddValue("float", key, util::to_string(prop.prop->ToValue<float>(0.f)));
 				break;
 			case udm::Type::Boolean:
-				block.AddValue("bool", key, std::to_string(prop.prop->ToValue<bool>(false)));
+				block.AddValue("bool", key, util::to_string(prop.prop->ToValue<bool>(false)));
 				break;
 			case udm::Type::Vector2:
 				{
 					auto v = prop.prop->ToValue<Vector2>(Vector2 {});
-					block.AddValue("vector2", key, std::to_string(v.x) + ' ' + std::to_string(v.y));
+					block.AddValue("vector2", key, util::to_string(v.x) + ' ' + util::to_string(v.y));
 					break;
 				}
 			case udm::Type::Vector3:
 				{
 					auto v = prop.prop->ToValue<Vector3>(Vector3 {});
-					block.AddValue("vector", key, std::to_string(v.x) + ' ' + std::to_string(v.y) + ' ' + std::to_string(v.z));
+					block.AddValue("vector", key, util::to_string(v.x) + ' ' + util::to_string(v.y) + ' ' + util::to_string(v.z));
 					break;
 				}
 			case udm::Type::Vector4:
 				{
 					auto v = prop.prop->ToValue<Vector4>(Vector4 {});
-					block.AddValue("vector4", key, std::to_string(v.x) + ' ' + std::to_string(v.y) + ' ' + std::to_string(v.z) + ' ' + std::to_string(v.w));
+					block.AddValue("vector4", key, util::to_string(v.x) + ' ' + util::to_string(v.y) + ' ' + util::to_string(v.z) + ' ' + util::to_string(v.w));
 					break;
 				}
 			case udm::Type::Element:

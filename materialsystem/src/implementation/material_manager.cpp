@@ -34,9 +34,9 @@ static const std::unordered_map<std::string, std::string> ENUM_VARS = {
   {"BORDER_COLOR_FLOAT_OPAQUE_WHITE", "4"},
   {"BORDER_COLOR_INT_OPAQUE_WHITE", "5"},
 
-  {"ALPHA_MODE_OPAQUE", std::to_string(pragma::math::to_integral(AlphaMode::Opaque))},
-  {"ALPHA_MODE_MASK", std::to_string(pragma::math::to_integral(AlphaMode::Mask))},
-  {"ALPHA_MODE_BLEND", std::to_string(pragma::math::to_integral(AlphaMode::Blend))},
+  {"ALPHA_MODE_OPAQUE", pragma::util::to_string(pragma::math::to_integral(AlphaMode::Opaque))},
+  {"ALPHA_MODE_MASK", pragma::util::to_string(pragma::math::to_integral(AlphaMode::Mask))},
+  {"ALPHA_MODE_BLEND", pragma::util::to_string(pragma::math::to_integral(AlphaMode::Blend))},
 };
 
 MaterialManager::LoadInfo::LoadInfo() : material(nullptr) {}
@@ -71,7 +71,7 @@ pragma::material::Material *MaterialManager::CreateMaterial(const std::string *i
 			return mat;
 	}
 	else
-		matId = "__anonymous" + std::to_string(m_unnamedIdx++);
+		matId = "__anonymous" + pragma::util::to_string(m_unnamedIdx++);
 	if(root == nullptr) {
 		auto dataSettings = pragma::datasystem::create_data_settings(ENUM_VARS);
 		root = pragma::util::make_shared<pragma::datasystem::Block>(*dataSettings);
@@ -321,31 +321,31 @@ bool MaterialManager::LoadUdm(std::shared_ptr<pragma::fs::VFilePtrInternal> &f, 
 			case udm::Type::UInt32:
 			case udm::Type::Int64:
 			case udm::Type::UInt64:
-				block.AddValue("int", key, std::to_string(prop.prop->ToValue<int32_t>(0)));
+				block.AddValue("int", key, pragma::util::to_string(prop.prop->ToValue<int32_t>(0)));
 				break;
 			case udm::Type::Float:
 			case udm::Type::Double:
-				block.AddValue("float", key, std::to_string(prop.prop->ToValue<float>(0.f)));
+				block.AddValue("float", key, pragma::util::to_string(prop.prop->ToValue<float>(0.f)));
 				break;
 			case udm::Type::Boolean:
-				block.AddValue("bool", key, std::to_string(prop.prop->ToValue<bool>(false)));
+				block.AddValue("bool", key, pragma::util::to_string(prop.prop->ToValue<bool>(false)));
 				break;
 			case udm::Type::Vector2:
 				{
 					auto v = prop.prop->ToValue<Vector2>(Vector2 {});
-					block.AddValue("vector2", key, std::to_string(v.x) + ' ' + std::to_string(v.y));
+					block.AddValue("vector2", key, pragma::util::to_string(v.x) + ' ' + pragma::util::to_string(v.y));
 					break;
 				}
 			case udm::Type::Vector3:
 				{
 					auto v = prop.prop->ToValue<Vector3>(Vector3 {});
-					block.AddValue("vector", key, std::to_string(v.x) + ' ' + std::to_string(v.y) + ' ' + std::to_string(v.z));
+					block.AddValue("vector", key, pragma::util::to_string(v.x) + ' ' + pragma::util::to_string(v.y) + ' ' + pragma::util::to_string(v.z));
 					break;
 				}
 			case udm::Type::Vector4:
 				{
 					auto v = prop.prop->ToValue<Vector4>(Vector4 {});
-					block.AddValue("vector4", key, std::to_string(v.x) + ' ' + std::to_string(v.y) + ' ' + std::to_string(v.z) + ' ' + std::to_string(v.w));
+					block.AddValue("vector4", key, pragma::util::to_string(v.x) + ' ' + pragma::util::to_string(v.y) + ' ' + pragma::util::to_string(v.z) + ' ' + pragma::util::to_string(v.w));
 					break;
 				}
 			case udm::Type::Element:

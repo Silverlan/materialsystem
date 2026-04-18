@@ -120,7 +120,7 @@ bool pragma::material::ISourceVmtFormatHandler::AssignFloatValue(datasystem::Blo
 		value = defaultValue;
 	if(!value)
 		return false;
-	dsData.AddValue("float", pragmaKey, std::to_string(*value));
+	dsData.AddValue("float", pragmaKey, util::to_string(*value));
 	return true;
 }
 bool pragma::material::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode, const std::string &outputPath, std::string &outFilePath)
@@ -161,16 +161,16 @@ bool pragma::material::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode
 		auto fInchesToMeters = [](float inches) { return inches * 0.0254f; };
 		auto fogStart = GetFloatValue("$fogstart", nullptr, 0.f);
 		if(fogStart)
-			fog->AddValue("float", "start", std::to_string(fInchesToMeters(*fogStart)));
+			fog->AddValue("float", "start", util::to_string(fInchesToMeters(*fogStart)));
 
 		auto fogEnd = GetFloatValue("$fogend", nullptr, 0.f);
 		if(fogEnd)
-			fog->AddValue("float", "end", std::to_string(fInchesToMeters(*fogEnd)));
+			fog->AddValue("float", "end", util::to_string(fInchesToMeters(*fogEnd)));
 
 		auto fogColor = GetColorValue("$fogcolor", nullptr);
 		if(fogColor) {
 			Color color {*fogColor};
-			fog->AddValue("color", "color", std::to_string(color.r) + ' ' + std::to_string(color.g) + ' ' + std::to_string(color.b));
+			fog->AddValue("color", "color", util::to_string(color.r) + ' ' + util::to_string(color.g) + ' ' + util::to_string(color.b));
 		}
 	}
 	else if(shader == "teeth") {
@@ -278,7 +278,7 @@ bool pragma::material::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode
 							uvScale.x = *val;
 						uvScale.y = uvScale.x;
 					}
-					root->AddValue("vector2", "detail_uv_scale", std::to_string(uvScale[0]) + ' ' + std::to_string(uvScale[1]));
+					root->AddValue("vector2", "detail_uv_scale", util::to_string(uvScale[0]) + ' ' + util::to_string(uvScale[1]));
 				}
 
 				node = GetNode("$detailblendfactor", &rootNode);
@@ -294,14 +294,14 @@ bool pragma::material::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode
 						if(val)
 							detailBlendFactor = *val;
 					}
-					root->AddValue("float", "detail_factor", std::to_string(detailBlendFactor));
+					root->AddValue("float", "detail_factor", util::to_string(detailBlendFactor));
 				}
 
 				Vector3 detailColorFactor {1.f, 1.f, 1.f};
 				auto vmtDetailTint = GetColorValue("$detailtint");
 				if(vmtDetailTint)
 					detailColorFactor = *vmtDetailTint;
-				root->AddValue("vector", "detail_color_factor", std::to_string(detailColorFactor[0]) + ' ' + std::to_string(detailColorFactor[1]) + ' ' + std::to_string(detailColorFactor[2]));
+				root->AddValue("vector", "detail_color_factor", util::to_string(detailColorFactor[0]) + ' ' + util::to_string(detailColorFactor[1]) + ' ' + util::to_string(detailColorFactor[2]));
 			}
 		}
 	}
@@ -335,7 +335,7 @@ bool pragma::material::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode
 		AssignTextureValue(*root, *m_rootNode, "$bumpmap", ematerial::NORMAL_MAP_IDENTIFIER);
 	AssignTextureValue(*root, *m_rootNode, "$envmapmask", "specular_map");
 	if((node = GetNode("$additive", &rootNode)) != nullptr) {
-		root->AddValue("int", "alpha_mode", std::to_string(pragma::math::to_integral(AlphaMode::Blend)));
+		root->AddValue("int", "alpha_mode", util::to_string(pragma::math::to_integral(AlphaMode::Blend)));
 		AssignBooleanValue(*root, *m_rootNode, "$additive", "black_to_alpha");
 	}
 	AssignBooleanValue(*root, *m_rootNode, "$phong", "phong_normal_alpha");
@@ -343,39 +343,39 @@ bool pragma::material::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode
 		if(std::isnan(phongOverride)) {
 			auto val = GetFloatValue(*node);
 			if(val)
-				root->AddValue("float", "phong_intensity", std::to_string(sqrtf(*val)));
+				root->AddValue("float", "phong_intensity", util::to_string(sqrtf(*val)));
 		}
 		else
-			root->AddValue("float", "phong_intensity", std::to_string(phongOverride));
+			root->AddValue("float", "phong_intensity", util::to_string(phongOverride));
 	}
 	if((node = GetNode("$phongboost", &rootNode)) != nullptr) {
 		auto val = GetFloatValue(*node);
 		if(val)
-			root->AddValue("float", "phong_shininess", std::to_string(*val * 2.f));
+			root->AddValue("float", "phong_shininess", util::to_string(*val * 2.f));
 	}
 	AssignTextureValue(*root, *m_rootNode, "$parallaxmap", ematerial::PARALLAX_MAP_IDENTIFIER);
 	if((node = GetNode("$parallaxmapscale", &rootNode)) != nullptr) {
 		auto val = GetFloatValue(*node);
 		if(val)
-			root->AddValue("float", "parallax_height_scale", std::to_string(*val * 0.025f));
+			root->AddValue("float", "parallax_height_scale", util::to_string(*val * 0.025f));
 	}
 
 	auto translucent = GetBooleanValue("$translucent");
 	if(translucent && *translucent)
-		root->AddValue("int", "alpha_mode", std::to_string(pragma::math::to_integral(AlphaMode::Blend)));
+		root->AddValue("int", "alpha_mode", util::to_string(pragma::math::to_integral(AlphaMode::Blend)));
 
 	auto alphaFactor = GetFloatValue("$alpha");
 	if(alphaFactor)
-		root->AddValue("float", "alpha_factor", std::to_string(*alphaFactor));
+		root->AddValue("float", "alpha_factor", util::to_string(*alphaFactor));
 
 	auto alphaTest = GetBooleanValue("$alphatest");
 	if(alphaTest) {
-		root->AddValue("int", "alpha_mode", std::to_string(pragma::math::to_integral(AlphaMode::Mask)));
+		root->AddValue("int", "alpha_mode", util::to_string(pragma::math::to_integral(AlphaMode::Mask)));
 		auto alphaCutoff = 0.5f; // TODO: Confirm that the default for Source is 0.5
 		auto alphaTestReference = GetFloatValue("$alphatestreference");
 		if(alphaTestReference)
 			alphaCutoff = *alphaTestReference;
-		root->AddValue("float", "alpha_cutoff", std::to_string(alphaCutoff));
+		root->AddValue("float", "alpha_cutoff", util::to_string(alphaCutoff));
 	}
 
 	auto surfaceProp = GetStringValue("$surfaceprop");
@@ -420,7 +420,7 @@ bool pragma::material::ISourceVmtFormatHandler::LoadVMT(const IVmtNode &rootNode
 		if(!color)
 			color = GetColorValue("$color2");
 		if(color) {
-			root->AddValue("vector4", "color_factor", std::to_string(color->r) + ' ' + std::to_string(color->g) + ' ' + std::to_string(color->b) + " 1.0");
+			root->AddValue("vector4", "color_factor", util::to_string(color->r) + ' ' + util::to_string(color->g) + ' ' + util::to_string(color->b) + " 1.0");
 			if(root->HasValue(ematerial::ALBEDO_MAP_IDENTIFIER) == false) // $color / $color2 attributes work without a diffuse texture
 				root->AddData(ematerial::ALBEDO_MAP_IDENTIFIER, pragma::util::make_shared<datasystem::Texture>(*dataSettings, "white"));
 		}

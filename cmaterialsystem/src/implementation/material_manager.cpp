@@ -73,7 +73,7 @@ pragma::material::Material *CMaterialManager::CreateMaterial(const std::string *
 		}
 	}
 	else
-		matId = "__anonymous" + std::to_string(m_unnamedIdx++);
+		matId = "__anonymous" + pragma::util::to_string(m_unnamedIdx++);
 	if(root == nullptr) {
 		auto dataSettings = CreateDataSettings();
 		root = std::make_shared<pragma::datasystem::Block>(*dataSettings);
@@ -361,7 +361,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt, LoadInfo &info, 
 					colorFactor = static_cast<pragma::datasystem::Vector4 &>(*vColorFactor).GetValue();
 				colorFactor += Vector4 {overbrightFactor, overbrightFactor, overbrightFactor, 0.f};
 
-				rootData.AddValue("vector4", "bloom_color_factor", std::to_string(colorFactor.r) + ' ' + std::to_string(colorFactor.g) + ' ' + std::to_string(colorFactor.b) + " 1.0");
+				rootData.AddValue("vector4", "bloom_color_factor", pragma::util::to_string(colorFactor.r) + ' ' + pragma::util::to_string(colorFactor.g) + ' ' + pragma::util::to_string(colorFactor.b) + " 1.0");
 			}
 		}
 
@@ -374,7 +374,7 @@ bool CMaterialManager::InitializeVMTData(VTFLib::CVMTFile &vmt, LoadInfo &info, 
 				colorFactor = static_cast<pragma::datasystem::Vector4 &>(*vColorFactor).GetValue();
 			colorFactor += Vector4 {addSelf, addSelf, addSelf, 0.f};
 
-			rootData.AddValue("vector4", "color_factor", std::to_string(colorFactor.r) + ' ' + std::to_string(colorFactor.g) + ' ' + std::to_string(colorFactor.b) + " 1.0");
+			rootData.AddValue("vector4", "color_factor", pragma::util::to_string(colorFactor.r) + ' ' + pragma::util::to_string(colorFactor.g) + ' ' + pragma::util::to_string(colorFactor.b) + " 1.0");
 		}
 	}
 	int32_t ssBumpmap;

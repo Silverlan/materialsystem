@@ -68,14 +68,14 @@ bool MaterialManager::LoadVMat(source2::resource::Resource &resource, LoadInfo &
 		auto *metalnessB = s2Mat->FindFloatParam("g_flMetalnessB");
 
 		if(metalnessA)
-			root->AddValue("float", "metalness_factor", std::to_string(*metalnessA));
+			root->AddValue("float", "metalness_factor", pragma::util::to_string(*metalnessA));
 
 		auto *roughnessA = s2Mat->FindVectorParam("TextureRoughnessA");
 		auto *roughnessB = s2Mat->FindVectorParam("TextureRoughnessB");
 
 		// TODO: Vector roughness?
 		//if(roughnessA)
-		//	root->AddValue("float","roughness_factor",std::to_string(*roughnessA));
+		//	root->AddValue("float","roughness_factor",util::to_string(*roughnessA));
 
 		// TODO: Add support for secondary normal map / metalness / roughness
 	}
@@ -91,7 +91,7 @@ bool MaterialManager::LoadVMat(source2::resource::Resource &resource, LoadInfo &
 
 		auto *metalness = s2Mat->FindFloatParam("g_flMetalnessA");
 		if(metalness)
-			root->AddValue("float", "metalness_factor", std::to_string(*metalness));
+			root->AddValue("float", "metalness_factor", pragma::util::to_string(*metalness));
 
 		auto *textureColor = s2Mat->FindVectorParam("TextureColorA");
 		// TODO
@@ -131,7 +131,7 @@ bool MaterialManager::LoadVMat(source2::resource::Resource &resource, LoadInfo &
 
 		auto *metalness = s2Mat->FindFloatParam("g_flMetalness");
 		if(metalness)
-			root->AddValue("float", "metalness_factor", std::to_string(*metalness));
+			root->AddValue("float", "metalness_factor", pragma::util::to_string(*metalness));
 		// TODO: Is there an attribute like this for roughness?
 	}
 

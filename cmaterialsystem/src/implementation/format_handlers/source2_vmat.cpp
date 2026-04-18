@@ -262,7 +262,7 @@ bool pragma::material::CSource2VmatFormatHandler::InitializeVMatData(::source2::
 				rootData.DetachData(*aoValue);
 
 			if(useAlpha)
-				rootData.AddValue("int", "alpha_mode", std::to_string(pragma::math::to_integral(AlphaMode::Blend)));
+				rootData.AddValue("int", "alpha_mode", util::to_string(pragma::math::to_integral(AlphaMode::Blend)));
 		}
 	}
 

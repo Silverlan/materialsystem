@@ -102,7 +102,7 @@ export namespace pragma::material {
 				auto v = singleNode->GetValue();
 				if(translate != nullptr)
 					v = translate(v);
-				root->AddData(key, std::make_shared<TData>(dataSettings, std::to_string(v)));
+				root->AddData(key, std::make_shared<TData>(dataSettings, util::to_string(v)));
 				break;
 			}
 		case NODE_TYPE_INTEGER:
@@ -111,7 +111,7 @@ export namespace pragma::material {
 				auto v = static_cast<float>(integerNode->GetValue());
 				if(translate != nullptr)
 					v = translate(v);
-				root->AddData(key, std::make_shared<TData>(dataSettings, std::to_string(v)));
+				root->AddData(key, std::make_shared<TData>(dataSettings, util::to_string(v)));
 				break;
 			}
 		case NODE_TYPE_STRING:
@@ -120,7 +120,7 @@ export namespace pragma::material {
 				auto v = pragma::util::to_float(stringNode->GetValue());
 				if(translate != nullptr)
 					v = translate(v);
-				root->AddData(key, std::make_shared<TData>(dataSettings, std::to_string(v)));
+				root->AddData(key, std::make_shared<TData>(dataSettings, util::to_string(v)));
 				break;
 			}
 		default:
@@ -133,9 +133,9 @@ export namespace pragma::material {
 	{
 		if(translate != nullptr) {
 			if constexpr(std::is_same_v<TInternal, float>)
-				value = std::to_string(translate(pragma::util::to_float(value)));
+				value = util::to_string(translate(pragma::util::to_float(value)));
 			else if constexpr(std::is_same_v<TInternal, int>)
-				value = std::to_string(translate(pragma::util::to_int(value)));
+				value = util::to_string(translate(pragma::util::to_int(value)));
 			else {
 				[]<bool flag = false>() { static_assert(flag, "Unsupported type"); }();
 			}
