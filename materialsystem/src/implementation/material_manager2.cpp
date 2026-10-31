@@ -58,11 +58,14 @@ bool pragma::material::udm_to_data_block(udm::LinkedPropertyWrapper &udmDataRoot
 			case udm::Type::Element:
 				{
 					if(texture) {
-						auto texPath = prop["texture"]->ToValue<std::string>("");
-						auto dsVal = block.AddValue("texture", key, texPath);
-						auto *dsTex = dynamic_cast<datasystem::Texture *>(dsVal.get());
-						if(dsTex)
-							dsTex->GetValue().userData = prop->Copy(true);
+						auto texture = prop["texture"];
+						if(texture) {
+							auto texPath = texture->ToValue<std::string>("");
+							auto dsVal = block.AddValue("texture", key, texPath);
+							auto *dsTex = dynamic_cast<datasystem::Texture *>(dsVal.get());
+							if(dsTex)
+								dsTex->GetValue().userData = prop->Copy(true);
+						}
 					}
 					else {
 						auto childBlock = block.AddBlock(key);
@@ -265,7 +268,36 @@ pragma::util::AssetObject pragma::material::MaterialManager::InitializeAsset(con
 }
 std::shared_ptr<pragma::datasystem::Settings> pragma::material::MaterialManager::CreateDataSettings() const { return datasystem::create_data_settings({}); }
 std::shared_ptr<pragma::material::Material> pragma::material::MaterialManager::CreateMaterialObject(const std::string &shader, const std::shared_ptr<datasystem::Block> &data) { return Material::Create(*this, shader, data); }
-std::shared_ptr<pragma::material::Material> pragma::material::MaterialManager::CreateMaterial(const udm::AssetData &assetData, std::string &outErr)
+std::shared_ptr<pragma::material::Material> pragma::material::MaterialManager::RegisterMaterialAsset(const std::shared_ptr<Material> &tmpMat, std::optional<std::string_view> identifier)
+{
+	std::shared_ptr<Material> mat = nullptr;
+	if(identifier) {
+		auto *asset = FindCachedAsset(std::string{*identifier});
+		if(asset) {
+			mat = GetAssetObject(*asset);
+			mat->Assign(*tmpMat);
+		}
+		else {
+			auto asset = std::make_shared<util::Asset>();
+			asset->assetObject = tmpMat;
+			auto idx = AddToCache(std::string{*identifier}, asset);
+			mat = tmpMat;
+			mat->SetIndex(idx);
+			mat->SetLoaded(true);
+			mat->SetName(ToCacheIdentifier(std::string{*identifier}));
+		}
+	}
+	else {
+		auto asset = std::make_shared<util::Asset>();
+		asset->assetObject = mat;
+		auto index = AddToIndex(asset);
+		mat = tmpMat;
+		mat->SetIndex(index);
+		mat->SetLoaded(true);
+	}
+	return mat;
+}
+std::shared_ptr<pragma::material::Material> pragma::material::MaterialManager::CreateMaterial(const udm::AssetData &assetData, std::string &outErr, std::optional<std::string_view> identifier)
 {
 	auto dataSettings = CreateDataSettings();
 	auto root = pragma::util::make_shared<datasystem::Block>(*dataSettings);
@@ -284,11 +316,7 @@ std::shared_ptr<pragma::material::Material> pragma::material::MaterialManager::C
 	std::string baseMaterial;
 	firstEl.property["base_material"](baseMaterial);
 	auto mat = CreateMaterialObject(std::string {shader}, root);
-	auto asset = std::make_shared<pragma::util::Asset>();
-	asset->assetObject = mat;
-	auto index = AddToIndex(asset);
-	mat->SetIndex(index);
-	mat->SetLoaded(true);
+	mat = RegisterMaterialAsset(mat, identifier);
 	if(!baseMaterial.empty())
 		mat->SetBaseMaterial(baseMaterial);
 	return mat;
@@ -305,21 +333,7 @@ std::shared_ptr<pragma::material::Material> pragma::material::MaterialManager::C
 }
 std::shared_ptr<pragma::material::Material> pragma::material::MaterialManager::CreateMaterial(const std::string &identifier, const std::string &shader, const std::shared_ptr<datasystem::Block> &data)
 {
-	auto tmpMat = CreateMaterialObject(shader, data);
-	std::shared_ptr<Material> mat = nullptr;
-	auto *asset = FindCachedAsset(identifier);
-	if(asset) {
-		mat = GetAssetObject(*asset);
-		mat->Assign(*tmpMat);
-	}
-	else {
-		auto asset = std::make_shared<pragma::util::Asset>();
-		asset->assetObject = tmpMat;
-		auto idx = AddToCache(identifier, asset);
-		mat = tmpMat;
-		mat->SetIndex(idx);
-		mat->SetLoaded(true);
-		mat->SetName(ToCacheIdentifier(identifier));
-	}
+	auto mat = CreateMaterialObject(shader, data);
+	mat = RegisterMaterialAsset(mat, identifier);
 	return mat;
 }
