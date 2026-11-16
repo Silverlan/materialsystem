@@ -6,19 +6,19 @@ module;
 #ifndef DISABLE_VMT_SUPPORT
 #include <VMTFile.h>
 #include <VTFLib.h>
+#endif
 
 export module pragma.materialsystem:format_handlers.source_vmt;
 
+#ifndef DISABLE_VMT_SUPPORT
 import pragma.datasystem;
 import pragma.math;
 export import pragma.util;
+
 #define ENABLE_VKV_PARSER
 #ifdef ENABLE_VKV_PARSER
 import REDxEYE.VKVParser;
 #endif
-#endif
-
-#ifndef DISABLE_VMT_SUPPORT
 
 export namespace pragma::material {
 	struct IVmtNode {
